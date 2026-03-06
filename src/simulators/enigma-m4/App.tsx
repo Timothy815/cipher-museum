@@ -23,6 +23,7 @@ const createInitialState = (): MachineState => ({
 
 function App() {
   const [machineState, setMachineState] = useState<MachineState>(createInitialState());
+  const [stateHistory, setStateHistory] = useState<MachineState[]>([]);
   const [litChar, setLitChar] = useState<string | null>(null);
   const [tapeText, setTapeText] = useState<string>('');
   const [pressedKeys, setPressedKeys] = useState<Set<string>>(new Set());
@@ -32,10 +33,13 @@ function App() {
   // Handle key press logic (Encryption)
   const handleKeyDown = useCallback((char: string) => {
     if (pressedKeys.has(char)) return; // Prevent repeat if holding key
-    
+
+    // Save state before stepping so we can undo
+    setStateHistory(prev => [...prev, machineState]);
+
     // Encrypt
     const { result, newState } = encryptCharacter(char, machineState);
-    
+
     setMachineState(newState);
     setLitChar(result);
     setTapeText(prev => prev + result);
@@ -51,6 +55,14 @@ function App() {
     });
   }, []);
 
+  const handleBackspace = useCallback(() => {
+    if (stateHistory.length === 0) return;
+    setMachineState(stateHistory[stateHistory.length - 1]);
+    setStateHistory(prev => prev.slice(0, -1));
+    setTapeText(prev => prev.slice(0, -1));
+    setLitChar(null);
+  }, [stateHistory]);
+
   // Keyboard Event Listeners
   useEffect(() => {
     const isInputFocused = () => {
@@ -65,7 +77,7 @@ function App() {
         handleKeyDown(char);
       }
       if (e.key === 'Backspace') {
-        setTapeText(prev => prev.slice(0, -1));
+        handleBackspace();
       }
     };
 
@@ -83,7 +95,7 @@ function App() {
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
     };
-  }, [handleKeyDown, handleKeyUp]);
+  }, [handleKeyDown, handleKeyUp, handleBackspace]);
 
   // Handler for manual rotor change from UI
   const handleRotorChange = (index: number, newConfig: Partial<RotorConfig>) => {
@@ -92,7 +104,14 @@ function App() {
     setMachineState({ ...machineState, rotors: newRotors });
   };
 
-  const handleClearTape = () => setTapeText('');
+  const handleClearTape = () => {
+    if (stateHistory.length > 0) {
+      setMachineState(stateHistory[0]);
+    }
+    setStateHistory([]);
+    setTapeText('');
+    setLitChar(null);
+  };
 
   return (
     <div className="flex-1 bg-slate-950 flex flex-col items-center justify-start py-10 px-6 text-slate-200">
@@ -178,7 +197,7 @@ function App() {
         onClose={() => setIsSettingsOpen(false)}
         state={machineState}
         onUpdateState={setMachineState}
-        onReset={() => { setMachineState(createInitialState()); setTapeText(''); }}
+        onReset={() => { setMachineState(createInitialState()); setTapeText(''); setStateHistory([]); }}
       />
 
     </div>
