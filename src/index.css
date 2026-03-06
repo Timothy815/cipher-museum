@@ -40,6 +40,53 @@ body {
   background: #64748b;
 }
 
+/* M-209 custom colors and styles */
+.bg-olive-900 { background-color: #1a1c10; }
+.bg-olive-800 { background-color: #2c301b; }
+.bg-olive-700 { background-color: #3e4226; }
+.bg-olive-600 { background-color: #4f5532; }
+.bg-olive-500 { background-color: #646b40; }
+.border-olive-900 { border-color: #1a1c10; }
+.border-olive-800 { border-color: #2c301b; }
+.border-olive-700 { border-color: #3e4226; }
+.border-olive-600 { border-color: #4f5532; }
+.text-olive-950\/30 { color: rgb(13 14 8 / 0.3); }
+.text-olive-400 { color: #8c945e; }
+.text-olive-300 { color: #b4bc8f; }
+.text-olive-500 { color: #646b40; }
+.text-olive-600 { color: #4f5532; }
+.text-olive-700 { color: #3e4226; }
+.hover\:bg-olive-800:hover { background-color: #2c301b; }
+.hover\:bg-olive-500:hover { background-color: #646b40; }
+.bg-olive-950\/30 { background-color: rgb(13 14 8 / 0.3); }
+.border-olive-700\/50 { border-color: rgb(62 66 38 / 0.5); }
+.border-olive-900\/50 { border-color: rgb(26 28 16 / 0.5); }
+.bg-olive-600 { background-color: #4f5532; }
+.bg-amber-900\/50 { background-color: rgb(120 53 15 / 0.5); }
+.border-amber-700 { border-color: #b45309; }
+
+.wheel-gradient {
+  background: linear-gradient(180deg, #3e4226 0%, #646b40 20%, #8c945e 50%, #646b40 80%, #3e4226 100%);
+}
+
+.tape-texture {
+  background-color: #f0e6d2;
+}
+
+/* SIGABA vintage font */
+.font-vintage {
+  font-family: 'Special Elite', cursive;
+}
+
+/* Purple simulator mono display font */
+.font-mono-display {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
 /* Animations */
 @keyframes spin-slow {
   from { transform: rotate(0deg); }
