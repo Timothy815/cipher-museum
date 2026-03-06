@@ -106,9 +106,9 @@ const colorMap: Record<string, { card: string; icon: string; badge: string; glow
 
 const Hub: React.FC = () => {
   return (
-    <div className="max-w-6xl mx-auto px-6 py-14">
+    <div className="max-w-6xl mx-auto px-10 sm:px-16 py-20">
       {/* Header */}
-      <div className="text-center mb-16">
+      <div className="text-center mb-20">
         <h1 className="text-5xl sm:text-6xl font-black tracking-tight text-white mb-4">
           CIPHER <span className="text-amber-500">MUSEUM</span>
         </h1>
@@ -119,17 +119,17 @@ const Hub: React.FC = () => {
       </div>
 
       {/* Machine Cards */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
         {machines.map(m => {
           const c = colorMap[m.color];
           return (
             <Link
               key={m.path}
               to={m.path}
-              className={`group block bg-slate-900/70 border border-slate-800 rounded-2xl p-6 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl ${c.card} ${c.glow}`}
+              className={`group block bg-slate-900/70 border border-slate-800 rounded-2xl p-8 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl ${c.card} ${c.glow}`}
             >
               {/* Icon + Country */}
-              <div className="flex items-start justify-between mb-4">
+              <div className="flex items-start justify-between mb-5">
                 <div className={`w-14 h-14 rounded-xl border flex items-center justify-center ${c.icon}`}>
                   {m.icon}
                 </div>
@@ -147,7 +147,7 @@ const Hub: React.FC = () => {
               <h2 className="text-2xl font-bold text-white mb-1 group-hover:text-amber-200 transition-colors">
                 {m.name}
               </h2>
-              <p className="text-xs font-mono text-slate-500 mb-3 uppercase tracking-wider">
+              <p className="text-xs font-mono text-slate-500 mb-4 uppercase tracking-wider">
                 {m.subtitle}
               </p>
 
@@ -157,7 +157,7 @@ const Hub: React.FC = () => {
               </p>
 
               {/* Launch hint */}
-              <div className="mt-4 text-xs font-semibold text-slate-600 group-hover:text-slate-400 transition-colors">
+              <div className="mt-6 text-xs font-semibold text-slate-600 group-hover:text-slate-400 transition-colors">
                 LAUNCH SIMULATOR &rarr;
               </div>
             </Link>
@@ -166,7 +166,7 @@ const Hub: React.FC = () => {
       </div>
 
       {/* Footer */}
-      <div className="mt-16 text-center text-xs text-slate-600">
+      <div className="mt-20 text-center text-xs text-slate-600">
         <p>Educational cipher machine simulations for classroom use.</p>
       </div>
     </div>
