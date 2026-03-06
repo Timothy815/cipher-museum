@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Lock, KeyRound, Cog, Cpu } from 'lucide-react';
+import { Shield, Lock, KeyRound, Cog, Cpu, Crown } from 'lucide-react';
 
 const machines = [
   {
@@ -22,6 +22,16 @@ const machines = [
     icon: <Cpu size={32} />,
     color: 'blue',
     description: '12-wheel teleprinter cipher used for strategic communications. Broken by Colossus at Bletchley Park.',
+  },
+  {
+    path: '/typex',
+    name: 'Typex',
+    subtitle: 'Type X Mk II — British Cipher Machine',
+    country: 'Britain',
+    era: '1937–1960s',
+    icon: <Crown size={32} />,
+    color: 'emerald',
+    description: '5-rotor machine based on Enigma with critical improvements. 2 stator rotors, multiple notches. Never broken.',
   },
   {
     path: '/m209',
@@ -67,6 +77,12 @@ const colorMap: Record<string, { card: string; icon: string; badge: string; glow
     icon: 'text-blue-400 bg-blue-950/50 border-blue-800/50',
     badge: 'bg-blue-500/20 text-blue-300 border-blue-700/50',
     glow: 'group-hover:shadow-blue-900/30',
+  },
+  emerald: {
+    card: 'hover:border-emerald-700/60',
+    icon: 'text-emerald-400 bg-emerald-950/50 border-emerald-800/50',
+    badge: 'bg-emerald-500/20 text-emerald-300 border-emerald-700/50',
+    glow: 'group-hover:shadow-emerald-900/30',
   },
   green: {
     card: 'hover:border-green-700/60',

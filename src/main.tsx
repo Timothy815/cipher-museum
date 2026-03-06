@@ -9,6 +9,7 @@ import LorenzApp from './simulators/lorenz-sz42/App';
 import M209App from './simulators/m209/App';
 import PurpleApp from './simulators/purple/App';
 import SigabaApp from './simulators/sigaba/App';
+import TypexApp from './simulators/typex/App';
 
 const root = document.getElementById('root')!;
 
@@ -23,6 +24,7 @@ ReactDOM.createRoot(root).render(
           <Route path="/m209" element={<M209App />} />
           <Route path="/purple" element={<PurpleApp />} />
           <Route path="/sigaba" element={<SigabaApp />} />
+          <Route path="/typex" element={<TypexApp />} />
         </Route>
       </Routes>
     </HashRouter>

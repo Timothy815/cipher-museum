@@ -1,19 +1,38 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Home, ChevronRight } from 'lucide-react';
+import { Home, ChevronRight, ChevronDown, Cog, Cpu, KeyRound, Lock, Shield, Crown } from 'lucide-react';
 
 const SIMULATORS = [
-  { path: '/enigma-m4', label: 'Enigma M4' },
-  { path: '/lorenz-sz42', label: 'Lorenz SZ42' },
-  { path: '/m209', label: 'M-209' },
-  { path: '/purple', label: 'Purple' },
-  { path: '/sigaba', label: 'SIGABA' },
+  { path: '/enigma-m4', label: 'Enigma M4', country: 'Germany', icon: <Cog size={14} /> },
+  { path: '/lorenz-sz42', label: 'Lorenz SZ42', country: 'Germany', icon: <Cpu size={14} /> },
+  { path: '/typex', label: 'Typex', country: 'Britain', icon: <Crown size={14} /> },
+  { path: '/m209', label: 'M-209', country: 'United States', icon: <KeyRound size={14} /> },
+  { path: '/purple', label: 'Purple', country: 'Japan', icon: <Lock size={14} /> },
+  { path: '/sigaba', label: 'SIGABA', country: 'United States', icon: <Shield size={14} /> },
 ];
 
 const Layout: React.FC = () => {
   const location = useLocation();
   const isHub = location.pathname === '/';
   const current = SIMULATORS.find(s => s.path === location.pathname);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  // Close dropdown on navigation
+  useEffect(() => {
+    setDropdownOpen(false);
+  }, [location.pathname]);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col">
@@ -35,21 +54,38 @@ const Layout: React.FC = () => {
             </>
           )}
 
+          {/* Simulator Dropdown */}
           {!isHub && (
-            <div className="ml-auto hidden md:flex gap-1">
-              {SIMULATORS.map(s => (
-                <Link
-                  key={s.path}
-                  to={s.path}
-                  className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${
-                    s.path === location.pathname
-                      ? 'bg-amber-500/20 text-amber-400'
-                      : 'text-slate-400 hover:text-white hover:bg-slate-800'
-                  }`}
-                >
-                  {s.label}
-                </Link>
-              ))}
+            <div className="ml-auto relative" ref={dropdownRef}>
+              <button
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-colors border border-slate-800"
+              >
+                Switch Machine
+                <ChevronDown size={14} className={`transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {dropdownOpen && (
+                <div className="absolute right-0 top-full mt-2 w-56 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden">
+                  {SIMULATORS.map(s => (
+                    <Link
+                      key={s.path}
+                      to={s.path}
+                      className={`flex items-center gap-3 px-4 py-3 text-sm transition-colors ${
+                        s.path === location.pathname
+                          ? 'bg-amber-500/10 text-amber-400'
+                          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                      }`}
+                    >
+                      <span className="text-slate-500">{s.icon}</span>
+                      <div className="flex flex-col">
+                        <span className="font-medium">{s.label}</span>
+                        <span className="text-[10px] text-slate-500">{s.country}</span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
