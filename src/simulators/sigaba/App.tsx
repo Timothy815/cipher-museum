@@ -92,7 +92,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#111] text-gray-200 flex flex-col items-center pb-20 overflow-hidden relative">
+    <div className="flex-1 bg-[#111] text-gray-200 flex flex-col items-center pb-20 overflow-hidden relative">
       {/* Background Texture */}
       <div className="absolute inset-0 opacity-5 pointer-events-none"
            style={{
@@ -102,7 +102,7 @@ const App: React.FC = () => {
       </div>
 
       {/* Header */}
-      <header className="w-full bg-[#1a1c23] border-b border-gray-700 p-4 flex justify-between items-center shadow-lg z-10">
+      <header className="w-full bg-[#1a1c23] border-b border-gray-700 px-6 py-4 flex justify-between items-center shadow-lg z-10">
         <div className="flex items-center gap-3">
             <div className="bg-amber-600 text-black font-bold px-2 py-1 rounded text-xs tracking-wider">TOP SECRET</div>
             <h1 className="text-xl md:text-2xl font-bold tracking-widest text-gray-100">
@@ -112,7 +112,7 @@ const App: React.FC = () => {
       </header>
 
       {/* Main Machine UI */}
-      <main className="flex-1 flex flex-col items-center justify-center w-full max-w-5xl px-2 md:px-8 py-6 gap-8">
+      <main className="flex-1 flex flex-col items-center justify-center w-full max-w-5xl px-6 md:px-10 py-8 gap-8">
 
         {/* Rotors Section */}
         <div className="bg-[#222] p-4 md:p-6 rounded-lg border-2 border-gray-600 shadow-2xl relative w-full">
@@ -152,7 +152,7 @@ const App: React.FC = () => {
         </div>
 
         {/* Controls */}
-        <div className="w-full flex justify-between items-center bg-[#1a1c23] p-3 rounded border border-gray-700">
+        <div className="w-full flex justify-between items-center bg-[#1a1c23] p-4 rounded-lg border border-gray-700">
            <div className="flex items-center gap-4">
                <div className="flex flex-col">
                   <span className="text-[10px] text-gray-500 uppercase">Operation Mode</span>

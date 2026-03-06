@@ -88,7 +88,7 @@ function App() {
   const handleClearTape = () => setTapeText('');
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-start py-8 px-4 text-slate-200">
+    <div className="flex-1 bg-slate-950 flex flex-col items-center justify-start py-10 px-6 text-slate-200">
       
       {/* Header / Top Bar */}
       <div className="w-full max-w-4xl flex justify-between items-center mb-8">
@@ -115,7 +115,7 @@ function App() {
       </div>
 
       {/* Main Machine Interface */}
-      <div className="w-full max-w-3xl flex flex-col gap-8 relative z-0">
+      <div className="w-full max-w-3xl flex flex-col gap-10 relative z-0">
         
         {/* Rotor Assembly */}
         <RotorAssembly rotors={machineState.rotors} onChange={handleRotorChange} />

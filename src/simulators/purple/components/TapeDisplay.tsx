@@ -17,10 +17,10 @@ const TapeDisplay: React.FC<TapeDisplayProps> = ({ logs, title }) => {
 
   return (
     <div className="flex flex-col h-32 sm:h-40 bg-[#e3dac9] text-neutral-900 rounded-md border-y-4 border-neutral-600 shadow-inner overflow-hidden font-mono-display relative">
-      <div className="absolute top-0 left-0 bg-neutral-800 text-white text-[10px] px-2 py-0.5 rounded-br uppercase tracking-wider z-10">
+      <div className="bg-neutral-800 text-white text-[10px] px-3 py-1 uppercase tracking-wider self-start rounded-br z-10 shrink-0">
         {title}
       </div>
-      
+
       {/* Tape Holes */}
       <div className="absolute top-0 bottom-0 left-2 w-4 border-r border-dashed border-neutral-400 flex flex-col justify-between py-2 pointer-events-none opacity-50">
          {[...Array(10)].map((_, i) => (
@@ -28,9 +28,9 @@ const TapeDisplay: React.FC<TapeDisplayProps> = ({ logs, title }) => {
          ))}
       </div>
 
-      <div 
+      <div
         ref={scrollRef}
-        className="flex-1 overflow-x-hidden overflow-y-auto p-4 pl-10 text-lg sm:text-xl tracking-[0.2em] leading-relaxed whitespace-pre-wrap break-all"
+        className="flex-1 overflow-x-hidden overflow-y-auto px-4 pb-4 pt-2 pl-10 text-lg sm:text-xl tracking-[0.2em] leading-relaxed whitespace-pre-wrap break-all"
         style={{ fontFamily: '"Typewriter", "Courier New", monospace' }}
       >
         {logs.map((log) => (

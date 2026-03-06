@@ -128,19 +128,21 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-stone-900 text-stone-200 flex flex-col font-sans selection:bg-amber-500/30">
-      
+    <div className="flex-1 bg-stone-900 text-stone-200 flex flex-col font-sans selection:bg-amber-500/30">
+
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-24 right-1/2 translate-x-1/2 z-50 bg-amber-600 text-white px-6 py-3 rounded-full shadow-[0_0_20px_rgba(245,158,11,0.5)] font-bold tracking-wider animate-in fade-in slide-in-from-top-4 duration-300 flex items-center gap-2 border border-amber-400">
+        <div className="fixed top-20 right-1/2 translate-x-1/2 z-50 bg-amber-600 text-white px-6 py-3 rounded-full shadow-[0_0_20px_rgba(245,158,11,0.5)] font-bold tracking-wider animate-in fade-in slide-in-from-top-4 duration-300 flex items-center gap-2 border border-amber-400">
           <CheckCircle size={20} className="text-amber-100" />
           {toastMessage}
         </div>
       )}
-      
-      {/* Navbar */}
-      <header className="bg-olive-900 border-b border-olive-800 p-4 shadow-lg sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto flex justify-between items-center">
+
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col items-center justify-start px-6 py-10 gap-8">
+
+        {/* Page Header */}
+        <div className="w-full max-w-4xl flex justify-between items-center">
           <div className="flex items-center gap-3">
              <div className="w-10 h-10 bg-olive-700 rounded-full flex items-center justify-center shadow-inner border border-olive-600">
                <span className="font-mono font-bold text-amber-500 text-lg">M</span>
@@ -150,18 +152,14 @@ const App: React.FC = () => {
                <p className="text-xs text-olive-400 uppercase tracking-widest">Converter M-209-B (US ARMY)</p>
              </div>
           </div>
-          <button 
+          <button
              onClick={() => setShowInfo(!showInfo)}
-             className={`transition-colors flex items-center gap-2 px-3 py-1 rounded border ${showInfo ? 'bg-amber-900/50 border-amber-700 text-amber-200' : 'bg-transparent border-transparent text-olive-400 hover:text-amber-200 hover:bg-olive-800'}`}
+             className={`transition-colors flex items-center gap-2 px-3 py-1.5 rounded border ${showInfo ? 'bg-amber-900/50 border-amber-700 text-amber-200' : 'bg-transparent border-transparent text-olive-400 hover:text-amber-200 hover:bg-olive-800'}`}
           >
             <Info size={20} />
             <span className="text-sm font-semibold hidden sm:inline">Instructions</span>
           </button>
         </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col items-center justify-start p-4 sm:p-8 gap-8">
         
         {/* Info Modal/Panel */}
         {showInfo && (

@@ -96,11 +96,12 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-blue-500/30">
-      
-      {/* Navbar */}
-      <header className="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+    <div className="flex-1 bg-slate-950 text-slate-200 font-sans selection:bg-blue-500/30">
+
+      <main className="max-w-7xl mx-auto px-6 py-10">
+
+        {/* Page Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center shadow-lg shadow-blue-900/50">
               <Settings className="text-white animate-spin-slow" size={18} />
@@ -109,27 +110,24 @@ const App: React.FC = () => {
               Lorenz <span className="text-blue-400">SZ42</span> Simulator
             </h1>
           </div>
-          <div className="flex gap-4">
-             <button 
+          <div className="flex gap-1 bg-slate-900 p-1 rounded-lg border border-slate-800">
+             <button
                 onClick={() => setActiveTab('simulator')}
-                className={`text-sm font-medium transition-colors ${activeTab === 'simulator' ? 'text-blue-400' : 'text-slate-400 hover:text-white'}`}
+                className={`text-sm font-medium px-4 py-1.5 rounded-md transition-colors ${activeTab === 'simulator' ? 'bg-blue-600/20 text-blue-400' : 'text-slate-400 hover:text-white'}`}
              >
                 Simulator
              </button>
-             <button 
+             <button
                 onClick={() => setActiveTab('about')}
-                className={`text-sm font-medium transition-colors ${activeTab === 'about' ? 'text-blue-400' : 'text-slate-400 hover:text-white'}`}
+                className={`text-sm font-medium px-4 py-1.5 rounded-md transition-colors ${activeTab === 'about' ? 'bg-blue-600/20 text-blue-400' : 'text-slate-400 hover:text-white'}`}
              >
                 About Tunny
              </button>
           </div>
         </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto px-4 py-8">
         
         {activeTab === 'simulator' ? (
-          <div className="space-y-8">
+          <div className="space-y-10">
             {/* Control Panel (The Machine) */}
             <section className="bg-slate-900 border border-slate-800 rounded-2xl p-6 md:p-8 shadow-xl relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 via-emerald-500 to-amber-500 opacity-50"></div>

@@ -90,7 +90,7 @@ const colorMap: Record<string, { card: string; icon: string; badge: string; glow
 
 const Hub: React.FC = () => {
   return (
-    <div className="max-w-6xl mx-auto px-4 py-12">
+    <div className="max-w-6xl mx-auto px-6 py-14">
       {/* Header */}
       <div className="text-center mb-16">
         <h1 className="text-5xl sm:text-6xl font-black tracking-tight text-white mb-4">

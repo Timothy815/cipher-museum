@@ -107,7 +107,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#121212] text-neutral-200 flex flex-col items-center py-8 px-4 selection:bg-purple-500 selection:text-white">
+    <div className="flex-1 bg-[#121212] text-neutral-200 flex flex-col items-center py-10 px-6 selection:bg-purple-500 selection:text-white">
       
       {/* Header */}
       <header className="w-full max-w-4xl flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
@@ -133,10 +133,10 @@ const App: React.FC = () => {
       </header>
 
       {/* Main Machine Interface */}
-      <main className="w-full max-w-4xl space-y-6">
+      <main className="w-full max-w-4xl space-y-8">
         
         {/* Top Control Bar */}
-        <div className="bg-neutral-900 border border-neutral-800 p-4 rounded-xl flex flex-wrap gap-4 items-center justify-between shadow-xl">
+        <div className="bg-neutral-900 border border-neutral-800 p-5 rounded-xl flex flex-wrap gap-4 items-center justify-between shadow-xl">
             {/* Mode Switch */}
             <div className="flex bg-neutral-800 p-1 rounded-lg">
                 <button 
