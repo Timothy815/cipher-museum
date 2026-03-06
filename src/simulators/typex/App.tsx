@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Settings, Eraser, Info } from 'lucide-react';
+import { Settings, Eraser, Info, Eye, EyeOff } from 'lucide-react';
 import { MachineState, RotorConfig } from './types';
 import { ROTOR_DATA } from './constants';
 import { encryptCharacter } from './services/typexService';
@@ -8,6 +8,7 @@ import { Lampboard } from './components/Lampboard';
 import { Keyboard } from './components/Keyboard';
 import { Tape } from './components/Tape';
 import { SettingsPanel } from './components/SettingsPanel';
+import { SignalPath } from './components/SignalPath';
 
 const createInitialState = (): MachineState => ({
   rotors: [
@@ -28,6 +29,8 @@ function App() {
   const [pressedKeys, setPressedKeys] = useState<Set<string>>(new Set());
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
+  const [showSignalPath, setShowSignalPath] = useState(false);
+  const [lastInputChar, setLastInputChar] = useState<string | null>(null);
 
   const handleKeyDown = useCallback((char: string) => {
     if (pressedKeys.has(char)) return;
@@ -36,6 +39,7 @@ function App() {
 
     const { result, newState } = encryptCharacter(char, machineState);
 
+    setLastInputChar(char);
     setMachineState(newState);
     setLitChar(result);
     setTapeText(prev => prev + result);
@@ -118,13 +122,25 @@ function App() {
           </h1>
           <span className="text-stone-500 text-xs tracking-[0.3em] font-mono">BRITISH CIPHER MACHINE</span>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-2">
+          <button
+            onClick={() => setShowSignalPath(!showSignalPath)}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg font-bold text-xs transition-all border ${
+              showSignalPath
+                ? 'bg-emerald-900/50 border-emerald-700 text-emerald-300'
+                : 'bg-stone-800 border-stone-700 text-stone-400 hover:text-white'
+            }`}
+            title="Signal Path"
+          >
+            {showSignalPath ? <EyeOff size={16} /> : <Eye size={16} />}
+            <span className="hidden sm:inline">Signal</span>
+          </button>
           <button
             onClick={() => setShowInfo(!showInfo)}
-            className="p-2 rounded-full hover:bg-stone-800 text-stone-400 transition-colors"
+            className="p-2 rounded-lg hover:bg-stone-800 text-stone-400 transition-colors border border-stone-700"
             title="About"
           >
-            <Info size={24} />
+            <Info size={20} />
           </button>
           <button
             onClick={() => setIsSettingsOpen(true)}
@@ -168,6 +184,11 @@ function App() {
             <Eraser size={24} />
           </button>
         </div>
+
+        {/* Signal Path Trace */}
+        {showSignalPath && (
+          <SignalPath state={machineState} lastInput={lastInputChar} />
+        )}
       </div>
 
       {/* Info Panel */}
