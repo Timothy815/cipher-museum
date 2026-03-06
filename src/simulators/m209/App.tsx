@@ -142,7 +142,7 @@ const App: React.FC = () => {
       <main className="flex-1 flex flex-col items-center justify-start px-6 py-10 gap-8">
 
         {/* Page Header */}
-        <div className="w-full max-w-4xl flex justify-between items-center">
+        <div className="w-full max-w-5xl flex justify-between items-center">
           <div className="flex items-center gap-3">
              <div className="w-10 h-10 bg-olive-700 rounded-full flex items-center justify-center shadow-inner border border-olive-600">
                <span className="font-mono font-bold text-amber-500 text-lg">M</span>
@@ -163,7 +163,7 @@ const App: React.FC = () => {
         
         {/* Info Modal/Panel */}
         {showInfo && (
-          <div className="max-w-4xl w-full bg-stone-800/90 border border-amber-700/30 p-6 rounded-lg shadow-2xl animate-fadeIn relative overflow-hidden">
+          <div className="max-w-5xl w-full bg-stone-800/90 border border-amber-700/30 p-6 rounded-lg shadow-2xl animate-fadeIn relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-600 to-olive-600"></div>
             <button 
               onClick={() => setShowInfo(false)}
@@ -224,14 +224,14 @@ const App: React.FC = () => {
         )}
 
         {/* The Machine Visual */}
-        <div className="w-full max-w-4xl bg-olive-800 rounded-3xl p-6 sm:p-10 shadow-2xl border-t border-olive-700 relative">
-          
+        <div className="w-full max-w-5xl bg-olive-800 rounded-3xl p-8 sm:p-12 shadow-2xl border-t border-olive-700 relative">
+
           {/* Metal Plate Detail */}
-          <div className="absolute top-4 left-4 sm:top-6 sm:left-6 text-olive-950/30 font-bold text-4xl sm:text-6xl select-none pointer-events-none tracking-tighter">
+          <div className="text-olive-950/30 font-bold text-4xl sm:text-5xl select-none pointer-events-none tracking-tighter mb-8">
             US ARMY
           </div>
 
-          <div className="flex flex-col items-center gap-8 z-10 relative mt-16 sm:mt-20">
+          <div className="flex flex-col items-center gap-10 z-10 relative">
              
              {/* Rotor Array */}
              <div className={`flex flex-wrap justify-center gap-2 sm:gap-4 bg-black/20 p-4 rounded-xl border border-olive-900/50 shadow-inner transition-opacity duration-300 ${isRekeying ? 'opacity-50 blur-sm scale-95' : 'opacity-100 scale-100'}`}>
@@ -292,7 +292,7 @@ const App: React.FC = () => {
         </div>
 
         {/* Input Area */}
-        <div className="w-full max-w-2xl">
+        <div className="w-full max-w-5xl">
           <label className="block text-olive-400 text-xs font-bold mb-2 uppercase tracking-wider flex justify-between">
             <span>Message Input</span>
             <span className="text-olive-600">Type to Encrypt/Decrypt</span>

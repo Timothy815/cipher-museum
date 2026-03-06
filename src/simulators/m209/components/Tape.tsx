@@ -22,7 +22,7 @@ export const Tape: React.FC<TapeProps> = ({ entries }) => {
   };
 
   return (
-    <div className="relative w-full max-w-2xl mx-auto h-32 sm:h-40 bg-black/20 rounded-md p-1 backdrop-blur-sm border border-olive-700/50">
+    <div className="relative w-full h-32 sm:h-40 bg-black/20 rounded-md p-1 backdrop-blur-sm border border-olive-700/50">
         
       {/* The Paper Strip */}
       <div 
