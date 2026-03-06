@@ -43,23 +43,23 @@ const RotorUnit: React.FC<{
         {rotor.type}
       </div>
 
+      {/* Step Up Button */}
+      <button
+        onClick={() => handleStep(1)}
+        className="text-slate-500 hover:text-amber-400 transition-colors z-10 p-1"
+      >
+        <ChevronUp size={20} />
+      </button>
+
       {/* The Mechanical Wheel Visual */}
-      <div className="relative bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 rounded-lg p-1 border-x-4 border-slate-900 shadow-2xl w-14 sm:w-16">
-        
-        {/* Buttons */}
-        <button 
-          onClick={() => handleStep(1)}
-          className="absolute -top-4 left-1/2 -translate-x-1/2 text-slate-500 hover:text-amber-400 transition-colors z-10"
-        >
-          <ChevronUp size={20} />
-        </button>
+      <div className="bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 rounded-lg p-1 border-x-4 border-slate-900 shadow-2xl w-14 sm:w-16">
 
         {/* Window */}
         <div className="h-24 overflow-hidden relative rounded bg-slate-900/50 inner-shadow flex flex-col items-center justify-center mask-image-gradient">
           <div className="text-slate-600 font-mono text-lg opacity-50 select-none blur-[1px] transform scale-75 translate-y-[-100%] absolute top-2">
             {prevLetter}
           </div>
-          
+
           <div className="text-amber-100 font-typewriter text-3xl font-bold select-none z-10 drop-shadow-[0_0_5px_rgba(251,191,36,0.5)]">
             {currentLetter}
           </div>
@@ -67,22 +67,23 @@ const RotorUnit: React.FC<{
           <div className="text-slate-600 font-mono text-lg opacity-50 select-none blur-[1px] transform scale-75 translate-y-[100%] absolute bottom-2">
             {nextLetter}
           </div>
-          
+
           {/* Glass glare effect */}
           <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none rounded"></div>
         </div>
-
-        <button 
-          onClick={() => handleStep(-1)}
-          className="absolute -bottom-4 left-1/2 -translate-x-1/2 text-slate-500 hover:text-amber-400 transition-colors z-10"
-        >
-          <ChevronDown size={20} />
-        </button>
       </div>
 
-      {/* Manual Input (The "Type them out" requirement) */}
-      <input 
-        className="mt-6 w-10 text-center bg-transparent border-b border-slate-600 text-amber-100 focus:outline-none focus:border-amber-400 font-mono uppercase transition-colors"
+      {/* Step Down Button */}
+      <button
+        onClick={() => handleStep(-1)}
+        className="text-slate-500 hover:text-amber-400 transition-colors z-10 p-1"
+      >
+        <ChevronDown size={20} />
+      </button>
+
+      {/* Manual Input */}
+      <input
+        className="mt-2 w-10 text-center bg-transparent border-b border-slate-600 text-amber-100 focus:outline-none focus:border-amber-400 font-mono uppercase transition-colors"
         value={currentLetter}
         onChange={handleType}
         onFocus={(e) => e.target.select()}

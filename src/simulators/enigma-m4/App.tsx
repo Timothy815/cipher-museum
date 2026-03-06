@@ -53,7 +53,13 @@ function App() {
 
   // Keyboard Event Listeners
   useEffect(() => {
+    const isInputFocused = () => {
+      const tag = document.activeElement?.tagName;
+      return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+    };
+
     const onKeyDown = (e: KeyboardEvent) => {
+      if (isInputFocused()) return;
       const char = e.key.toUpperCase();
       if (/^[A-Z]$/.test(char) && !e.repeat && !e.metaKey && !e.ctrlKey && !e.altKey) {
         handleKeyDown(char);
@@ -64,6 +70,7 @@ function App() {
     };
 
     const onKeyUp = (e: KeyboardEvent) => {
+      if (isInputFocused()) return;
       const char = e.key.toUpperCase();
       if (/^[A-Z]$/.test(char)) {
         handleKeyUp(char);
