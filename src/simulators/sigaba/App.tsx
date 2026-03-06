@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Eraser } from 'lucide-react';
+import { Eraser, Settings, Info, Eye, EyeOff } from 'lucide-react';
 import { MachineState } from './types';
 import { getInitialState, processCharacter } from './services/sigabaLogic';
 import Rotor from './components/Rotor';
 import Keyboard from './components/Keyboard';
 import Lampboard from './components/Lampboard';
 import Tape from './components/Tape';
+import SignalTrace from './components/SignalTrace';
+import SettingsPanel from './components/SettingsPanel';
 
 const App: React.FC = () => {
   const [machineState, setMachineState] = useState<MachineState>(getInitialState());
@@ -13,6 +15,9 @@ const App: React.FC = () => {
   const [litChar, setLitChar] = useState<string | null>(null);
   const [tapeText, setTapeText] = useState<string>('');
   const [activeKey, setActiveKey] = useState<string | null>(null);
+  const [showTrace, setShowTrace] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
 
   // Audio refs
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -109,10 +114,81 @@ const App: React.FC = () => {
               SIGABA <span className="text-gray-500 text-lg">ECM MARK II</span>
             </h1>
         </div>
+        <div className="flex gap-2">
+            <button
+              onClick={() => setShowTrace(!showTrace)}
+              className={`p-2 rounded border transition-colors flex items-center gap-1.5 text-xs font-bold ${
+                showTrace
+                  ? 'bg-amber-900/50 border-amber-700 text-amber-300'
+                  : 'border-gray-700 text-gray-400 hover:text-white hover:border-gray-500'
+              }`}
+              title="Toggle Signal Trace"
+            >
+              {showTrace ? <EyeOff size={16} /> : <Eye size={16} />}
+              <span className="hidden sm:inline">Trace</span>
+            </button>
+            <button
+              onClick={() => setShowSettings(true)}
+              className="p-2 rounded border border-gray-700 text-gray-400 hover:text-white hover:border-gray-500 transition-colors flex items-center gap-1.5 text-xs font-bold"
+              title="Machine Settings"
+            >
+              <Settings size={16} />
+              <span className="hidden sm:inline">Config</span>
+            </button>
+            <button
+              onClick={() => setShowInfo(!showInfo)}
+              className={`p-2 rounded border transition-colors ${
+                showInfo
+                  ? 'bg-blue-900/50 border-blue-700 text-blue-300'
+                  : 'border-gray-700 text-gray-400 hover:text-white hover:border-gray-500'
+              }`}
+              title="How it works"
+            >
+              <Info size={16} />
+            </button>
+        </div>
       </header>
 
       {/* Main Machine UI */}
       <main className="flex-1 flex flex-col items-center justify-center w-full max-w-5xl px-6 md:px-10 py-8 gap-8">
+
+        {/* Info Panel */}
+        {showInfo && (
+          <div className="w-full bg-[#1a1c23] border border-gray-700 rounded-xl p-6 space-y-4">
+            <h3 className="text-lg font-bold text-amber-400 tracking-wider">How SIGABA Works</h3>
+            <div className="grid md:grid-cols-3 gap-4 text-sm text-gray-300">
+              <div className="bg-black/20 p-4 rounded-lg border border-amber-800/30">
+                <h4 className="text-amber-400 font-bold text-xs uppercase tracking-wider mb-2">Cipher Bank (Bottom)</h4>
+                <p className="text-xs leading-relaxed text-gray-400">
+                  5 rotors that perform the actual encryption. Unlike Enigma, SIGABA is <strong className="text-gray-200">not reciprocal</strong> — it has
+                  separate encipher/decipher modes. Each rotor can be inserted forward or reversed.
+                </p>
+              </div>
+              <div className="bg-black/20 p-4 rounded-lg border border-blue-800/30">
+                <h4 className="text-blue-400 font-bold text-xs uppercase tracking-wider mb-2">Control Bank (Middle)</h4>
+                <p className="text-xs leading-relaxed text-gray-400">
+                  5 rotors that generate stepping signals. The middle 3 rotors step in an odometer pattern.
+                  Signals F, G, H, I pass through these rotors to determine <strong className="text-gray-200">which cipher rotors advance</strong>.
+                </p>
+              </div>
+              <div className="bg-black/20 p-4 rounded-lg border border-green-800/30">
+                <h4 className="text-green-400 font-bold text-xs uppercase tracking-wider mb-2">Index Bank (Top)</h4>
+                <p className="text-xs leading-relaxed text-gray-400">
+                  5 rotors that <strong className="text-gray-200">permute the control signals</strong> before they reach the cipher bank stepping magnets.
+                  These rotors stay fixed during operation, set once as part of the key.
+                </p>
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 pt-2 border-t border-gray-800">
+              This complex 3-tier stepping mechanism made SIGABA's rotor motion unpredictable.
+              It is the only major WWII cipher machine <strong className="text-gray-400">never broken</strong> by an adversary.
+              Enable <strong className="text-gray-400">Trace</strong> to watch the stepping signals flow in real time.
+            </p>
+          </div>
+        )}
+
+        {/* Signal Trace */}
+        {showTrace && <SignalTrace state={machineState} />}
 
         {/* Rotors Section */}
         <div className="bg-[#222] p-4 md:p-6 rounded-lg border-2 border-gray-600 shadow-2xl relative w-full">
@@ -187,6 +263,19 @@ const App: React.FC = () => {
         />
 
       </main>
+
+      {/* Settings Modal */}
+      <SettingsPanel
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        state={machineState}
+        onUpdateState={setMachineState}
+        onReset={() => {
+          setMachineState(getInitialState());
+          setTapeText('');
+          setHistory([]);
+        }}
+      />
     </div>
   );
 };
