@@ -4,7 +4,8 @@ import { MachineState, TapeEntry } from './types';
 import { M209Service } from './services/m209Service';
 import { Wheel } from './components/Wheel';
 import { Tape } from './components/Tape';
-import { RefreshCw, RotateCcw, Trash2, Info, X, CheckCircle, Undo2 } from 'lucide-react';
+import InternalView from './components/InternalView';
+import { RefreshCw, RotateCcw, Trash2, Info, X, CheckCircle, Undo2, Wrench } from 'lucide-react';
 
 const App: React.FC = () => {
   const [state, setState] = useState<MachineState>(generateRandomState());
@@ -17,6 +18,7 @@ const App: React.FC = () => {
   const [showInfo, setShowInfo] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isRekeying, setIsRekeying] = useState(false);
+  const [showInternals, setShowInternals] = useState(false);
 
   // Initialize start positions on mount
   useEffect(() => {
@@ -152,13 +154,22 @@ const App: React.FC = () => {
                <p className="text-xs text-olive-400 uppercase tracking-widest">Converter M-209-B (US ARMY)</p>
              </div>
           </div>
-          <button
-             onClick={() => setShowInfo(!showInfo)}
-             className={`transition-colors flex items-center gap-2 px-3 py-1.5 rounded border ${showInfo ? 'bg-amber-900/50 border-amber-700 text-amber-200' : 'bg-transparent border-transparent text-olive-400 hover:text-amber-200 hover:bg-olive-800'}`}
-          >
-            <Info size={20} />
-            <span className="text-sm font-semibold hidden sm:inline">Instructions</span>
-          </button>
+          <div className="flex gap-2">
+            <button
+               onClick={() => setShowInternals(!showInternals)}
+               className={`transition-colors flex items-center gap-2 px-3 py-1.5 rounded border ${showInternals ? 'bg-amber-900/50 border-amber-700 text-amber-200' : 'bg-transparent border-transparent text-olive-400 hover:text-amber-200 hover:bg-olive-800'}`}
+            >
+              <Wrench size={20} />
+              <span className="text-sm font-semibold hidden sm:inline">Internals</span>
+            </button>
+            <button
+               onClick={() => setShowInfo(!showInfo)}
+               className={`transition-colors flex items-center gap-2 px-3 py-1.5 rounded border ${showInfo ? 'bg-amber-900/50 border-amber-700 text-amber-200' : 'bg-transparent border-transparent text-olive-400 hover:text-amber-200 hover:bg-olive-800'}`}
+            >
+              <Info size={20} />
+              <span className="text-sm font-semibold hidden sm:inline">Instructions</span>
+            </button>
+          </div>
         </div>
         
         {/* Info Modal/Panel */}
@@ -310,6 +321,14 @@ const App: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Internal Mechanism View */}
+        {showInternals && (
+          <InternalView
+            state={state}
+            onUpdateState={setState}
+          />
+        )}
 
       </main>
 
