@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Home, ChevronRight, ChevronDown, Cog, Cpu, KeyRound, Lock, Shield, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc } from 'lucide-react';
+import { Home, ChevronRight, ChevronDown, Cog, Cpu, KeyRound, Lock, Shield, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck } from 'lucide-react';
 
 const SIMULATORS = [
   { path: '/enigma-i', label: 'Enigma I', country: 'Germany', icon: <Cog size={14} /> },
@@ -19,6 +19,8 @@ const SIMULATORS = [
   { path: '/playfair', label: 'Playfair', country: 'Britain', icon: <Grid3X3 size={14} /> },
   { path: '/adfgvx', label: 'ADFGVX', country: 'Germany', icon: <Hash size={14} /> },
   { path: '/jefferson', label: 'Jefferson Wheel', country: 'United States', icon: <Disc size={14} /> },
+  { path: '/hill', label: 'Hill Cipher', country: 'United States', icon: <Grid2X2 size={14} /> },
+  { path: '/otp', label: 'One-Time Pad', country: 'International', icon: <ShieldCheck size={14} /> },
 ];
 
 const Layout: React.FC = () => {

@@ -20,6 +20,8 @@ import VigenereApp from './simulators/vigenere/App';
 import PlayfairApp from './simulators/playfair/App';
 import AdfgvxApp from './simulators/adfgvx/App';
 import JeffersonApp from './simulators/jefferson/App';
+import HillApp from './simulators/hill/App';
+import OtpApp from './simulators/otp/App';
 
 const root = document.getElementById('root')!;
 
@@ -45,6 +47,8 @@ ReactDOM.createRoot(root).render(
           <Route path="/playfair" element={<PlayfairApp />} />
           <Route path="/adfgvx" element={<AdfgvxApp />} />
           <Route path="/jefferson" element={<JeffersonApp />} />
+          <Route path="/hill" element={<HillApp />} />
+          <Route path="/otp" element={<OtpApp />} />
         </Route>
       </Routes>
     </HashRouter>

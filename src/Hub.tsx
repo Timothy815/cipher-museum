@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc } from 'lucide-react';
+import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck } from 'lucide-react';
 
 const machines = [
   {
@@ -162,6 +162,26 @@ const machines = [
     icon: <Disc size={32} />,
     color: 'sky',
     description: 'Thomas Jefferson\'s cylinder cipher — 125 years ahead of its time. Reinvented as the US Army M-94 in 1922.',
+  },
+  {
+    path: '/hill',
+    name: 'Hill Cipher',
+    subtitle: 'Matrix Polygraphic Cipher',
+    country: 'United States',
+    era: '1929',
+    icon: <Grid2X2 size={32} />,
+    color: 'purple',
+    description: 'First practical polygraphic cipher using matrix multiplication mod 26. Encrypts blocks of letters simultaneously using linear algebra.',
+  },
+  {
+    path: '/otp',
+    name: 'One-Time Pad',
+    subtitle: 'Theoretically Unbreakable',
+    country: 'International',
+    era: '1882',
+    icon: <ShieldCheck size={32} />,
+    color: 'emerald',
+    description: 'The only cipher proven to be perfectly secure. Uses a random key as long as the message. Used on the Moscow-Washington hotline.',
   },
 ];
 
