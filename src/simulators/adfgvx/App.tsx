@@ -48,14 +48,67 @@ function adfgvxEncrypt(text: string, grid: string[], transKey: string): { fracti
   return { fractionated, columnar, result };
 }
 
+function adfgvxDecrypt(ciphertext: string, grid: string[], transKey: string): { deTransposed: string; plaintext: string } {
+  const clean = ciphertext.toUpperCase().replace(/[^ADFGVX]/g, '');
+  const key = transKey.toUpperCase().replace(/[^A-Z]/g, '');
+  if (!key || !clean) return { deTransposed: '', plaintext: '' };
+
+  // Step 1: Reverse columnar transposition
+  const numCols = key.length;
+  const numRows = Math.ceil(clean.length / numCols);
+  const fullCells = clean.length;
+
+  // Determine column order (sorted by key letter)
+  const order = key.split('').map((c, i) => ({ c, i })).sort((a, b) => a.c.localeCompare(b.c));
+
+  // Calculate how many chars go in each column
+  const colLengths: number[] = Array(numCols).fill(0);
+  for (let i = 0; i < fullCells; i++) {
+    colLengths[i % numCols]++;
+  }
+
+  // Fill columns in sorted order
+  const columns: string[] = Array(numCols).fill('');
+  let pos = 0;
+  for (const o of order) {
+    const len = colLengths[o.i];
+    columns[o.i] = clean.slice(pos, pos + len);
+    pos += len;
+  }
+
+  // Read row by row
+  let deTransposed = '';
+  for (let r = 0; r < numRows; r++) {
+    for (let c = 0; c < numCols; c++) {
+      if (r < columns[c].length) {
+        deTransposed += columns[c][r];
+      }
+    }
+  }
+
+  // Step 2: Reverse fractionation — pairs of ADFGVX back to letters
+  let plaintext = '';
+  for (let i = 0; i < deTransposed.length - 1; i += 2) {
+    const rowIdx = HEADERS.indexOf(deTransposed[i]);
+    const colIdx = HEADERS.indexOf(deTransposed[i + 1]);
+    if (rowIdx === -1 || colIdx === -1) continue;
+    plaintext += grid[rowIdx * 6 + colIdx];
+  }
+
+  return { deTransposed, plaintext };
+}
+
 function App() {
   const [gridKey, setGridKey] = useState('PRIVACY');
   const [transKey, setTransKey] = useState('GERMAN');
   const [input, setInput] = useState('');
+  const [mode, setMode] = useState<'encrypt' | 'decrypt'>('encrypt');
   const [showInfo, setShowInfo] = useState(false);
 
   const grid = useMemo(() => buildGrid(gridKey), [gridKey]);
-  const { fractionated, result } = input ? adfgvxEncrypt(input, grid, transKey) : { fractionated: '', result: '' };
+
+  const encResult = mode === 'encrypt' && input ? adfgvxEncrypt(input, grid, transKey) : null;
+  const decResult = mode === 'decrypt' && input ? adfgvxDecrypt(input, grid, transKey) : null;
 
   return (
     <div className="flex-1 bg-[#161210] flex flex-col items-center justify-start py-10 px-6 text-stone-200">
@@ -113,28 +166,75 @@ function App() {
           </div>
         </div>
 
+        {/* Mode Toggle */}
+        <div className="flex gap-2 mb-6">
+          <button
+            onClick={() => { setMode('encrypt'); setInput(''); }}
+            className={`px-4 py-2 rounded-lg text-sm font-bold tracking-wider transition-colors ${mode === 'encrypt' ? 'bg-orange-500/20 text-orange-300 border border-orange-600/50' : 'bg-stone-800/50 text-stone-500 border border-stone-700 hover:text-stone-300'}`}
+          >
+            ENCRYPT
+          </button>
+          <button
+            onClick={() => { setMode('decrypt'); setInput(''); }}
+            className={`px-4 py-2 rounded-lg text-sm font-bold tracking-wider transition-colors ${mode === 'decrypt' ? 'bg-orange-500/20 text-orange-300 border border-orange-600/50' : 'bg-stone-800/50 text-stone-500 border border-stone-700 hover:text-stone-300'}`}
+          >
+            DECRYPT
+          </button>
+        </div>
+
         {/* I/O */}
         <div className="space-y-4 mb-8">
           <div>
-            <label className="block text-xs text-stone-400 font-bold uppercase tracking-wider mb-2">Plaintext</label>
-            <textarea value={input} onChange={e => setInput(e.target.value.toUpperCase())} placeholder="TYPE YOUR MESSAGE..." className="w-full h-28 bg-stone-900 border border-stone-700 rounded-xl p-4 font-mono text-lg tracking-wider focus:outline-none focus:ring-2 focus:ring-orange-500/50 resize-none text-stone-200 placeholder-stone-700" spellCheck={false} />
+            <label className="block text-xs text-stone-400 font-bold uppercase tracking-wider mb-2">
+              {mode === 'encrypt' ? 'Plaintext' : 'Ciphertext (ADFGVX characters only)'}
+            </label>
+            <textarea value={input} onChange={e => setInput(e.target.value.toUpperCase())} placeholder={mode === 'encrypt' ? 'TYPE YOUR MESSAGE...' : 'PASTE CIPHERTEXT...'} className="w-full h-28 bg-stone-900 border border-stone-700 rounded-xl p-4 font-mono text-lg tracking-wider focus:outline-none focus:ring-2 focus:ring-orange-500/50 resize-none text-stone-200 placeholder-stone-700" spellCheck={false} />
           </div>
 
-          {fractionated && (
+          {mode === 'encrypt' && encResult && (
+            <>
+              <div>
+                <label className="block text-xs text-stone-500 font-bold uppercase tracking-wider mb-2">Step 1: Fractionated (ADFGVX pairs)</label>
+                <div className="bg-stone-800/50 border border-stone-700/50 rounded-xl p-4 font-mono text-base tracking-wider text-stone-400 break-all">
+                  {encResult.fractionated.match(/.{1,2}/g)?.join(' ')}
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs text-orange-400 font-bold uppercase tracking-wider mb-2">Step 2: Final Ciphertext (after transposition)</label>
+                <div className="bg-stone-800/50 border border-stone-700/50 rounded-xl p-4 font-mono text-lg tracking-wider text-orange-200 break-all min-h-[3rem]">
+                  {encResult.result}
+                </div>
+              </div>
+            </>
+          )}
+
+          {mode === 'decrypt' && decResult && (
+            <>
+              <div>
+                <label className="block text-xs text-stone-500 font-bold uppercase tracking-wider mb-2">Step 1: De-transposed (ADFGVX pairs)</label>
+                <div className="bg-stone-800/50 border border-stone-700/50 rounded-xl p-4 font-mono text-base tracking-wider text-stone-400 break-all">
+                  {decResult.deTransposed.match(/.{1,2}/g)?.join(' ')}
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs text-orange-400 font-bold uppercase tracking-wider mb-2">Step 2: Recovered Plaintext</label>
+                <div className="bg-stone-800/50 border border-stone-700/50 rounded-xl p-4 font-mono text-lg tracking-wider text-orange-200 break-all min-h-[3rem]">
+                  {decResult.plaintext}
+                </div>
+              </div>
+            </>
+          )}
+
+          {!encResult && !decResult && (
             <div>
-              <label className="block text-xs text-stone-500 font-bold uppercase tracking-wider mb-2">Step 1: Fractionated (ADFGVX pairs)</label>
-              <div className="bg-stone-800/50 border border-stone-700/50 rounded-xl p-4 font-mono text-base tracking-wider text-stone-400 break-all">
-                {fractionated.match(/.{1,2}/g)?.join(' ')}
+              <label className="block text-xs text-orange-400 font-bold uppercase tracking-wider mb-2">
+                {mode === 'encrypt' ? 'Ciphertext' : 'Plaintext'}
+              </label>
+              <div className="bg-stone-800/50 border border-stone-700/50 rounded-xl p-4 font-mono text-lg tracking-wider text-orange-200 break-all min-h-[3rem]">
+                <span className="text-stone-700">...</span>
               </div>
             </div>
           )}
-
-          <div>
-            <label className="block text-xs text-orange-400 font-bold uppercase tracking-wider mb-2">Step 2: Final Ciphertext (after transposition)</label>
-            <div className="bg-stone-800/50 border border-stone-700/50 rounded-xl p-4 font-mono text-lg tracking-wider text-orange-200 break-all min-h-[3rem]">
-              {result || <span className="text-stone-700">...</span>}
-            </div>
-          </div>
         </div>
       </div>
 
