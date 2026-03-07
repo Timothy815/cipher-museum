@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Eraser, Info, Eye, EyeOff } from 'lucide-react';
 import { MachineState } from './types';
 import { SIXES_CHARS, TWENTIES_CHARS, SIXES_WIRINGS, TWENTIES_WIRINGS } from './constants';
-import { encryptCharacter } from './services/redService';
+import { encryptCharacter, decryptCharacter } from './services/redService';
 import { SwitchDisplay } from './components/SwitchDisplay';
 import { Lampboard } from './components/Lampboard';
 import { Keyboard } from './components/Keyboard';
@@ -22,11 +22,13 @@ function App() {
   const [pressedKeys, setPressedKeys] = useState<Set<string>>(new Set());
   const [showInfo, setShowInfo] = useState(false);
   const [showSwitches, setShowSwitches] = useState(false);
+  const [decrypt, setDecrypt] = useState(false);
 
   const handleKeyDown = useCallback((char: string) => {
     if (pressedKeys.has(char)) return;
     setStateHistory(prev => [...prev, machineState]);
-    const { result, newState } = encryptCharacter(char, machineState);
+    const processFn = decrypt ? decryptCharacter : encryptCharacter;
+    const { result, newState } = processFn(char, machineState);
     setMachineState(newState);
     setLitChar(result);
     setTapeText(prev => prev + result);
@@ -95,6 +97,14 @@ function App() {
           <span className="text-neutral-500 text-xs tracking-[0.3em] font-mono">JAPANESE DIPLOMATIC CIPHER</span>
         </div>
         <div className="flex gap-2">
+          <button
+            onClick={() => setDecrypt(d => !d)}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg font-bold text-xs transition-all border ${
+              decrypt ? 'bg-amber-900/50 border-amber-700 text-amber-300' : 'bg-neutral-800 border-neutral-700 text-neutral-400 hover:text-white'
+            }`}
+          >
+            {decrypt ? 'DECRYPT' : 'ENCRYPT'}
+          </button>
           <button
             onClick={() => setShowSwitches(!showSwitches)}
             className={`flex items-center gap-1.5 px-3 py-2 rounded-lg font-bold text-xs transition-all border ${
