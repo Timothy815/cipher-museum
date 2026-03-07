@@ -3,6 +3,7 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Home, ChevronRight, ChevronDown, Cog, Cpu, KeyRound, Lock, Shield, Crown, Flower2 } from 'lucide-react';
 
 const SIMULATORS = [
+  { path: '/enigma-i', label: 'Enigma I', country: 'Germany', icon: <Cog size={14} /> },
   { path: '/enigma-m4', label: 'Enigma M4', country: 'Germany', icon: <Cog size={14} /> },
   { path: '/lorenz-sz42', label: 'Lorenz SZ42', country: 'Germany', icon: <Cpu size={14} /> },
   { path: '/typex', label: 'Typex', country: 'Britain', icon: <Crown size={14} /> },

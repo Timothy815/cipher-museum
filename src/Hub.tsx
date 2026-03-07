@@ -14,6 +14,16 @@ const machines = [
     description: 'The 4-rotor Enigma used by the German Navy. Features plugboard, double-stepping, and thin reflectors.',
   },
   {
+    path: '/enigma-i',
+    name: 'Enigma I',
+    subtitle: 'Wehrmacht Standard Cipher',
+    country: 'Germany',
+    era: '1930–1945',
+    icon: <Cog size={32} />,
+    color: 'yellow',
+    description: 'The iconic 3-rotor Enigma. Broken by Polish mathematicians and Alan Turing at Bletchley Park. The most famous cipher machine in history.',
+  },
+  {
     path: '/lorenz-sz42',
     name: 'Lorenz SZ42',
     subtitle: 'Tunny — High Command Cipher',
@@ -76,6 +86,12 @@ const machines = [
 ];
 
 const colorMap: Record<string, { card: string; icon: string; badge: string; glow: string }> = {
+  yellow: {
+    card: 'hover:border-yellow-700/60',
+    icon: 'text-yellow-400 bg-yellow-950/50 border-yellow-800/50',
+    badge: 'bg-yellow-500/20 text-yellow-300 border-yellow-700/50',
+    glow: 'group-hover:shadow-yellow-900/30',
+  },
   amber: {
     card: 'hover:border-amber-700/60',
     icon: 'text-amber-400 bg-amber-950/50 border-amber-800/50',
