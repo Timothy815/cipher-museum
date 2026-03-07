@@ -108,7 +108,7 @@ const Hub: React.FC = () => {
   return (
     <div className="w-full flex-1 flex flex-col items-center px-8 sm:px-16 pt-24 pb-20">
       {/* Header */}
-      <div className="text-center mb-20 w-full max-w-5xl">
+      <div className="text-center mb-20">
         <h1 className="text-5xl sm:text-6xl font-black tracking-tight text-white mb-6">
           CIPHER <span className="text-amber-500">MUSEUM</span>
         </h1>
