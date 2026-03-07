@@ -20,11 +20,12 @@ function App() {
   const [pressedKeys, setPressedKeys] = useState<Set<string>>(new Set());
   const [showInfo, setShowInfo] = useState(false);
   const [selectedRotor, setSelectedRotor] = useState(1);
+  const [decrypt, setDecrypt] = useState(false);
 
   const handleKeyDown = useCallback((char: string) => {
     if (pressedKeys.has(char)) return;
     setStateHistory(prev => [...prev, machineState]);
-    const { result, newState } = encryptCharacter(char, machineState);
+    const { result, newState } = encryptCharacter(char, machineState, decrypt);
     setMachineState(newState);
     setLitChar(result);
     setTapeText(prev => prev + result);
@@ -100,24 +101,37 @@ function App() {
           <div className="absolute top-2 right-4 text-neutral-700 text-xs font-mono tracking-widest opacity-50">PAT. 1918</div>
 
           <div className="flex flex-col items-center gap-4 mt-4">
-            {/* Rotor selector */}
-            <div className="flex gap-2">
-              {Object.keys(ROTOR_WIRINGS).map(k => {
-                const id = Number(k);
-                return (
-                  <button
-                    key={id}
-                    onClick={() => handleRotorSelect(id)}
-                    className={`px-3 py-1 rounded text-xs font-mono font-bold border transition-colors ${
-                      selectedRotor === id
-                        ? 'bg-teal-900/50 border-teal-700 text-teal-300'
-                        : 'bg-neutral-800 border-neutral-700 text-neutral-500 hover:text-white'
-                    }`}
-                  >
-                    #{id}
-                  </button>
-                );
-              })}
+            {/* Mode + Rotor selector */}
+            <div className="flex items-center gap-4">
+              <div className="flex gap-2">
+                {Object.keys(ROTOR_WIRINGS).map(k => {
+                  const id = Number(k);
+                  return (
+                    <button
+                      key={id}
+                      onClick={() => handleRotorSelect(id)}
+                      className={`px-3 py-1 rounded text-xs font-mono font-bold border transition-colors ${
+                        selectedRotor === id
+                          ? 'bg-teal-900/50 border-teal-700 text-teal-300'
+                          : 'bg-neutral-800 border-neutral-700 text-neutral-500 hover:text-white'
+                      }`}
+                    >
+                      #{id}
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="w-px h-6 bg-neutral-700" />
+              <button
+                onClick={() => setDecrypt(d => !d)}
+                className={`px-3 py-1 rounded text-xs font-mono font-bold border transition-colors ${
+                  decrypt
+                    ? 'bg-amber-900/50 border-amber-700 text-amber-300'
+                    : 'bg-neutral-800 border-neutral-700 text-neutral-500 hover:text-white'
+                }`}
+              >
+                {decrypt ? '⟲ REVERSED (DECRYPT)' : 'FORWARD (ENCRYPT)'}
+              </button>
             </div>
 
             <RotorDisplay
@@ -167,7 +181,7 @@ function App() {
           <div className="grid grid-cols-2 gap-4 text-xs font-mono text-neutral-500">
             <div>* Single rotor — the simplest rotor cipher.</div>
             <div>* Steps once per keypress (Caesar-like advance).</div>
-            <div>* No reflector — not reciprocal.</div>
+            <div>* No reflector — reverse rotor to decrypt.</div>
             <div>* Grandfather of all rotor cipher machines.</div>
           </div>
         </div>
