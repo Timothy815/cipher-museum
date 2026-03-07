@@ -119,7 +119,7 @@ const Hub: React.FC = () => {
       </div>
 
       {/* Machine Cards */}
-      <div className="w-full max-w-5xl grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+      <div className="w-full max-w-6xl grid gap-10 md:grid-cols-2 lg:grid-cols-3">
         {machines.map(m => {
           const c = colorMap[m.color];
           return (
@@ -166,7 +166,7 @@ const Hub: React.FC = () => {
       </div>
 
       {/* Footer */}
-      <div className="mt-20 text-center text-xs text-slate-600 w-full max-w-5xl">
+      <div className="mt-20 text-center text-xs text-slate-600 w-full max-w-6xl">
         <p>Educational cipher machine simulations for classroom use.</p>
       </div>
     </div>
