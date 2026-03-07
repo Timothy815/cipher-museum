@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck } from 'lucide-react';
+import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle } from 'lucide-react';
 
 const machines = [
   {
@@ -183,6 +183,36 @@ const machines = [
     color: 'emerald',
     description: 'The only cipher proven to be perfectly secure. Uses a random key as long as the message. Used on the Moscow-Washington hotline.',
   },
+  {
+    path: '/cx52',
+    name: 'CX-52 (Hagelin)',
+    subtitle: 'Crypto AG — Operation Rubicon',
+    country: 'Switzerland',
+    era: '1952',
+    icon: <Settings size={32} />,
+    color: 'amber',
+    description: 'Successor to the M-209. Sold to 60+ countries — secretly owned by the CIA, who backdoored the machines for decades in Operation Rubicon.',
+  },
+  {
+    path: '/kl7',
+    name: 'KL-7 (ADONIS)',
+    subtitle: 'NATO Cipher Machine',
+    country: 'NATO',
+    era: '1952–1983',
+    icon: <Layers size={32} />,
+    color: 'blue',
+    description: 'NATO\'s primary cipher machine for 30 years. 8 rotors from a set of 12 with irregular notch-driven stepping. Compromised by the Walker spy ring.',
+  },
+  {
+    path: '/chaocipher',
+    name: 'Chaocipher',
+    subtitle: 'Mutating Alphabet Cipher',
+    country: 'United States',
+    era: '1918',
+    icon: <Shuffle size={32} />,
+    color: 'red',
+    description: 'Two dynamically mutating alphabets that change after every letter. Algorithm kept secret until 2010. Never adopted, never broken.',
+  },
 ];
 
 const colorMap: Record<string, { card: string; icon: string; badge: string; glow: string }> = {
@@ -257,7 +287,7 @@ const Hub: React.FC = () => {
           CIPHER <span className="text-amber-500">MUSEUM</span>
         </h1>
         <p className="text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed mt-4">
-          Interactive simulations of the most significant cipher machines of World War II.
+          Interactive simulations of history's most significant ciphers — from ancient Rome to the Cold War.
           Explore the mechanics of encryption that shaped the course of history.
         </p>
       </div>

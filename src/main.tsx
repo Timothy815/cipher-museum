@@ -22,6 +22,9 @@ import AdfgvxApp from './simulators/adfgvx/App';
 import JeffersonApp from './simulators/jefferson/App';
 import HillApp from './simulators/hill/App';
 import OtpApp from './simulators/otp/App';
+import Cx52App from './simulators/cx52/App';
+import Kl7App from './simulators/kl7/App';
+import ChaocipherApp from './simulators/chaocipher/App';
 
 const root = document.getElementById('root')!;
 
@@ -49,6 +52,9 @@ ReactDOM.createRoot(root).render(
           <Route path="/jefferson" element={<JeffersonApp />} />
           <Route path="/hill" element={<HillApp />} />
           <Route path="/otp" element={<OtpApp />} />
+          <Route path="/cx52" element={<Cx52App />} />
+          <Route path="/kl7" element={<Kl7App />} />
+          <Route path="/chaocipher" element={<ChaocipherApp />} />
         </Route>
       </Routes>
     </HashRouter>
