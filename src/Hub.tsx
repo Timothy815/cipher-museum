@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2 } from 'lucide-react';
+import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap } from 'lucide-react';
 
 const machines = [
   {
@@ -83,6 +83,36 @@ const machines = [
     color: 'rose',
     description: '10-rotor Soviet cipher with reversible rotors, punch card keying, and irregular stepping. Used by all Warsaw Pact nations.',
   },
+  {
+    path: '/nema',
+    name: 'NEMA',
+    subtitle: 'NEue MAschine — Swiss Cipher',
+    country: 'Switzerland',
+    era: '1947–1970s',
+    icon: <Plus size={32} />,
+    color: 'sky',
+    description: '4-rotor Swiss improvement over Enigma. Drive wheel and multiple notches per rotor create highly irregular stepping.',
+  },
+  {
+    path: '/red',
+    name: 'RED (Type 91)',
+    subtitle: 'Japanese Diplomatic Cipher',
+    country: 'Japan',
+    era: '1931–1939',
+    icon: <Radio size={32} />,
+    color: 'red',
+    description: 'Japan\'s first cipher machine. Split alphabet into "sixes" and "twenties" using telephone stepping switches. Predecessor to Purple.',
+  },
+  {
+    path: '/hebern',
+    name: 'Hebern Electric',
+    subtitle: 'First Rotor Cipher Machine',
+    country: 'United States',
+    era: '1918–1920s',
+    icon: <Zap size={32} />,
+    color: 'teal',
+    description: 'The world\'s first rotor cipher machine. Single-rotor design that pioneered the concept behind Enigma, SIGABA, and all rotor ciphers.',
+  },
 ];
 
 const colorMap: Record<string, { card: string; icon: string; badge: string; glow: string }> = {
@@ -127,6 +157,18 @@ const colorMap: Record<string, { card: string; icon: string; badge: string; glow
     icon: 'text-red-400 bg-red-950/50 border-red-800/50',
     badge: 'bg-red-500/20 text-red-300 border-red-700/50',
     glow: 'group-hover:shadow-red-900/30',
+  },
+  teal: {
+    card: 'hover:border-teal-700/60',
+    icon: 'text-teal-400 bg-teal-950/50 border-teal-800/50',
+    badge: 'bg-teal-500/20 text-teal-300 border-teal-700/50',
+    glow: 'group-hover:shadow-teal-900/30',
+  },
+  sky: {
+    card: 'hover:border-sky-700/60',
+    icon: 'text-sky-400 bg-sky-950/50 border-sky-800/50',
+    badge: 'bg-sky-500/20 text-sky-300 border-sky-700/50',
+    glow: 'group-hover:shadow-sky-900/30',
   },
   rose: {
     card: 'hover:border-rose-700/60',

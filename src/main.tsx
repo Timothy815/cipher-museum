@@ -12,6 +12,9 @@ import SigabaApp from './simulators/sigaba/App';
 import TypexApp from './simulators/typex/App';
 import FialkaApp from './simulators/fialka/App';
 import EnigmaIApp from './simulators/enigma-i/App';
+import NemaApp from './simulators/nema/App';
+import RedApp from './simulators/red/App';
+import HebernApp from './simulators/hebern/App';
 
 const root = document.getElementById('root')!;
 
@@ -29,6 +32,9 @@ ReactDOM.createRoot(root).render(
           <Route path="/typex" element={<TypexApp />} />
           <Route path="/fialka" element={<FialkaApp />} />
           <Route path="/enigma-i" element={<EnigmaIApp />} />
+          <Route path="/nema" element={<NemaApp />} />
+          <Route path="/red" element={<RedApp />} />
+          <Route path="/hebern" element={<HebernApp />} />
         </Route>
       </Routes>
     </HashRouter>
