@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Lock, KeyRound, Cog, Cpu, Crown } from 'lucide-react';
+import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2 } from 'lucide-react';
 
 const machines = [
   {
@@ -63,6 +63,16 @@ const machines = [
     color: 'red',
     description: '15-rotor cipher machine. The only major WWII cipher device never broken by an adversary.',
   },
+  {
+    path: '/fialka',
+    name: 'Fialka M-125',
+    subtitle: 'Soviet Electromechanical Cipher',
+    country: 'Soviet Union',
+    era: '1956–1990s',
+    icon: <Flower2 size={32} />,
+    color: 'rose',
+    description: '10-rotor Soviet cipher with reversible rotors, punch card keying, and irregular stepping. Used by all Warsaw Pact nations.',
+  },
 ];
 
 const colorMap: Record<string, { card: string; icon: string; badge: string; glow: string }> = {
@@ -101,6 +111,12 @@ const colorMap: Record<string, { card: string; icon: string; badge: string; glow
     icon: 'text-red-400 bg-red-950/50 border-red-800/50',
     badge: 'bg-red-500/20 text-red-300 border-red-700/50',
     glow: 'group-hover:shadow-red-900/30',
+  },
+  rose: {
+    card: 'hover:border-rose-700/60',
+    icon: 'text-rose-400 bg-rose-950/50 border-rose-800/50',
+    badge: 'bg-rose-500/20 text-rose-300 border-rose-700/50',
+    glow: 'group-hover:shadow-rose-900/30',
   },
 };
 

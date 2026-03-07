@@ -1,0 +1,38 @@
+import React from 'react';
+import { ALPHABET } from '../constants';
+
+interface LampboardProps {
+  litChar: string | null;
+}
+
+const ROWS = [
+  ALPHABET.slice(0, 9),
+  ALPHABET.slice(9, 18),
+  ALPHABET.slice(18, 26),
+];
+
+export const Lampboard: React.FC<LampboardProps> = ({ litChar }) => {
+  return (
+    <div className="flex flex-col items-center gap-2">
+      {ROWS.map((row, ri) => (
+        <div key={ri} className="flex gap-1.5 sm:gap-2">
+          {row.split('').map(char => {
+            const isLit = litChar === char;
+            return (
+              <div
+                key={char}
+                className={`w-9 h-9 sm:w-11 sm:h-11 rounded-full flex items-center justify-center text-sm sm:text-base font-bold font-mono transition-all duration-100 border ${
+                  isLit
+                    ? 'bg-red-500 text-white border-red-400 shadow-[0_0_20px_rgba(239,68,68,0.7)]'
+                    : 'bg-stone-900 text-stone-500 border-stone-700'
+                }`}
+              >
+                {char}
+              </div>
+            );
+          })}
+        </div>
+      ))}
+    </div>
+  );
+};

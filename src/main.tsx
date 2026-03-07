@@ -10,6 +10,7 @@ import M209App from './simulators/m209/App';
 import PurpleApp from './simulators/purple/App';
 import SigabaApp from './simulators/sigaba/App';
 import TypexApp from './simulators/typex/App';
+import FialkaApp from './simulators/fialka/App';
 
 const root = document.getElementById('root')!;
 
@@ -25,6 +26,7 @@ ReactDOM.createRoot(root).render(
           <Route path="/purple" element={<PurpleApp />} />
           <Route path="/sigaba" element={<SigabaApp />} />
           <Route path="/typex" element={<TypexApp />} />
+          <Route path="/fialka" element={<FialkaApp />} />
         </Route>
       </Routes>
     </HashRouter>

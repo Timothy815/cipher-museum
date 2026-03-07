@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Home, ChevronRight, ChevronDown, Cog, Cpu, KeyRound, Lock, Shield, Crown } from 'lucide-react';
+import { Home, ChevronRight, ChevronDown, Cog, Cpu, KeyRound, Lock, Shield, Crown, Flower2 } from 'lucide-react';
 
 const SIMULATORS = [
   { path: '/enigma-m4', label: 'Enigma M4', country: 'Germany', icon: <Cog size={14} /> },
@@ -9,6 +9,7 @@ const SIMULATORS = [
   { path: '/m209', label: 'M-209', country: 'United States', icon: <KeyRound size={14} /> },
   { path: '/purple', label: 'Purple', country: 'Japan', icon: <Lock size={14} /> },
   { path: '/sigaba', label: 'SIGABA', country: 'United States', icon: <Shield size={14} /> },
+  { path: '/fialka', label: 'Fialka M-125', country: 'Soviet Union', icon: <Flower2 size={14} /> },
 ];
 
 const Layout: React.FC = () => {
