@@ -96,9 +96,9 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 bg-slate-950 text-slate-200 font-sans selection:bg-blue-500/30">
+    <div className="flex-1 bg-slate-950 text-slate-200 font-sans selection:bg-blue-500/30 flex flex-col items-center">
 
-      <main className="max-w-7xl mx-auto px-6 py-10">
+      <main className="w-full max-w-5xl px-6 py-10">
 
         {/* Page Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
