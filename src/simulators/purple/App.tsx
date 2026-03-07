@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Settings, RefreshCw, Eraser, Info, Play, RotateCcw } from 'lucide-react';
+import { Settings, RefreshCw, Eraser, Info, Play, RotateCcw, Delete } from 'lucide-react';
 import { PurpleMachine } from './services/purpleMachine';
 import { CipherMode, LogEntry, MachineState } from './types';
 import RotorDisplay from './components/RotorDisplay';
@@ -27,6 +27,9 @@ const App: React.FC = () => {
   const [isAutoTyping, setIsAutoTyping] = useState(false);
   const autoTypeRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Undo history: stack of machine states before each character was processed
+  const [history, setHistory] = useState<MachineState[]>([]);
+
   const handleReset = () => {
     purpleMachine.reset();
     setMachineState(purpleMachine.getState());
@@ -34,21 +37,32 @@ const App: React.FC = () => {
     setInputText('');
     setLastKeyPressed(null);
     setActivePath(null);
+    setHistory([]);
     setIsAutoTyping(false);
     if (autoTypeRef.current) clearTimeout(autoTypeRef.current);
   };
 
   const handleClearText = () => {
+    // Restore machine to state before any characters were typed
+    if (history.length > 0) {
+      const initialState = history[0];
+      purpleMachine.setState(initialState);
+      setMachineState(initialState);
+    }
     setLogs([]);
     setInputText('');
+    setHistory([]);
   };
 
   const processInput = useCallback((char: string) => {
     // Only allow A-Z
     if (!/^[a-zA-Z]$/.test(char)) return;
 
+    // Save state before processing for undo
+    setHistory(prev => [...prev, purpleMachine.getState()]);
+
     const result = purpleMachine.processChar(char, mode);
-    
+
     setMachineState(result.machineStateAfter);
     setLogs(prev => [...prev, { input: result.inputChar, output: result.outputChar, index: prev.length }]);
     setInputText(prev => prev + result.inputChar);
@@ -59,6 +73,18 @@ const App: React.FC = () => {
     setTimeout(() => setActivePath(null), 400);
   }, [mode]);
 
+  const handleUndo = useCallback(() => {
+    if (history.length === 0) return;
+
+    const prevState = history[history.length - 1];
+    purpleMachine.setState(prevState);
+    setMachineState(prevState);
+    setHistory(prev => prev.slice(0, -1));
+    setLogs(prev => prev.slice(0, -1));
+    setInputText(prev => prev.slice(0, -1));
+    setLastKeyPressed(null);
+  }, [history]);
+
   // Physical Keyboard Listener
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -67,12 +93,13 @@ const App: React.FC = () => {
         processInput(e.key);
       }
       if (e.key === 'Backspace') {
-        // Optional: Implement backspace logic (complex for cipher machines usually, so we might just prevent or clear)
+        e.preventDefault();
+        handleUndo();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [processInput]);
+  }, [processInput, handleUndo]);
 
   // Adjust Rotors Manually
   const adjustRotor = (key: keyof MachineState, delta: number) => {
@@ -157,6 +184,9 @@ const App: React.FC = () => {
             <div className="flex gap-3">
                  <button onClick={() => setShowSettings(!showSettings)} className={`p-2 rounded border ${showSettings ? 'bg-neutral-700 border-neutral-600 text-white' : 'border-neutral-800 text-neutral-500 hover:border-neutral-600'}`} title="Toggle Settings">
                     <Settings size={20} />
+                </button>
+                <button onClick={handleUndo} disabled={history.length === 0} className="p-2 rounded border border-neutral-800 text-neutral-500 hover:text-white hover:border-neutral-600 transition-all disabled:opacity-30 disabled:cursor-not-allowed" title="Undo (Backspace)">
+                    <Delete size={20} />
                 </button>
                 <button onClick={handleClearText} className="p-2 rounded border border-neutral-800 text-neutral-500 hover:text-white hover:border-neutral-600 transition-all" title="Clear Tape">
                     <Eraser size={20} />
