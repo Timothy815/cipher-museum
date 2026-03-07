@@ -15,6 +15,11 @@ import EnigmaIApp from './simulators/enigma-i/App';
 import NemaApp from './simulators/nema/App';
 import RedApp from './simulators/red/App';
 import HebernApp from './simulators/hebern/App';
+import CaesarApp from './simulators/caesar/App';
+import VigenereApp from './simulators/vigenere/App';
+import PlayfairApp from './simulators/playfair/App';
+import AdfgvxApp from './simulators/adfgvx/App';
+import JeffersonApp from './simulators/jefferson/App';
 
 const root = document.getElementById('root')!;
 
@@ -35,6 +40,11 @@ ReactDOM.createRoot(root).render(
           <Route path="/nema" element={<NemaApp />} />
           <Route path="/red" element={<RedApp />} />
           <Route path="/hebern" element={<HebernApp />} />
+          <Route path="/caesar" element={<CaesarApp />} />
+          <Route path="/vigenere" element={<VigenereApp />} />
+          <Route path="/playfair" element={<PlayfairApp />} />
+          <Route path="/adfgvx" element={<AdfgvxApp />} />
+          <Route path="/jefferson" element={<JeffersonApp />} />
         </Route>
       </Routes>
     </HashRouter>

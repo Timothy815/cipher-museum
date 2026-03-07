@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Home, ChevronRight, ChevronDown, Cog, Cpu, KeyRound, Lock, Shield, Crown, Flower2, Plus, Radio, Zap } from 'lucide-react';
+import { Home, ChevronRight, ChevronDown, Cog, Cpu, KeyRound, Lock, Shield, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc } from 'lucide-react';
 
 const SIMULATORS = [
   { path: '/enigma-i', label: 'Enigma I', country: 'Germany', icon: <Cog size={14} /> },
@@ -14,6 +14,11 @@ const SIMULATORS = [
   { path: '/nema', label: 'NEMA', country: 'Switzerland', icon: <Plus size={14} /> },
   { path: '/red', label: 'RED (Type 91)', country: 'Japan', icon: <Radio size={14} /> },
   { path: '/hebern', label: 'Hebern Electric', country: 'United States', icon: <Zap size={14} /> },
+  { path: '/caesar', label: 'Caesar Cipher', country: 'Rome', icon: <ArrowRightLeft size={14} /> },
+  { path: '/vigenere', label: 'Vigenere', country: 'France', icon: <BookOpen size={14} /> },
+  { path: '/playfair', label: 'Playfair', country: 'Britain', icon: <Grid3X3 size={14} /> },
+  { path: '/adfgvx', label: 'ADFGVX', country: 'Germany', icon: <Hash size={14} /> },
+  { path: '/jefferson', label: 'Jefferson Wheel', country: 'United States', icon: <Disc size={14} /> },
 ];
 
 const Layout: React.FC = () => {

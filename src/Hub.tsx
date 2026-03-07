@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap } from 'lucide-react';
+import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc } from 'lucide-react';
 
 const machines = [
   {
@@ -112,6 +112,56 @@ const machines = [
     icon: <Zap size={32} />,
     color: 'teal',
     description: 'The world\'s first rotor cipher machine. Single-rotor design that pioneered the concept behind Enigma, SIGABA, and all rotor ciphers.',
+  },
+  {
+    path: '/caesar',
+    name: 'Caesar Cipher',
+    subtitle: 'Shift Cipher — ~50 BC',
+    country: 'Rome',
+    era: '~50 BC',
+    icon: <ArrowRightLeft size={32} />,
+    color: 'yellow',
+    description: 'The simplest substitution cipher. Shift each letter by a fixed amount. Used by Julius Caesar. Includes brute-force breaker.',
+  },
+  {
+    path: '/vigenere',
+    name: 'Vigenere',
+    subtitle: 'Le Chiffre Indechiffrable',
+    country: 'France',
+    era: '1553',
+    icon: <BookOpen size={32} />,
+    color: 'purple',
+    description: 'Polyalphabetic cipher using a keyword. Considered unbreakable for 300 years. Includes Tabula Recta visualization.',
+  },
+  {
+    path: '/playfair',
+    name: 'Playfair',
+    subtitle: 'Digraph Substitution',
+    country: 'Britain',
+    era: '1854',
+    icon: <Grid3X3 size={32} />,
+    color: 'emerald',
+    description: 'First practical digraph cipher using a 5x5 grid. Encrypts pairs of letters. Used in the Boer War and WWI.',
+  },
+  {
+    path: '/adfgvx',
+    name: 'ADFGVX',
+    subtitle: 'WWI German Field Cipher',
+    country: 'Germany',
+    era: '1918',
+    icon: <Hash size={32} />,
+    color: 'amber',
+    description: 'Combines Polybius square fractionation with columnar transposition. Nearly changed the outcome of WWI.',
+  },
+  {
+    path: '/jefferson',
+    name: 'Jefferson Wheel',
+    subtitle: 'Multi-Disk Cipher',
+    country: 'United States',
+    era: '1795',
+    icon: <Disc size={32} />,
+    color: 'sky',
+    description: 'Thomas Jefferson\'s cylinder cipher — 125 years ahead of its time. Reinvented as the US Army M-94 in 1922.',
   },
 ];
 
