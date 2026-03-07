@@ -126,7 +126,7 @@ const Hub: React.FC = () => {
             <Link
               key={m.path}
               to={m.path}
-              className={`group block bg-slate-900/70 border border-slate-800 rounded-2xl p-10 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl ${c.card} ${c.glow}`}
+              className={`group block bg-slate-900/70 border border-slate-800 rounded-2xl p-12 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl ${c.card} ${c.glow}`}
             >
               {/* Icon + Country */}
               <div className="flex items-start justify-between mb-6">
