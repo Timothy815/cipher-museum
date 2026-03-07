@@ -106,9 +106,9 @@ const colorMap: Record<string, { card: string; icon: string; badge: string; glow
 
 const Hub: React.FC = () => {
   return (
-    <div className="max-w-6xl mx-auto px-10 sm:px-16 py-20">
+    <div className="w-full flex-1 flex flex-col items-center px-8 sm:px-16 pt-24 pb-20">
       {/* Header */}
-      <div className="text-center mb-20">
+      <div className="text-center mb-20 w-full max-w-5xl">
         <h1 className="text-5xl sm:text-6xl font-black tracking-tight text-white mb-4">
           CIPHER <span className="text-amber-500">MUSEUM</span>
         </h1>
@@ -119,7 +119,7 @@ const Hub: React.FC = () => {
       </div>
 
       {/* Machine Cards */}
-      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+      <div className="w-full max-w-5xl grid gap-8 md:grid-cols-2 lg:grid-cols-3">
         {machines.map(m => {
           const c = colorMap[m.color];
           return (
@@ -166,7 +166,7 @@ const Hub: React.FC = () => {
       </div>
 
       {/* Footer */}
-      <div className="mt-20 text-center text-xs text-slate-600">
+      <div className="mt-20 text-center text-xs text-slate-600 w-full max-w-5xl">
         <p>Educational cipher machine simulations for classroom use.</p>
       </div>
     </div>
