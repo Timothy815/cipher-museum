@@ -25,6 +25,10 @@ import OtpApp from './simulators/otp/App';
 import Cx52App from './simulators/cx52/App';
 import Kl7App from './simulators/kl7/App';
 import ChaocipherApp from './simulators/chaocipher/App';
+import FrequencyAnalysisApp from './simulators/frequency-analysis/App';
+import VigenereBreakerApp from './simulators/vigenere-breaker/App';
+import BombeApp from './simulators/bombe/App';
+import ColossusApp from './simulators/colossus/App';
 
 const root = document.getElementById('root')!;
 
@@ -55,6 +59,11 @@ ReactDOM.createRoot(root).render(
           <Route path="/cx52" element={<Cx52App />} />
           <Route path="/kl7" element={<Kl7App />} />
           <Route path="/chaocipher" element={<ChaocipherApp />} />
+          {/* Cryptanalysis Tools */}
+          <Route path="/frequency-analysis" element={<FrequencyAnalysisApp />} />
+          <Route path="/vigenere-breaker" element={<VigenereBreakerApp />} />
+          <Route path="/bombe" element={<BombeApp />} />
+          <Route path="/colossus" element={<ColossusApp />} />
         </Route>
       </Routes>
     </HashRouter>

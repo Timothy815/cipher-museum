@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Home, ChevronRight, ChevronDown, Cog, Cpu, KeyRound, Lock, Shield, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle } from 'lucide-react';
+import { Home, ChevronRight, ChevronDown, Cog, Cpu, KeyRound, Lock, Shield, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary } from 'lucide-react';
 
 const SIMULATORS = [
   { path: '/enigma-i', label: 'Enigma I', country: 'Germany', icon: <Cog size={14} /> },
@@ -26,10 +26,19 @@ const SIMULATORS = [
   { path: '/chaocipher', label: 'Chaocipher', country: 'United States', icon: <Shuffle size={14} /> },
 ];
 
+const CRYPTANALYSIS = [
+  { path: '/frequency-analysis', label: 'Frequency Analysis', country: 'Cryptanalysis', icon: <BarChart3 size={14} /> },
+  { path: '/vigenere-breaker', label: 'Vigenère Breaker', country: 'Cryptanalysis', icon: <KeySquare size={14} /> },
+  { path: '/bombe', label: 'Bombe', country: 'Cryptanalysis', icon: <CircuitBoard size={14} /> },
+  { path: '/colossus', label: 'Colossus', country: 'Cryptanalysis', icon: <Binary size={14} /> },
+];
+
+const ALL_ITEMS = [...SIMULATORS, ...CRYPTANALYSIS];
+
 const Layout: React.FC = () => {
   const location = useLocation();
   const isHub = location.pathname === '/';
-  const current = SIMULATORS.find(s => s.path === location.pathname);
+  const current = ALL_ITEMS.find(s => s.path === location.pathname);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -65,7 +74,7 @@ const Layout: React.FC = () => {
           {current && (
             <>
               <ChevronRight size={14} className="text-slate-600" />
-              <span className="text-sm font-medium text-amber-400">{current.label}</span>
+              <span className={`text-sm font-medium ${CRYPTANALYSIS.some(c => c.path === current.path) ? 'text-red-400' : 'text-amber-400'}`}>{current.label}</span>
             </>
           )}
 
@@ -81,7 +90,8 @@ const Layout: React.FC = () => {
               </button>
 
               {dropdownOpen && (
-                <div className="absolute right-0 top-full mt-2 w-56 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden">
+                <div className="absolute right-0 top-full mt-2 w-56 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden max-h-[70vh] overflow-y-auto">
+                  <div className="px-4 py-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-800">Cipher Machines</div>
                   {SIMULATORS.map(s => (
                     <Link
                       key={s.path}
@@ -93,6 +103,24 @@ const Layout: React.FC = () => {
                       }`}
                     >
                       <span className="text-slate-500">{s.icon}</span>
+                      <div className="flex flex-col">
+                        <span className="font-medium">{s.label}</span>
+                        <span className="text-[10px] text-slate-500">{s.country}</span>
+                      </div>
+                    </Link>
+                  ))}
+                  <div className="px-4 py-2 text-[10px] font-bold text-red-400 uppercase tracking-wider border-b border-t border-slate-800">Cryptanalysis Tools</div>
+                  {CRYPTANALYSIS.map(s => (
+                    <Link
+                      key={s.path}
+                      to={s.path}
+                      className={`flex items-center gap-3 px-4 py-3 text-sm transition-colors ${
+                        s.path === location.pathname
+                          ? 'bg-red-500/10 text-red-400'
+                          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                      }`}
+                    >
+                      <span className="text-red-500/70">{s.icon}</span>
                       <div className="flex flex-col">
                         <span className="font-medium">{s.label}</span>
                         <span className="text-[10px] text-slate-500">{s.country}</span>

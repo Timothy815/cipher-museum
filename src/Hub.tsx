@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle } from 'lucide-react';
+import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary } from 'lucide-react';
 
 const machines = [
   {
@@ -276,7 +276,56 @@ const colorMap: Record<string, { card: string; icon: string; badge: string; glow
     badge: 'bg-rose-500/20 text-rose-300 border-rose-700/50',
     glow: 'group-hover:shadow-rose-900/30',
   },
+  crimson: {
+    card: 'hover:border-red-600/60',
+    icon: 'text-red-400 bg-red-950/60 border-red-700/50',
+    badge: 'bg-red-500/20 text-red-300 border-red-600/50',
+    glow: 'group-hover:shadow-red-800/40',
+  },
 };
+
+const cryptanalysisTools = [
+  {
+    path: '/frequency-analysis',
+    name: 'Frequency Analysis',
+    subtitle: 'Statistical Codebreaking',
+    country: 'Arabia',
+    era: '~850 AD',
+    icon: <BarChart3 size={32} />,
+    color: 'crimson',
+    description: 'The first known cryptanalysis technique. Letter frequency, bigrams, trigrams, and Index of Coincidence. Pioneered by Al-Kindi.',
+  },
+  {
+    path: '/vigenere-breaker',
+    name: 'Vigenère Breaker',
+    subtitle: 'Kasiski + Index of Coincidence',
+    country: 'Britain / Prussia',
+    era: '1863',
+    icon: <KeySquare size={32} />,
+    color: 'crimson',
+    description: 'Break the "unbreakable cipher" step by step. Kasiski examination finds the key length, then frequency analysis recovers each key letter.',
+  },
+  {
+    path: '/bombe',
+    name: 'Bombe',
+    subtitle: 'Turing\'s Enigma Breaker',
+    country: 'Britain',
+    era: '1940',
+    icon: <CircuitBoard size={32} />,
+    color: 'crimson',
+    description: 'Alan Turing\'s electromechanical machine that broke Enigma by testing rotor positions against known-plaintext cribs. The tool that won the Battle of the Atlantic.',
+  },
+  {
+    path: '/colossus',
+    name: 'Colossus',
+    subtitle: 'First Electronic Computer',
+    country: 'Britain',
+    era: '1944',
+    icon: <Binary size={32} />,
+    color: 'crimson',
+    description: 'Tommy Flowers\' electronic marvel that broke the Lorenz cipher by statistical analysis. The world\'s first programmable electronic computer, kept secret for 30 years.',
+  },
+];
 
 const Hub: React.FC = () => {
   return (
@@ -337,6 +386,60 @@ const Hub: React.FC = () => {
             </Link>
           );
         })}
+      </div>
+
+      {/* Cryptanalysis Section */}
+      <div className="w-full max-w-6xl mt-28">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-white mb-4">
+            CRYPTANALYSIS <span className="text-red-500">TOOLS</span>
+          </h2>
+          <p className="text-base text-slate-400 max-w-xl mx-auto leading-relaxed">
+            The codebreaker's workbench — statistical analysis, automated attacks, and the legendary machines that cracked the "unbreakable."
+          </p>
+        </div>
+
+        <div className="grid gap-10 md:grid-cols-2">
+          {cryptanalysisTools.map(m => {
+            const c = colorMap[m.color];
+            return (
+              <Link
+                key={m.path}
+                to={m.path}
+                className={`group block bg-slate-900/70 border border-slate-800 rounded-2xl p-12 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl ${c.card} ${c.glow}`}
+              >
+                <div className="flex items-start justify-between mb-6">
+                  <div className={`w-14 h-14 rounded-xl border flex items-center justify-center ${c.icon}`}>
+                    {m.icon}
+                  </div>
+                  <div className="flex gap-2">
+                    <span className={`text-[10px] font-bold px-2 py-1 rounded-full border ${c.badge}`}>
+                      {m.country}
+                    </span>
+                    <span className="text-[10px] font-bold px-2 py-1 rounded-full border bg-slate-800/50 text-slate-400 border-slate-700/50">
+                      {m.era}
+                    </span>
+                  </div>
+                </div>
+
+                <h2 className="text-2xl font-bold text-white mb-2 group-hover:text-red-300 transition-colors">
+                  {m.name}
+                </h2>
+                <p className="text-xs font-mono text-slate-500 mb-5 uppercase tracking-wider">
+                  {m.subtitle}
+                </p>
+
+                <p className="text-sm text-slate-400 leading-relaxed">
+                  {m.description}
+                </p>
+
+                <div className="mt-8 text-xs font-semibold text-slate-600 group-hover:text-slate-400 transition-colors">
+                  LAUNCH TOOL &rarr;
+                </div>
+              </Link>
+            );
+          })}
+        </div>
       </div>
 
       {/* Footer */}
