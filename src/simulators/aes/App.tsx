@@ -351,8 +351,8 @@ const AESSimulator: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#1a1814] text-white px-6 py-4 sm:px-10 md:px-16 md:py-8">
-      <div className="max-w-6xl mx-auto space-y-6">
+    <div className="flex-1 bg-[#1a1814] text-white flex flex-col items-center px-6 py-4 sm:px-10 md:px-16 md:py-8">
+      <div className="w-full max-w-6xl space-y-6">
         {/* Header */}
         <div className="flex items-start justify-between">
           <div>

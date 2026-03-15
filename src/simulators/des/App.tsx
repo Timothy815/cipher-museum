@@ -305,8 +305,8 @@ const App: React.FC = () => {
   const inputClass = 'bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-cyan-700/50 w-full';
 
   return (
-    <div className="min-h-screen bg-[#1a1814] text-white px-6 py-4 sm:px-10 md:px-16 md:py-8">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="flex-1 bg-[#1a1814] text-white flex flex-col items-center px-6 py-4 sm:px-10 md:px-16 md:py-8">
+      <div className="w-full max-w-6xl space-y-6">
 
         {/* Header */}
         <div className="flex items-center justify-between">
