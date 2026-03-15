@@ -170,7 +170,7 @@ const App: React.FC = () => {
   const outputBitsEnc = inputBits.map((b, i) => b ^ keystream[i]);
 
   return (
-    <div className="min-h-screen bg-[#1a1814] text-white p-4 md:p-8">
+    <div className="min-h-screen bg-[#1a1814] text-white px-6 py-4 sm:px-10 md:px-16 md:py-8">
       <div className="max-w-5xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">

@@ -249,7 +249,7 @@ const App: React.FC = () => {
   }, [allSteps.length]);
 
   return (
-    <div className="flex-1 bg-[#1a1814] flex flex-col items-center justify-start py-10 px-4 text-stone-200 overflow-y-auto">
+    <div className="flex-1 bg-[#1a1814] flex flex-col items-center justify-start py-10 px-6 sm:px-10 md:px-16 text-stone-200 overflow-y-auto">
       <div className="w-full max-w-5xl">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">

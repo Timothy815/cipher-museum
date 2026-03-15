@@ -176,7 +176,7 @@ const ColossusApp: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 bg-[#1a1814] text-stone-200 px-4 py-8 sm:px-8">
+    <div className="flex-1 bg-[#1a1814] text-stone-200 px-6 py-8 sm:px-10 md:px-16">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
