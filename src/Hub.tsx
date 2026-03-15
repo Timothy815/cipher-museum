@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind, GitBranch, Key, UserCheck, Circle } from 'lucide-react';
+import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind, GitBranch, Key, UserCheck, Circle, SlidersHorizontal } from 'lucide-react';
 
 const machines = [
   {
@@ -336,6 +336,16 @@ const cryptanalysisTools = [
     icon: <Binary size={32} />,
     color: 'crimson',
     description: 'Tommy Flowers\' electronic marvel that broke the Lorenz cipher by statistical analysis. The world\'s first programmable electronic computer, kept secret for 30 years.',
+  },
+  {
+    path: '/vigenere-workshop',
+    name: 'Vigenère Workshop',
+    subtitle: 'Hands-On Codebreaking',
+    country: 'Interactive',
+    era: '1863',
+    icon: <SlidersHorizontal size={32} />,
+    color: 'crimson',
+    description: 'Crack the Vigenère cipher yourself. Find repeated sequences with Kasiski examination, then slide frequency bars to match English patterns and reveal each key letter.',
   },
 ];
 

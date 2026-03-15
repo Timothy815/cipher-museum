@@ -29,6 +29,7 @@ import FrequencyAnalysisApp from './simulators/frequency-analysis/App';
 import VigenereBreakerApp from './simulators/vigenere-breaker/App';
 import BombeApp from './simulators/bombe/App';
 import ColossusApp from './simulators/colossus/App';
+import VigenereWorkshopApp from './simulators/vigenere-workshop/App';
 import LfsrApp from './simulators/lfsr/App';
 import DesApp from './simulators/des/App';
 import AesApp from './simulators/aes/App';
@@ -73,6 +74,7 @@ ReactDOM.createRoot(root).render(
           <Route path="/vigenere-breaker" element={<VigenereBreakerApp />} />
           <Route path="/bombe" element={<BombeApp />} />
           <Route path="/colossus" element={<ColossusApp />} />
+          <Route path="/vigenere-workshop" element={<VigenereWorkshopApp />} />
           {/* Modern Cryptography */}
           <Route path="/lfsr" element={<LfsrApp />} />
           <Route path="/des" element={<DesApp />} />
