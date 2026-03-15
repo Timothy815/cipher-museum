@@ -3,17 +3,87 @@ import { BarChart3, Info, X } from 'lucide-react';
 
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
-// Expected English letter frequencies (%)
-const ENGLISH_FREQ: Record<string, number> = {
-  A: 8.167, B: 1.492, C: 2.782, D: 4.253, E: 12.702, F: 2.228,
-  G: 2.015, H: 6.094, I: 6.966, J: 0.153, K: 0.772, L: 4.025,
-  M: 2.406, N: 6.749, O: 7.507, P: 1.929, Q: 0.095, R: 5.987,
-  S: 6.327, T: 9.056, U: 2.758, V: 0.978, W: 2.360, X: 0.150,
-  Y: 1.974, Z: 0.074,
-};
+interface LangProfile {
+  label: string;
+  flag: string;
+  freq: Record<string, number>;
+  bigrams: string[];
+  trigrams: string[];
+  ioc: number; // expected IoC
+}
 
-const ENGLISH_BIGRAMS = ['TH', 'HE', 'IN', 'ER', 'AN', 'RE', 'ON', 'AT', 'EN', 'ND', 'TI', 'ES', 'OR', 'TE', 'OF', 'ED', 'IS', 'IT', 'AL', 'AR'];
-const ENGLISH_TRIGRAMS = ['THE', 'AND', 'ING', 'HER', 'HAT', 'HIS', 'THA', 'ERE', 'FOR', 'ENT', 'ION', 'TER', 'WAS', 'YOU', 'ITH'];
+const LANGUAGES: Record<string, LangProfile> = {
+  english: {
+    label: 'English', flag: 'EN',
+    freq: { A:8.167,B:1.492,C:2.782,D:4.253,E:12.702,F:2.228,G:2.015,H:6.094,I:6.966,J:0.153,K:0.772,L:4.025,M:2.406,N:6.749,O:7.507,P:1.929,Q:0.095,R:5.987,S:6.327,T:9.056,U:2.758,V:0.978,W:2.360,X:0.150,Y:1.974,Z:0.074 },
+    bigrams: ['TH','HE','IN','ER','AN','RE','ON','AT','EN','ND','TI','ES','OR','TE','OF','ED','IS','IT','AL','AR'],
+    trigrams: ['THE','AND','ING','HER','HAT','HIS','THA','ERE','FOR','ENT','ION','TER','WAS','YOU','ITH'],
+    ioc: 0.0667,
+  },
+  german: {
+    label: 'German', flag: 'DE',
+    freq: { A:6.516,B:1.886,C:2.732,D:5.076,E:16.396,F:1.656,G:3.009,H:4.577,I:6.550,J:0.268,K:1.417,L:3.437,M:2.534,N:9.776,O:2.594,P:0.670,Q:0.018,R:7.003,S:7.270,T:6.154,U:4.166,V:0.846,W:1.921,X:0.034,Y:0.039,Z:1.134 },
+    bigrams: ['EN','ER','CH','DE','EI','ND','TE','IN','IE','GE','ES','NE','UN','ST','RE','AN','HE','BE','SE','AU'],
+    trigrams: ['EIN','ICH','DER','DIE','UND','DEN','SCH','CHE','END','GEN','CHT','NDE','TEN','VER','BER'],
+    ioc: 0.0762,
+  },
+  french: {
+    label: 'French', flag: 'FR',
+    freq: { A:7.636,B:0.901,C:3.260,D:3.669,E:14.715,F:1.066,G:0.866,H:0.737,I:7.529,J:0.613,K:0.049,L:5.456,M:2.968,N:7.095,O:5.378,P:2.521,Q:1.362,R:6.553,S:7.948,T:7.244,U:6.311,V:1.838,W:0.074,X:0.427,Y:0.128,Z:0.326 },
+    bigrams: ['ES','LE','DE','EN','RE','NT','ON','ER','TE','EL','AN','SE','LA','AI','NE','OU','ET','ME','IT','CE'],
+    trigrams: ['LES','ENT','DES','QUE','ION','EST','ANT','PAR','ONT','AIT','OUR','AIS','CON','MEN','UNE'],
+    ioc: 0.0778,
+  },
+  spanish: {
+    label: 'Spanish', flag: 'ES',
+    freq: { A:11.525,B:2.215,C:4.019,D:5.010,E:12.181,F:0.692,G:1.768,H:0.703,I:6.247,J:0.493,K:0.011,L:4.967,M:3.157,N:6.712,O:8.683,P:2.510,Q:0.877,R:6.871,S:7.977,T:4.632,U:2.927,V:1.138,W:0.017,X:0.215,Y:1.008,Z:0.467 },
+    bigrams: ['DE','EN','ES','EL','LA','OS','AS','ER','AL','RE','ON','AR','RA','AN','AD','NT','DO','CO','SE','TA'],
+    trigrams: ['QUE','DEL','ENT','LOS','ADE','EST','ION','LAS','CON','RES','ARA','ERA','DOS','ADO','TRA'],
+    ioc: 0.0775,
+  },
+  italian: {
+    label: 'Italian', flag: 'IT',
+    freq: { A:11.745,B:0.927,C:4.501,D:3.736,E:11.792,F:1.153,G:1.644,H:0.636,I:10.143,J:0.011,K:0.009,L:6.510,M:2.512,N:6.883,O:9.832,P:3.056,Q:0.505,R:6.367,S:4.981,T:5.623,U:3.011,V:2.097,W:0.033,X:0.003,Y:0.020,Z:1.181 },
+    bigrams: ['CH','DI','RE','ER','IN','DE','EL','LE','LA','AL','NO','ON','NE','CO','TO','EN','TA','RI','NT','AN'],
+    trigrams: ['CHE','DEL','ATO','PER','ION','CON','ONE','ARE','ENT','TTO','ANO','ALE','ELL','NTE','INO'],
+    ioc: 0.0738,
+  },
+  portuguese: {
+    label: 'Portuguese', flag: 'PT',
+    freq: { A:14.634,B:1.043,C:3.882,D:4.992,E:12.570,F:1.023,G:1.303,H:0.781,I:6.186,J:0.397,K:0.015,L:2.779,M:4.738,N:4.446,O:9.735,P:2.523,Q:1.204,R:6.530,S:6.805,T:4.336,U:3.639,V:1.665,W:0.037,X:0.253,Y:0.006,Z:0.470 },
+    bigrams: ['DE','OS','AS','ES','DO','DA','EM','RE','EN','SE','NO','RA','CO','QU','AR','AL','ER','AN','OR','NT'],
+    trigrams: ['QUE','ENT','ADE','DOS','EST','DAS','PAR','RES','CON','COM','STA','MEN','ARA','ERA','ANT'],
+    ioc: 0.0745,
+  },
+  dutch: {
+    label: 'Dutch', flag: 'NL',
+    freq: { A:7.486,B:1.584,C:1.242,D:5.933,E:18.914,F:0.805,G:3.403,H:2.380,I:6.499,J:1.461,K:2.248,L:3.568,M:2.213,N:10.032,O:6.063,P:1.570,Q:0.009,R:6.411,S:3.730,T:6.790,U:1.990,V:2.850,W:1.520,X:0.036,Y:0.035,Z:1.390 },
+    bigrams: ['EN','DE','AN','ET','ER','EE','HE','ND','VE','TE','IN','GE','EL','AA','ST','VA','ON','IJ','BE','RE'],
+    trigrams: ['EEN','VAN','HET','DEN','AAR','DER','TEN','AND','VER','ING','DAT','ERE','OOR','EDE','NDE'],
+    ioc: 0.0798,
+  },
+  polish: {
+    label: 'Polish', flag: 'PL',
+    freq: { A:8.910,B:1.470,C:3.960,D:3.250,E:7.660,F:0.300,G:1.420,H:1.080,I:8.210,J:2.280,K:3.510,L:2.100,M:2.800,N:5.520,O:7.750,P:3.130,Q:0.003,R:4.690,S:4.320,T:3.980,U:2.500,V:0.040,W:4.650,X:0.020,Y:3.760,Z:5.640 },
+    bigrams: ['NI','IE','CZ','RZ','PO','PR','NA','ST','OW','ZE','WI','KO','AN','DO','NO','RA','OD','RO','JE','MI'],
+    trigrams: ['NIE','PRZ','CZY','POW','STA','OWA','KON','ANI','NIA','TER','ZNA','POD','NAD','WIE','ROZ'],
+    ioc: 0.0607,
+  },
+  latin: {
+    label: 'Latin', flag: 'LA',
+    freq: { A:7.680,B:1.480,C:3.980,D:3.460,E:11.490,F:1.040,G:1.290,H:0.890,I:10.420,J:0.010,K:0.010,L:2.170,M:5.300,N:6.740,O:5.290,P:2.770,Q:1.490,R:6.280,S:7.430,T:8.510,U:8.340,V:0.930,W:0.000,X:0.590,Y:0.060,Z:0.020 },
+    bigrams: ['IS','UM','US','ER','AM','UT','IN','EM','IT','ES','ET','EN','NT','AT','TI','TE','RE','RI','TU','TA'],
+    trigrams: ['QUE','TUR','TIS','EST','TEM','ENT','NTI','ION','BUS','RUM','ATE','TIO','ITA','URE','NTE'],
+    ioc: 0.0700,
+  },
+  russian: {
+    label: 'Russian (transliterated)', flag: 'RU',
+    freq: { A:8.010,B:1.590,C:0.940,D:2.980,E:8.450,F:0.260,G:1.700,H:2.650,I:7.350,J:0.350,K:3.490,L:4.400,M:3.210,N:6.700,O:10.970,P:2.810,Q:0.040,R:4.730,S:5.470,T:6.260,U:2.620,V:4.640,W:0.180,X:0.030,Y:1.900,Z:0.940 },
+    bigrams: ['ST','NO','NA','EN','TO','OV','NI','RA','KO','PO','ET','RE','PR','OS','TA','GO','NE','OB','DA','ER'],
+    trigrams: ['STO','OST','ENI','PRO','OVA','NOT','PRI','TSI','ETS','NOS','TOR','KON','OGO','RED','ONA'],
+    ioc: 0.0529,
+  },
+};
 
 const SAMPLE_PRESETS = [
   {
@@ -76,15 +146,15 @@ function calcIoC(text: string): number {
   return sum / (N * (N - 1));
 }
 
-function calcChiSquared(text: string): number {
+function calcChiSquared(text: string, freqTable: Record<string, number>): number {
   const clean = text.toUpperCase().replace(/[^A-Z]/g, '');
   const N = clean.length;
   if (N === 0) return 0;
   const counts = countLetters(clean);
   let chi = 0;
   for (const c of ALPHABET) {
-    const expected = (ENGLISH_FREQ[c] / 100) * N;
-    chi += Math.pow(counts[c] - expected, 2) / expected;
+    const expected = ((freqTable[c] || 0) / 100) * N;
+    if (expected > 0) chi += Math.pow(counts[c] - expected, 2) / expected;
   }
   return chi;
 }
@@ -99,6 +169,8 @@ const FrequencyAnalysisApp: React.FC = () => {
   const [plaintext, setPlaintext] = useState(DEFAULT_PLAINTEXT);
   const [caesarShift, setCaesarShift] = useState(3);
   const [vigKey, setVigKey] = useState('SECRET');
+  const [lang, setLang] = useState('english');
+  const langProfile = LANGUAGES[lang];
 
   // Auto-encrypt when parameters change
   const encryptedText = useMemo(() => {
@@ -113,7 +185,7 @@ const FrequencyAnalysisApp: React.FC = () => {
   const letterCounts = useMemo(() => countLetters(analysisText), [analysisText]);
   const totalLetters = useMemo(() => Object.values(letterCounts).reduce((a, b) => a + b, 0), [letterCounts]);
   const ioc = useMemo(() => calcIoC(analysisText), [analysisText]);
-  const chiSq = useMemo(() => calcChiSquared(analysisText), [analysisText]);
+  const chiSq = useMemo(() => calcChiSquared(analysisText, langProfile.freq), [analysisText, langProfile]);
 
   const bigrams = useMemo(() => {
     const map = countNgrams(analysisText, 2);
@@ -126,7 +198,8 @@ const FrequencyAnalysisApp: React.FC = () => {
   }, [analysisText]);
 
   const maxCount = Math.max(...Object.values(letterCounts), 1);
-  const maxEnglishFreq = Math.max(...Object.values(ENGLISH_FREQ));
+  const maxRefFreq = Math.max(...Object.values(langProfile.freq));
+  const sortedRefOrder = [...ALPHABET].sort((a, b) => (langProfile.freq[b] || 0) - (langProfile.freq[a] || 0));
 
   // Sort letters by frequency for ranking
   const sortedByFreq = [...ALPHABET].sort((a, b) => letterCounts[b] - letterCounts[a]);
@@ -303,6 +376,24 @@ const FrequencyAnalysisApp: React.FC = () => {
           </div>
         </div>
 
+        {/* Language selector */}
+        <div className="mb-4 flex items-center gap-3 flex-wrap">
+          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Reference Language</label>
+          {Object.entries(LANGUAGES).map(([key, lp]) => (
+            <button
+              key={key}
+              onClick={() => setLang(key)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                lang === key
+                  ? 'bg-red-950/50 text-red-400 border border-red-700/50'
+                  : 'text-slate-500 hover:text-white border border-slate-700 hover:border-slate-500'
+              }`}
+            >
+              <span className="font-bold mr-1">{lp.flag}</span> {lp.label}
+            </button>
+          ))}
+        </div>
+
         {/* IoC Display */}
         <div className="mb-8 bg-slate-900/60 border border-slate-800 rounded-xl p-5">
           <div className="flex items-center justify-between mb-3">
@@ -316,9 +407,9 @@ const FrequencyAnalysisApp: React.FC = () => {
             <div className="absolute top-0 bottom-0 w-0.5 bg-blue-400" style={{ left: `${((0.0385 - 0.03) / (0.08 - 0.03)) * 100}%` }}>
               <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] text-blue-400 whitespace-nowrap">Random 0.038</div>
             </div>
-            {/* English marker */}
-            <div className="absolute top-0 bottom-0 w-0.5 bg-green-400" style={{ left: `${((0.0667 - 0.03) / (0.08 - 0.03)) * 100}%` }}>
-              <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] text-green-400 whitespace-nowrap">English 0.067</div>
+            {/* Language IoC marker */}
+            <div className="absolute top-0 bottom-0 w-0.5 bg-green-400" style={{ left: `${((langProfile.ioc - 0.03) / (0.08 - 0.03)) * 100}%` }}>
+              <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] text-green-400 whitespace-nowrap">{langProfile.label} {langProfile.ioc.toFixed(3)}</div>
             </div>
             {/* Current value */}
             <div
@@ -330,7 +421,7 @@ const FrequencyAnalysisApp: React.FC = () => {
           </div>
           <div className="flex justify-between mt-6 text-[10px] text-slate-500">
             <span>Polyalphabetic / Random</span>
-            <span>Monoalphabetic / English</span>
+            <span>Monoalphabetic / {langProfile.label}</span>
           </div>
         </div>
 
@@ -358,9 +449,9 @@ const FrequencyAnalysisApp: React.FC = () => {
               {ALPHABET.split('').map(letter => {
                 const count = letterCounts[letter];
                 const pct = totalLetters > 0 ? (count / totalLetters) * 100 : 0;
-                const engPct = ENGLISH_FREQ[letter];
+                const refPct = langProfile.freq[letter] || 0;
                 const barH = totalLetters > 0 ? (count / maxCount) * 100 : 0;
-                const engBarH = (engPct / maxEnglishFreq) * 100;
+                const refBarH = (refPct / maxRefFreq) * 100;
                 const isTop = top5.has(letter);
 
                 return (
@@ -368,12 +459,12 @@ const FrequencyAnalysisApp: React.FC = () => {
                     {/* Tooltip */}
                     <div className="absolute bottom-full mb-2 hidden group-hover:block bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-xs z-10 whitespace-nowrap">
                       <div className="font-bold text-white">{letter}: {count} ({pct.toFixed(1)}%)</div>
-                      <div className="text-slate-400">English: {engPct.toFixed(1)}%</div>
+                      <div className="text-slate-400">{langProfile.label}: {refPct.toFixed(1)}%</div>
                     </div>
-                    {/* English reference bar */}
+                    {/* Reference language bar */}
                     <div
                       className="w-full bg-slate-700/30 rounded-t-sm absolute bottom-6"
-                      style={{ height: `${engBarH * 0.85}%` }}
+                      style={{ height: `${refBarH * 0.85}%` }}
                     />
                     {/* Observed bar */}
                     <div
@@ -400,7 +491,7 @@ const FrequencyAnalysisApp: React.FC = () => {
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-sm bg-slate-700/30" />
-                <span>Expected English</span>
+                <span>Expected {langProfile.label}</span>
               </div>
             </div>
             {/* Frequency ranking */}
@@ -410,8 +501,8 @@ const FrequencyAnalysisApp: React.FC = () => {
                 <span className="font-mono text-red-400">{sortedByFreq.filter(l => letterCounts[l] > 0).join(' ')}</span>
               </div>
               <div className="text-xs text-slate-400">
-                <span className="font-bold text-slate-300">English order: </span>
-                <span className="font-mono text-slate-500">E T A O I N S H R D L C U M W F G Y P B V K J X Q Z</span>
+                <span className="font-bold text-slate-300">{langProfile.label} order: </span>
+                <span className="font-mono text-slate-500">{sortedRefOrder.filter(l => (langProfile.freq[l] || 0) > 0).join(' ')}</span>
               </div>
             </div>
           </div>
@@ -440,9 +531,9 @@ const FrequencyAnalysisApp: React.FC = () => {
                 </div>
               </div>
               <div>
-                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Expected English Bigrams</h4>
+                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Expected {langProfile.label} Bigrams</h4>
                 <div className="space-y-1">
-                  {ENGLISH_BIGRAMS.map((gram, i) => (
+                  {langProfile.bigrams.map((gram, i) => (
                     <div key={gram} className="flex items-center gap-3">
                       <span className="text-xs text-slate-600 w-5 text-right">{i + 1}.</span>
                       <span className="font-mono text-sm text-slate-400 w-8">{gram}</span>
@@ -484,9 +575,9 @@ const FrequencyAnalysisApp: React.FC = () => {
                 </div>
               </div>
               <div>
-                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Expected English Trigrams</h4>
+                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Expected {langProfile.label} Trigrams</h4>
                 <div className="space-y-1">
-                  {ENGLISH_TRIGRAMS.map((gram, i) => (
+                  {langProfile.trigrams.map((gram, i) => (
                     <div key={gram} className="flex items-center gap-3">
                       <span className="text-xs text-slate-600 w-5 text-right">{i + 1}.</span>
                       <span className="font-mono text-sm text-slate-400 w-10">{gram}</span>
