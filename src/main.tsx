@@ -29,6 +29,11 @@ import FrequencyAnalysisApp from './simulators/frequency-analysis/App';
 import VigenereBreakerApp from './simulators/vigenere-breaker/App';
 import BombeApp from './simulators/bombe/App';
 import ColossusApp from './simulators/colossus/App';
+import LfsrApp from './simulators/lfsr/App';
+import DesApp from './simulators/des/App';
+import AesApp from './simulators/aes/App';
+import Salsa20App from './simulators/salsa20/App';
+import Chacha20App from './simulators/chacha20/App';
 
 const root = document.getElementById('root')!;
 
@@ -64,6 +69,12 @@ ReactDOM.createRoot(root).render(
           <Route path="/vigenere-breaker" element={<VigenereBreakerApp />} />
           <Route path="/bombe" element={<BombeApp />} />
           <Route path="/colossus" element={<ColossusApp />} />
+          {/* Modern Cryptography */}
+          <Route path="/lfsr" element={<LfsrApp />} />
+          <Route path="/des" element={<DesApp />} />
+          <Route path="/aes" element={<AesApp />} />
+          <Route path="/salsa20" element={<Salsa20App />} />
+          <Route path="/chacha20" element={<Chacha20App />} />
         </Route>
       </Routes>
     </HashRouter>

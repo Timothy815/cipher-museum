@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Home, ChevronRight, ChevronDown, Cog, Cpu, KeyRound, Lock, Shield, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary } from 'lucide-react';
+import { Home, ChevronRight, ChevronDown, Cog, Cpu, KeyRound, Lock, Shield, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind } from 'lucide-react';
 
 const SIMULATORS = [
   { path: '/enigma-i', label: 'Enigma I', country: 'Germany', icon: <Cog size={14} /> },
@@ -33,7 +33,15 @@ const CRYPTANALYSIS = [
   { path: '/colossus', label: 'Colossus', country: 'Cryptanalysis', icon: <Binary size={14} /> },
 ];
 
-const ALL_ITEMS = [...SIMULATORS, ...CRYPTANALYSIS];
+const MODERN_CRYPTO = [
+  { path: '/lfsr', label: 'LFSR', country: 'Modern Crypto', icon: <Waves size={14} /> },
+  { path: '/des', label: 'DES', country: 'Modern Crypto', icon: <Box size={14} /> },
+  { path: '/aes', label: 'AES', country: 'Modern Crypto', icon: <Grid3x3Icon size={14} /> },
+  { path: '/salsa20', label: 'Salsa20', country: 'Modern Crypto', icon: <Droplets size={14} /> },
+  { path: '/chacha20', label: 'ChaCha20', country: 'Modern Crypto', icon: <Wind size={14} /> },
+];
+
+const ALL_ITEMS = [...SIMULATORS, ...CRYPTANALYSIS, ...MODERN_CRYPTO];
 
 const Layout: React.FC = () => {
   const location = useLocation();
@@ -74,7 +82,7 @@ const Layout: React.FC = () => {
           {current && (
             <>
               <ChevronRight size={14} className="text-slate-600" />
-              <span className={`text-sm font-medium ${CRYPTANALYSIS.some(c => c.path === current.path) ? 'text-red-400' : 'text-amber-400'}`}>{current.label}</span>
+              <span className={`text-sm font-medium ${CRYPTANALYSIS.some(c => c.path === current.path) ? 'text-red-400' : MODERN_CRYPTO.some(c => c.path === current.path) ? 'text-cyan-400' : 'text-amber-400'}`}>{current.label}</span>
             </>
           )}
 
@@ -121,6 +129,24 @@ const Layout: React.FC = () => {
                       }`}
                     >
                       <span className="text-red-500/70">{s.icon}</span>
+                      <div className="flex flex-col">
+                        <span className="font-medium">{s.label}</span>
+                        <span className="text-[10px] text-slate-500">{s.country}</span>
+                      </div>
+                    </Link>
+                  ))}
+                  <div className="px-4 py-2 text-[10px] font-bold text-cyan-400 uppercase tracking-wider border-b border-t border-slate-800">Modern Cryptography</div>
+                  {MODERN_CRYPTO.map(s => (
+                    <Link
+                      key={s.path}
+                      to={s.path}
+                      className={`flex items-center gap-3 px-4 py-3 text-sm transition-colors ${
+                        s.path === location.pathname
+                          ? 'bg-cyan-500/10 text-cyan-400'
+                          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                      }`}
+                    >
+                      <span className="text-cyan-500/70">{s.icon}</span>
                       <div className="flex flex-col">
                         <span className="font-medium">{s.label}</span>
                         <span className="text-[10px] text-slate-500">{s.country}</span>
