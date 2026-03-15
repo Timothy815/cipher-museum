@@ -73,6 +73,31 @@ function randomPrime(min: number, max: number): bigint {
   return 61n; // fallback
 }
 
+function randomBigInt(bits: number): bigint {
+  const bytes = new Uint8Array(Math.ceil(bits / 8));
+  crypto.getRandomValues(bytes);
+  // Mask top byte to get exact bit length
+  const excessBits = bytes.length * 8 - bits;
+  if (excessBits > 0) bytes[0] &= (1 << (8 - excessBits)) - 1;
+  // Set the top bit to ensure we get a number of the right magnitude
+  bytes[0] |= 1 << (7 - excessBits);
+  let n = 0n;
+  for (const byte of bytes) n = (n << 8n) | BigInt(byte);
+  return n;
+}
+
+function randomBigPrime(bits: number): bigint {
+  for (let attempts = 0; attempts < 10000; attempts++) {
+    let candidate = randomBigInt(bits);
+    candidate |= 1n; // ensure odd
+    if (isPrime(candidate)) return candidate;
+  }
+  // Fallback: increment until we find a prime
+  let candidate = randomBigInt(bits) | 1n;
+  while (!isPrime(candidate)) candidate += 2n;
+  return candidate;
+}
+
 function trialFactor(n: bigint): { p: bigint; q: bigint; steps: number; found: boolean } {
   if (n % 2n === 0n) return { p: 2n, q: n / 2n, steps: 1, found: true };
   let steps = 0;
@@ -89,6 +114,18 @@ const PRIME_PRESETS = [
   { label: 'Tiny (61, 53)', p: '61', q: '53' },
   { label: 'Small (257, 263)', p: '257', q: '263' },
   { label: 'Medium (104729, 104723)', p: '104729', q: '104723' },
+];
+
+const BIT_SIZE_OPTIONS = [
+  { label: '8-bit', bits: 8, desc: 'Trivially breakable' },
+  { label: '16-bit', bits: 16, desc: 'Breakable instantly' },
+  { label: '32-bit', bits: 32, desc: 'Seconds to factor' },
+  { label: '64-bit', bits: 64, desc: 'Minutes on a laptop' },
+  { label: '128-bit', bits: 128, desc: 'Expensive but feasible' },
+  { label: '256-bit', bits: 256, desc: 'Currently very hard' },
+  { label: '512-bit', bits: 512, desc: 'Broken by researchers (1999)' },
+  { label: '1024-bit', bits: 1024, desc: 'Deprecated, still used' },
+  { label: '2048-bit', bits: 2048, desc: 'Current standard minimum' },
 ];
 
 const E_OPTIONS = [
@@ -112,6 +149,7 @@ const App: React.FC = () => {
   const [factorResult, setFactorResult] = useState<{
     p: bigint; q: bigint; steps: number; found: boolean; timeMs: number;
   } | null>(null);
+  const [generating, setGenerating] = useState(false);
 
   const inputClass = 'bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-violet-700/50 w-full';
   const labelClass = 'text-xs font-bold text-slate-400 uppercase tracking-wider';
@@ -211,12 +249,32 @@ const App: React.FC = () => {
     setTimeout(() => setCopied(false), 2000);
   }, []);
 
-  const generateRandomPrimes = () => {
-    const rp = randomPrime(50, 500);
-    let rq = randomPrime(50, 500);
-    while (rq === rp) rq = randomPrime(50, 500);
-    setPStr(rp.toString());
-    setQStr(rq.toString());
+  const generateRandomPrimes = (bits?: number) => {
+    if (!bits) {
+      const rp = randomPrime(50, 500);
+      let rq = randomPrime(50, 500);
+      while (rq === rp) rq = randomPrime(50, 500);
+      setPStr(rp.toString());
+      setQStr(rq.toString());
+      return;
+    }
+    // Each prime is bits/2 bits so that n is approximately `bits` bits
+    const primeBits = Math.max(4, Math.floor(bits / 2));
+    setGenerating(true);
+    // Use setTimeout to let the UI update before heavy computation
+    setTimeout(() => {
+      try {
+        const rp = randomBigPrime(primeBits);
+        let rq = randomBigPrime(primeBits);
+        while (rq === rp) rq = randomBigPrime(primeBits);
+        setPStr(rp.toString());
+        setQStr(rq.toString());
+        setEStr('65537');
+        setFactorResult(null);
+      } finally {
+        setGenerating(false);
+      }
+    }, 50);
   };
 
   return (
@@ -261,18 +319,20 @@ const App: React.FC = () => {
           <h2 className="text-sm font-bold text-violet-400 uppercase tracking-wider mb-4">Step 1 — Key Generation</h2>
 
           {/* Prime inputs */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
             <div>
               <label className={`${labelClass} block mb-1`}>
-                Prime p {pValid ? <span className="text-emerald-400 ml-1">prime</span> : <span className="text-red-400 ml-1">not prime</span>}
+                Prime p {pStr.length > 0 && (pValid ? <span className="text-emerald-400 ml-1">prime ({p.toString(2).length}-bit)</span> : <span className="text-red-400 ml-1">not prime</span>)}
               </label>
-              <input value={pStr} onChange={e => { setPStr(e.target.value); setFactorResult(null); }} className={inputClass} />
+              <textarea value={pStr} onChange={e => { setPStr(e.target.value); setFactorResult(null); }}
+                className={inputClass + ' resize-none min-h-[44px] max-h-32'} rows={pStr.length > 80 ? 3 : 1} />
             </div>
             <div>
               <label className={`${labelClass} block mb-1`}>
-                Prime q {qValid ? <span className="text-emerald-400 ml-1">prime</span> : <span className="text-red-400 ml-1">not prime</span>}
+                Prime q {qStr.length > 0 && (qValid ? <span className="text-emerald-400 ml-1">prime ({q.toString(2).length}-bit)</span> : <span className="text-red-400 ml-1">not prime</span>)}
               </label>
-              <input value={qStr} onChange={e => { setQStr(e.target.value); setFactorResult(null); }} className={inputClass} />
+              <textarea value={qStr} onChange={e => { setQStr(e.target.value); setFactorResult(null); }}
+                className={inputClass + ' resize-none min-h-[44px] max-h-32'} rows={qStr.length > 80 ? 3 : 1} />
             </div>
             <div>
               <label className={`${labelClass} block mb-1`}>
@@ -288,25 +348,48 @@ const App: React.FC = () => {
           </div>
 
           {/* Presets */}
-          <div className="flex gap-2 mb-5 flex-wrap">
+          <div className="flex gap-2 mb-3 flex-wrap">
             {PRIME_PRESETS.map(pr => (
               <button key={pr.label} onClick={() => { setPStr(pr.p); setQStr(pr.q); setFactorResult(null); }}
                 className="px-3 py-1.5 text-xs font-mono bg-slate-800 border border-slate-700 rounded-lg text-slate-400 hover:border-violet-700/50 hover:text-violet-400 transition-colors">
                 {pr.label}
               </button>
             ))}
-            <button onClick={generateRandomPrimes}
+            <button onClick={() => generateRandomPrimes()}
               className="px-3 py-1.5 text-xs font-mono bg-slate-800 border border-slate-700 rounded-lg text-slate-400 hover:border-violet-700/50 hover:text-violet-400 transition-colors flex items-center gap-1.5">
-              <RefreshCw size={12} /> Random Primes
+              <RefreshCw size={12} /> Random Small
             </button>
           </div>
 
+          {/* Generate by bit size */}
+          <div className="mb-5">
+            <label className={`${labelClass} block mb-2`}>Generate by key size (n ≈ this many bits)</label>
+            <div className="flex gap-2 flex-wrap">
+              {BIT_SIZE_OPTIONS.map(opt => (
+                <button
+                  key={opt.bits}
+                  onClick={() => generateRandomPrimes(opt.bits)}
+                  disabled={generating}
+                  className="group px-3 py-2 text-xs bg-slate-800 border border-slate-700 rounded-lg text-slate-400 hover:border-violet-700/50 hover:text-violet-400 transition-colors disabled:opacity-50 disabled:cursor-wait"
+                >
+                  <div className="font-mono font-bold">{opt.label}</div>
+                  <div className="text-[10px] text-slate-600 group-hover:text-slate-500">{opt.desc}</div>
+                </button>
+              ))}
+            </div>
+            {generating && (
+              <div className="mt-2 text-xs text-violet-400 flex items-center gap-2">
+                <RefreshCw size={12} className="animate-spin" /> Generating primes...
+              </div>
+            )}
+          </div>
+
           {/* Computed values step-by-step */}
-          <div className="space-y-2 font-mono text-sm">
+          <div className="space-y-2 font-mono text-sm [&_span]:break-all">
             <div className="bg-slate-900/80 rounded-lg p-3 space-y-1">
               <div className="text-slate-500 text-xs">1. Compute n = p x q</div>
               <div className="text-white">n = {pStr} x {qStr} = <span className="text-violet-300 font-bold">{n.toString()}</span></div>
-              <div className="text-slate-600 text-xs">{n.toString().length} digits — messages must be smaller than n</div>
+              <div className="text-slate-600 text-xs">{n.toString().length} digits, {n.toString(2).length} bits — messages must be smaller than n</div>
             </div>
 
             <div className="bg-slate-900/80 rounded-lg p-3 space-y-1">
