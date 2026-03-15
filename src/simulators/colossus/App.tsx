@@ -20,7 +20,7 @@ function generateWheel(size: number, seed: number): number[] {
   let state = seed;
   for (let i = 0; i < size; i++) {
     state = (state * 1103515245 + 12345) & 0x7fffffff;
-    pattern.push(state % 2);
+    pattern.push((state >> 16) & 1); // use high bit — low bit of this LCG has period 2
   }
   return pattern;
 }
