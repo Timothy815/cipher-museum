@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { KeySquare, Info, X, ChevronRight } from 'lucide-react';
+import { KeySquare, Info, X, ChevronRight, Lock } from 'lucide-react';
 
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
@@ -137,25 +137,46 @@ function findBestShift(col: string): { shift: number; chi: number; allShifts: { 
 }
 
 const VigenereBreakerApp: React.FC = () => {
-  const [ciphertext, setCiphertext] = useState('');
   const [showInfo, setShowInfo] = useState(false);
+  const [tab, setTab] = useState<'encrypt' | 'break'>('encrypt');
+
+  // Encrypt tab state
+  const [encryptPlain, setEncryptPlain] = useState('THE VIGENERE CIPHER WAS CONSIDERED UNBREAKABLE FOR THREE HUNDRED YEARS UNTIL CHARLES BABBAGE AND FRIEDRICH KASISKI INDEPENDENTLY DISCOVERED HOW TO CRACK IT USING STATISTICAL METHODS');
+  const [encryptKey, setEncryptKey] = useState('LEMON');
+
+  const encryptedOutput = useMemo(() => {
+    const cleanKey = encryptKey.toUpperCase().replace(/[^A-Z]/g, '');
+    if (!cleanKey) return '';
+    return vigenereEncrypt(encryptPlain, cleanKey);
+  }, [encryptPlain, encryptKey]);
+
+  // Break tab state
+  const [ciphertext, setCiphertext] = useState('');
   const [step, setStep] = useState(1);
   const [selectedKeyLen, setSelectedKeyLen] = useState<number | null>(null);
   const [manualKey, setManualKey] = useState('');
 
-  // Initialize with first preset
   const loadPreset = (preset: typeof PRESETS[0]) => {
     const encrypted = vigenereEncrypt(preset.plain, preset.key);
     setCiphertext(encrypted);
     setStep(1);
     setSelectedKeyLen(null);
     setManualKey('');
+    setTab('break');
   };
 
-  // Auto-load first preset
+  const loadFromEncrypt = () => {
+    setCiphertext(encryptedOutput);
+    setStep(1);
+    setSelectedKeyLen(null);
+    setManualKey('');
+    setTab('break');
+  };
+
+  // Auto-load first preset on mount
   const [initialized, setInitialized] = useState(false);
   if (!initialized) {
-    loadPreset(PRESETS[0]);
+    setCiphertext(vigenereEncrypt(PRESETS[0].plain, PRESETS[0].key));
     setInitialized(true);
   }
 
@@ -259,8 +280,104 @@ const VigenereBreakerApp: React.FC = () => {
           </div>
         )}
 
+        {/* Tabs */}
+        <div className="flex gap-2 mb-6">
+          <button
+            onClick={() => setTab('encrypt')}
+            className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors ${
+              tab === 'encrypt'
+                ? 'bg-amber-950/50 text-amber-400 border border-amber-700/50'
+                : 'text-slate-500 border border-slate-800 hover:text-white'
+            }`}
+          >
+            <Lock size={14} className="inline mr-2" />
+            Encrypt with Vigenère
+          </button>
+          <button
+            onClick={() => setTab('break')}
+            className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors ${
+              tab === 'break'
+                ? 'bg-red-950/50 text-red-400 border border-red-700/50'
+                : 'text-slate-500 border border-slate-800 hover:text-white'
+            }`}
+          >
+            <KeySquare size={14} className="inline mr-2" />
+            Break Ciphertext
+          </button>
+        </div>
+
+        {/* ═══════════ ENCRYPT TAB ═══════════ */}
+        {tab === 'encrypt' && (
+          <div className="space-y-6">
+            <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-5">
+              <p className="text-sm text-slate-400">
+                <strong className="text-white">Encrypt any message with any keyword.</strong> Then send the ciphertext to the breaker and watch it recover your key using Kasiski examination and frequency analysis. Longer messages with shorter keys are easier to break.
+              </p>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Plaintext</label>
+              <textarea
+                value={encryptPlain}
+                onChange={e => setEncryptPlain(e.target.value)}
+                className="w-full h-28 bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 font-mono text-sm text-white resize-none focus:outline-none focus:border-amber-700/50"
+                placeholder="Type your message..."
+              />
+              <div className="text-xs text-slate-500 mt-1">{encryptPlain.toUpperCase().replace(/[^A-Z]/g, '').length} letters</div>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Key</label>
+              <input
+                type="text"
+                value={encryptKey}
+                onChange={e => setEncryptKey(e.target.value.toUpperCase())}
+                className="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-lg text-amber-400 tracking-[0.3em] focus:outline-none focus:border-amber-700/50"
+                placeholder="KEYWORD"
+              />
+              <div className="text-xs text-slate-500 mt-1">
+                Key length: {encryptKey.toUpperCase().replace(/[^A-Z]/g, '').length}
+                {encryptKey.toUpperCase().replace(/[^A-Z]/g, '').length < 2 && <span className="text-yellow-400 ml-2">— enter at least 2 letters</span>}
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Ciphertext</label>
+              <div className="bg-slate-900/80 border border-amber-900/30 rounded-xl px-4 py-3 font-mono text-sm text-amber-400 break-all min-h-[3rem]">
+                {encryptedOutput || <span className="text-slate-700">Enter a key to encrypt...</span>}
+              </div>
+            </div>
+
+            {/* Key alignment preview */}
+            {encryptedOutput && (
+              <div className="bg-slate-800/40 rounded-lg p-4 font-mono text-xs overflow-x-auto">
+                <div className="text-amber-400/50 mb-1">
+                  Key:    {encryptPlain.toUpperCase().replace(/[^A-Z]/g, '').split('').map((_, i) => encryptKey.toUpperCase().replace(/[^A-Z]/g, '')[(i) % encryptKey.toUpperCase().replace(/[^A-Z]/g, '').length] || '?').join('').slice(0, 60)}{encryptedOutput.length > 60 ? '...' : ''}
+                </div>
+                <div className="text-slate-400 mb-1">
+                  Plain:  {encryptPlain.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 60)}{encryptedOutput.length > 60 ? '...' : ''}
+                </div>
+                <div className="text-amber-400">
+                  Cipher: {encryptedOutput.slice(0, 60)}{encryptedOutput.length > 60 ? '...' : ''}
+                </div>
+              </div>
+            )}
+
+            <button
+              onClick={loadFromEncrypt}
+              disabled={!encryptedOutput}
+              className="px-6 py-3 bg-red-950/50 border border-red-700/50 rounded-lg text-red-400 font-medium hover:bg-red-900/40 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              Send to Breaker →
+            </button>
+          </div>
+        )}
+
+        {/* ═══════════ BREAK TAB ═══════════ */}
+        {tab === 'break' && (<div className="space-y-6">
+
         {/* Input */}
-        <div className="mb-6">
+        <div>
           <div className="flex items-center gap-3 mb-3">
             <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Ciphertext</label>
             <div className="flex gap-2">
@@ -568,6 +685,8 @@ const VigenereBreakerApp: React.FC = () => {
             </div>
           </div>
         )}
+
+        </div>)}
       </div>
     </div>
   );
