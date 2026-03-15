@@ -28,6 +28,14 @@ function mixColors(h1: number, h2: number): number {
   return ((h1 + diff / 2) + 360) % 360;
 }
 
+function mixThreeColors(h1: number, h2: number, h3: number): number {
+  // Average three hues on the color wheel using circular mean
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const sinSum = Math.sin(toRad(h1)) + Math.sin(toRad(h2)) + Math.sin(toRad(h3));
+  const cosSum = Math.cos(toRad(h1)) + Math.cos(toRad(h2)) + Math.cos(toRad(h3));
+  return ((Math.atan2(sinSum, cosSum) * 180) / Math.PI + 360) % 360;
+}
+
 // ── Presets ──────────────────────────────────────────────────────────
 
 const PRESETS = [
@@ -73,9 +81,7 @@ const App: React.FC = () => {
   // Color mixing
   const aliceMixed = mixColors(publicHue, aliceSecretHue);
   const bobMixed = mixColors(publicHue, bobSecretHue);
-  const aliceFinal = mixColors(aliceMixed, bobSecretHue); // wrong: alice doesn't know bob's secret
-  const aliceShared = mixColors(bobMixed, aliceSecretHue); // alice mixes bob's public mix with her secret
-  const bobShared = mixColors(aliceMixed, bobSecretHue); // bob mixes alice's public mix with his secret
+  const sharedHue = mixThreeColors(publicHue, aliceSecretHue, bobSecretHue);
 
   const S = 70, L = 55;
   const publicColor = hslToString(publicHue, S, L);
@@ -83,8 +89,7 @@ const App: React.FC = () => {
   const bobSecretColor = hslToString(bobSecretHue, S, L);
   const aliceMixedColor = hslToString(aliceMixed, S, L);
   const bobMixedColor = hslToString(bobMixed, S, L);
-  const aliceSharedColor = hslToString(aliceShared, S, L);
-  const bobSharedColor = hslToString(bobShared, S, L);
+  const sharedColor = hslToString(sharedHue, S, L);
 
   const inputClass = 'bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-violet-700/50 w-full';
   const labelClass = 'text-xs font-bold text-slate-400 uppercase tracking-wider';
@@ -175,7 +180,7 @@ const App: React.FC = () => {
                   <span className="text-slate-600 text-xs">+</span>
                   <div className="w-8 h-8 rounded" style={{ backgroundColor: aliceSecretColor }} />
                   <span className="text-slate-600 text-xs">=</span>
-                  <div className="w-10 h-10 rounded-lg border-2 border-violet-500 shadow-lg shadow-violet-500/20" style={{ backgroundColor: aliceSharedColor }} />
+                  <div className="w-10 h-10 rounded-lg border-2 border-violet-500 shadow-lg shadow-violet-500/20" style={{ backgroundColor: sharedColor }} />
                 </div>
                 <div className="text-xs font-bold text-violet-400">Shared Secret</div>
               </div>
@@ -224,7 +229,7 @@ const App: React.FC = () => {
                   <span className="text-slate-600 text-xs">+</span>
                   <div className="w-8 h-8 rounded" style={{ backgroundColor: bobSecretColor }} />
                   <span className="text-slate-600 text-xs">=</span>
-                  <div className="w-10 h-10 rounded-lg border-2 border-violet-500 shadow-lg shadow-violet-500/20" style={{ backgroundColor: bobSharedColor }} />
+                  <div className="w-10 h-10 rounded-lg border-2 border-violet-500 shadow-lg shadow-violet-500/20" style={{ backgroundColor: sharedColor }} />
                 </div>
                 <div className="text-xs font-bold text-violet-400">Shared Secret</div>
               </div>
