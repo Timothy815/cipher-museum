@@ -1,7 +1,6 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { Binary, Info, X, Play, Pause, RotateCcw } from 'lucide-react';
+import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import { Binary, Info, X, Play, Pause, RotateCcw, Lock } from 'lucide-react';
 
-// ITA2 / Baudot code (5-bit teleprinter encoding)
 const ITA2_LETTERS: Record<string, number> = {
   'A': 0b00011, 'B': 0b11001, 'C': 0b01110, 'D': 0b01001, 'E': 0b00001,
   'F': 0b01101, 'G': 0b11010, 'H': 0b10100, 'I': 0b00110, 'J': 0b01011,
@@ -14,11 +13,9 @@ const ITA2_LETTERS: Record<string, number> = {
 const ITA2_REVERSE: Record<number, string> = {};
 for (const [k, v] of Object.entries(ITA2_LETTERS)) ITA2_REVERSE[v] = k;
 
-// Chi wheel patterns (simplified — real wheels had 41,31,29,26,23 pins)
 const CHI_SIZES = [41, 31, 29, 26, 23];
 
 function generateWheel(size: number, seed: number): number[] {
-  // Deterministic pseudo-random wheel pattern
   const pattern: number[] = [];
   let state = seed;
   for (let i = 0; i < size; i++) {
@@ -28,12 +25,10 @@ function generateWheel(size: number, seed: number): number[] {
   return pattern;
 }
 
-// Generate 5 chi wheels
 function generateChiWheels(seed: number = 42): number[][] {
   return CHI_SIZES.map((size, i) => generateWheel(size, seed + i * 7));
 }
 
-// Simplified Lorenz encryption (chi wheels only for demo)
 function lorenzEncrypt(plainBits: number[][], chiWheels: number[][], chiPositions: number[]): number[][] {
   return plainBits.map((charBits, charIdx) => {
     return charBits.map((bit, bitIdx) => {
@@ -43,21 +38,13 @@ function lorenzEncrypt(plainBits: number[][], chiWheels: number[][], chiPosition
   });
 }
 
-// Convert text to 5-bit arrays
 function textToBits(text: string): number[][] {
   return text.toUpperCase().split('').map(ch => {
     const code = ITA2_LETTERS[ch] ?? 0;
-    return [
-      (code >> 4) & 1,
-      (code >> 3) & 1,
-      (code >> 2) & 1,
-      (code >> 1) & 1,
-      code & 1,
-    ];
+    return [(code >> 4) & 1, (code >> 3) & 1, (code >> 2) & 1, (code >> 1) & 1, code & 1];
   });
 }
 
-// Convert 5-bit arrays to text
 function bitsToText(bits: number[][]): string {
   return bits.map(charBits => {
     const code = (charBits[0] << 4) | (charBits[1] << 3) | (charBits[2] << 2) | (charBits[3] << 1) | charBits[4];
@@ -65,7 +52,6 @@ function bitsToText(bits: number[][]): string {
   }).join('');
 }
 
-// Delta operation: XOR adjacent characters (Tutte's 1+2 method)
 function deltaStream(bits: number[][]): number[][] {
   const result: number[][] = [];
   for (let i = 0; i < bits.length - 1; i++) {
@@ -74,8 +60,6 @@ function deltaStream(bits: number[][]): number[][] {
   return result;
 }
 
-// Score: count how many bits in a stream are 0 (for one bit position)
-// Higher count of 0s = more bias = more likely correct chi position
 function scoreBitPosition(cipherBits: number[][], chiWheel: number[], chiStart: number, bitPos: number): number {
   const delta = deltaStream(cipherBits);
   let zeros = 0;
@@ -87,39 +71,48 @@ function scoreBitPosition(cipherBits: number[][], chiWheel: number[], chiStart: 
   return zeros;
 }
 
-// Generate demo scenario
-function generateDemo(): {
-  plaintext: string;
-  chiWheels: number[][];
-  chiPositions: number[];
-  cipherBits: number[][];
-  cipherText: string;
-} {
-  const plaintext = 'THE QUICK BROWN FOX JUMPED OVER THE LAZY DOG AND THEN RESTED BY THE RIVER';
-  const chiWheels = generateChiWheels(42);
-  const chiPositions = [7, 13, 5, 19, 2]; // Secret starting positions
-  const plainBits = textToBits(plaintext);
-  const cipherBits = lorenzEncrypt(plainBits, chiWheels, chiPositions);
-  const cipherText = bitsToText(cipherBits);
-  return { plaintext, chiWheels, chiPositions, cipherBits, cipherText };
-}
+const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 const ColossusApp: React.FC = () => {
   const [showInfo, setShowInfo] = useState(false);
-  const [demo] = useState(generateDemo);
+  const [tab, setTab] = useState<'encrypt' | 'attack'>('encrypt');
+
+  // Encrypt state
+  const [plaintext, setPlaintext] = useState('THE QUICK BROWN FOX JUMPED OVER THE LAZY DOG AND THEN RESTED BY THE RIVER WAITING FOR THE SIGNAL');
+  const [wheelSeed, setWheelSeed] = useState(42);
+  const [chiPositions, setChiPositions] = useState<number[]>([7, 13, 5, 19, 2]);
+
+  const chiWheels = useMemo(() => generateChiWheels(wheelSeed), [wheelSeed]);
+  const plainBits = useMemo(() => textToBits(plaintext.toUpperCase()), [plaintext]);
+  const cipherBits = useMemo(() => lorenzEncrypt(plainBits, chiWheels, chiPositions), [plainBits, chiWheels, chiPositions]);
+  const cipherText = useMemo(() => bitsToText(cipherBits), [cipherBits]);
+
+  // Attack state
+  const [attackBits, setAttackBits] = useState<number[][]>([]);
+  const [attackWheels, setAttackWheels] = useState<number[][]>([]);
+  const [attackCorrectPos, setAttackCorrectPos] = useState<number[]>([]);
   const [selectedWheel, setSelectedWheel] = useState(0);
   const [running, setRunning] = useState(false);
-  const [speed, setSpeed] = useState(50);
+  const [speed, setSpeed] = useState(70);
   const [currentPos, setCurrentPos] = useState(-1);
   const [scores, setScores] = useState<Map<number, number>>(new Map());
   const [bestPos, setBestPos] = useState<number | null>(null);
   const runRef = useRef(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const wheelSize = CHI_SIZES[selectedWheel];
-  const correctPos = demo.chiPositions[selectedWheel];
+  const loadToAttack = () => {
+    setAttackBits([...cipherBits]);
+    setAttackWheels(chiWheels.map(w => [...w]));
+    setAttackCorrectPos([...chiPositions]);
+    setTab('attack');
+    resetColossus();
+  };
+
+  const activeWheelSize = attackWheels.length > 0 ? attackWheels[selectedWheel]?.length ?? 41 : CHI_SIZES[selectedWheel];
+  const correctPos = attackCorrectPos[selectedWheel] ?? 0;
 
   const runColossus = useCallback(() => {
+    if (attackBits.length === 0 || attackWheels.length === 0) return;
     runRef.current = true;
     setRunning(true);
     setScores(new Map());
@@ -129,31 +122,31 @@ const ColossusApp: React.FC = () => {
     const newScores = new Map<number, number>();
     let best = -1;
     let bestScore = -1;
+    const ws = activeWheelSize;
 
     function step() {
-      if (!runRef.current || pos >= wheelSize) {
+      if (!runRef.current || pos >= ws) {
         setRunning(false);
         runRef.current = false;
         setBestPos(best);
         return;
       }
 
-      const score = scoreBitPosition(demo.cipherBits, demo.chiWheels[selectedWheel], pos, selectedWheel);
-      newScores.set(pos, score);
-      if (score > bestScore) {
-        bestScore = score;
-        best = pos;
+      const batchSize = speed > 80 ? 5 : 1;
+      for (let b = 0; b < batchSize && pos < ws; b++) {
+        const score = scoreBitPosition(attackBits, attackWheels[selectedWheel], pos, selectedWheel);
+        newScores.set(pos, score);
+        if (score > bestScore) { bestScore = score; best = pos; }
+        pos++;
       }
 
-      setCurrentPos(pos);
+      setCurrentPos(pos - 1);
       setScores(new Map(newScores));
 
-      pos++;
-      timerRef.current = setTimeout(step, Math.max(10, 400 - speed * 4));
+      timerRef.current = setTimeout(step, speed > 80 ? 10 : Math.max(10, 400 - speed * 4));
     }
-
     step();
-  }, [demo, selectedWheel, speed, wheelSize]);
+  }, [attackBits, attackWheels, selectedWheel, speed, activeWheelSize]);
 
   const stopColossus = useCallback(() => {
     runRef.current = false;
@@ -172,13 +165,15 @@ const ColossusApp: React.FC = () => {
     return () => { runRef.current = false; if (timerRef.current) clearTimeout(timerRef.current); };
   }, []);
 
-  useEffect(() => {
-    resetColossus();
-  }, [selectedWheel]);
+  useEffect(() => { resetColossus(); }, [selectedWheel]);
 
   const maxScore = Math.max(...(scores.size > 0 ? [...scores.values()] : [1]));
   const minScore = Math.min(...(scores.size > 0 ? [...scores.values()] : [0]));
-  const expectedBaseline = demo.cipherBits.length > 1 ? (demo.cipherBits.length - 1) / 2 : 0;
+  const expectedBaseline = attackBits.length > 1 ? (attackBits.length - 1) / 2 : 0;
+
+  const randomizePositions = () => {
+    setChiPositions(CHI_SIZES.map(size => Math.floor(Math.random() * size)));
+  };
 
   return (
     <div className="flex-1 bg-[#1a1814] text-stone-200 px-4 py-8 sm:px-8">
@@ -220,57 +215,369 @@ const ColossusApp: React.FC = () => {
           </div>
         )}
 
-        {/* Concept */}
-        <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-5 mb-6">
-          <p className="text-sm text-slate-400">
-            <strong className="text-white">Colossus breaks the Lorenz cipher by statistical attack on the Chi wheels.</strong> For each candidate wheel position, it XORs the cipher stream against the candidate Chi pattern and counts the bias. The correct position produces a statistically significant deviation from random (more zeros than expected).
-          </p>
+        {/* Tabs */}
+        <div className="flex gap-2 mb-6">
+          <button
+            onClick={() => setTab('encrypt')}
+            className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors ${
+              tab === 'encrypt'
+                ? 'bg-amber-950/50 text-amber-400 border border-amber-700/50'
+                : 'text-slate-500 border border-slate-800 hover:text-white'
+            }`}
+          >
+            <Lock size={14} className="inline mr-2" />
+            Encrypt with Lorenz
+          </button>
+          <button
+            onClick={() => setTab('attack')}
+            className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors ${
+              tab === 'attack'
+                ? 'bg-red-950/50 text-red-400 border border-red-700/50'
+                : 'text-slate-500 border border-slate-800 hover:text-white'
+            }`}
+          >
+            <Binary size={14} className="inline mr-2" />
+            Run Colossus Attack
+          </button>
         </div>
 
-        {/* Ciphertext display */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
-            <h3 className="text-sm font-bold text-white mb-3">Intercepted Ciphertext</h3>
-            <div className="font-mono text-xs text-red-400 break-all leading-relaxed mb-3">
-              {demo.cipherText}
+        {/* ═══════════ ENCRYPT TAB ═══════════ */}
+        {tab === 'encrypt' && (
+          <div className="space-y-6">
+            <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-5">
+              <p className="text-sm text-slate-400">
+                <strong className="text-white">Encrypt a message with a simplified Lorenz</strong> (Chi wheels only). Type any message, set the secret Chi wheel positions, then send the ciphertext to Colossus for statistical attack.
+                Longer messages give Colossus stronger statistical signal — try 50+ characters.
+              </p>
             </div>
-            <div className="text-[10px] text-slate-500">{demo.cipherText.length} characters (Baudot/ITA2 encoded)</div>
-          </div>
 
-          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
-            <h3 className="text-sm font-bold text-white mb-3">Baudot / ITA2 Binary</h3>
-            <div className="font-mono text-[10px] leading-relaxed max-h-32 overflow-y-auto">
-              {demo.cipherBits.slice(0, 20).map((bits, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <span className="text-red-400 w-4">{demo.cipherText[i]}</span>
-                  <span className="text-slate-500">→</span>
-                  {bits.map((b, j) => (
-                    <span key={j} className={b ? 'text-green-400' : 'text-slate-600'}>{b}</span>
-                  ))}
+            {/* Plaintext */}
+            <div>
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Plaintext (letters and spaces, Baudot/ITA2 encoded)</label>
+              <textarea
+                value={plaintext}
+                onChange={e => setPlaintext(e.target.value)}
+                className="w-full h-24 bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 font-mono text-sm text-white resize-none focus:outline-none focus:border-amber-700/50"
+                placeholder="Type your message..."
+              />
+              <div className="text-xs text-slate-500 mt-1">{plaintext.length} characters</div>
+            </div>
+
+            {/* Chi wheel positions */}
+            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-bold text-white">Chi Wheel Starting Positions (secret key)</h3>
+                <button
+                  onClick={randomizePositions}
+                  className="px-3 py-1 text-xs border border-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors"
+                >
+                  Randomize
+                </button>
+              </div>
+              <div className="flex gap-4">
+                {CHI_SIZES.map((size, i) => (
+                  <div key={i} className="text-center">
+                    <div className="text-[10px] text-slate-500 mb-1">χ{i + 1} (0-{size - 1})</div>
+                    <div className="flex flex-col items-center gap-1">
+                      <button
+                        onClick={() => { const p = [...chiPositions]; p[i] = (p[i] + 1) % size; setChiPositions(p); }}
+                        className="text-slate-500 hover:text-white"
+                      >▲</button>
+                      <div className="w-12 h-10 rounded-lg bg-slate-800 border border-amber-700/40 flex items-center justify-center font-mono text-lg font-bold text-amber-400">
+                        {chiPositions[i]}
+                      </div>
+                      <button
+                        onClick={() => { const p = [...chiPositions]; p[i] = (p[i] - 1 + size) % size; setChiPositions(p); }}
+                        className="text-slate-500 hover:text-white"
+                      >▼</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Wheel seed */}
+            <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-4">
+              <div className="flex items-center gap-4">
+                <label className="text-xs font-bold text-slate-400 uppercase">Wheel Pattern Seed</label>
+                <input
+                  type="number"
+                  value={wheelSeed}
+                  onChange={e => setWheelSeed(parseInt(e.target.value) || 0)}
+                  className="w-24 bg-slate-800 border border-slate-700 rounded-lg px-3 py-1 font-mono text-sm text-white focus:outline-none"
+                />
+                <span className="text-xs text-slate-500">Changes the pin pattern on all 5 Chi wheels</span>
+              </div>
+            </div>
+
+            {/* Ciphertext output */}
+            <div>
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Lorenz Ciphertext</label>
+              <div className="bg-slate-900/80 border border-amber-900/30 rounded-xl px-4 py-3 font-mono text-sm text-amber-400 break-all min-h-[3rem]">
+                {cipherText}
+              </div>
+              <div className="text-xs text-slate-500 mt-1">{cipherText.length} characters</div>
+            </div>
+
+            {/* Baudot binary preview */}
+            <details>
+              <summary className="text-xs text-slate-500 cursor-pointer hover:text-slate-300">Show Baudot/ITA2 binary</summary>
+              <div className="mt-2 bg-slate-900/40 border border-slate-800 rounded-xl p-4 font-mono text-[10px] max-h-48 overflow-y-auto">
+                {cipherBits.slice(0, 30).map((bits, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <span className="text-red-400 w-4">{cipherText[i]}</span>
+                    <span className="text-slate-600">→</span>
+                    {bits.map((b, j) => (
+                      <span key={j} className={b ? 'text-green-400' : 'text-slate-600'}>{b}</span>
+                    ))}
+                  </div>
+                ))}
+                {cipherBits.length > 30 && <div className="text-slate-600">... {cipherBits.length - 30} more</div>}
+              </div>
+            </details>
+
+            <button
+              onClick={loadToAttack}
+              className="px-6 py-3 bg-red-950/50 border border-red-700/50 rounded-lg text-red-400 font-medium hover:bg-red-900/40 transition-colors"
+            >
+              Send to Colossus →
+            </button>
+          </div>
+        )}
+
+        {/* ═══════════ ATTACK TAB ═══════════ */}
+        {tab === 'attack' && (
+          <div className="space-y-6">
+            {attackBits.length === 0 ? (
+              <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-8 text-center">
+                <p className="text-slate-400 mb-4">No intercepted message loaded. Encrypt a message first, then send it to Colossus.</p>
+                <button
+                  onClick={() => setTab('encrypt')}
+                  className="px-4 py-2 border border-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors"
+                >
+                  Go to Encrypt tab
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-5">
+                  <p className="text-sm text-slate-400">
+                    <strong className="text-white">Colossus attacks one Chi wheel at a time.</strong> For each candidate position, it XORs the cipher delta against the candidate Chi delta and counts the statistical bias. The correct position shows significantly more zeros than random chance (~{expectedBaseline.toFixed(0)}).
+                    Message length: <strong className="text-white">{attackBits.length}</strong> characters.
+                  </p>
                 </div>
-              ))}
-              {demo.cipherBits.length > 20 && (
-                <div className="text-slate-600">... {demo.cipherBits.length - 20} more characters</div>
-              )}
-            </div>
+
+                {/* Intercepted message preview */}
+                <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
+                  <h3 className="text-sm font-bold text-white mb-2">Intercepted Ciphertext</h3>
+                  <div className="font-mono text-xs text-red-400 break-all leading-relaxed">
+                    {bitsToText(attackBits)}
+                  </div>
+                  <div className="text-[10px] text-slate-500 mt-1">{attackBits.length} characters</div>
+                </div>
+
+                {/* Chi Wheel Selection */}
+                <div>
+                  <h3 className="text-sm font-bold text-slate-300 mb-3">Select Chi Wheel to Attack</h3>
+                  <div className="flex gap-3">
+                    {CHI_SIZES.map((size, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setSelectedWheel(i)}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          selectedWheel === i
+                            ? 'bg-red-950/50 text-red-400 border border-red-700/50'
+                            : 'text-slate-500 border border-slate-800 hover:text-white hover:border-slate-600'
+                        }`}
+                      >
+                        χ{i + 1} ({size} pins)
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Wheel pattern */}
+                <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-4">
+                  <h4 className="text-xs font-bold text-slate-400 uppercase mb-2">Chi-{selectedWheel + 1} Pattern ({activeWheelSize} pins)</h4>
+                  <div className="flex gap-[2px] flex-wrap">
+                    {(attackWheels[selectedWheel] || []).map((bit, i) => (
+                      <div
+                        key={i}
+                        className={`w-4 h-4 rounded-sm text-[8px] flex items-center justify-center font-mono ${
+                          bit ? 'bg-green-900/40 text-green-400' : 'bg-slate-800 text-slate-600'
+                        }`}
+                      >
+                        {bit}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Controls */}
+                <div className="flex items-center gap-4">
+                  {!running ? (
+                    <button
+                      onClick={runColossus}
+                      className="flex items-center gap-2 px-6 py-2 bg-red-950/50 border border-red-700/50 rounded-lg text-red-400 font-medium hover:bg-red-900/40 transition-colors"
+                    >
+                      <Play size={16} /> Run Colossus ({activeWheelSize} positions)
+                    </button>
+                  ) : (
+                    <button
+                      onClick={stopColossus}
+                      className="flex items-center gap-2 px-6 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-300 font-medium hover:bg-slate-700 transition-colors"
+                    >
+                      <Pause size={16} /> Pause
+                    </button>
+                  )}
+                  <button
+                    onClick={resetColossus}
+                    className="flex items-center gap-2 px-4 py-2 border border-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors"
+                  >
+                    <RotateCcw size={16} /> Reset
+                  </button>
+                  <div className="flex items-center gap-2 ml-auto">
+                    <span className="text-xs text-slate-500">Speed</span>
+                    <input
+                      type="range" min={1} max={100} value={speed}
+                      onChange={e => setSpeed(parseInt(e.target.value))}
+                      className="w-24 accent-red-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Score chart */}
+                <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6">
+                  <h3 className="text-sm font-bold text-white mb-2">Chi-{selectedWheel + 1} Position Scores</h3>
+                  <p className="text-xs text-slate-500 mb-4">
+                    Each bar = count of zeros in delta-XOR. Higher = more bias = more likely correct. Baseline: ~{expectedBaseline.toFixed(0)}.
+                  </p>
+                  <div className="flex items-end gap-[2px] h-48">
+                    {Array.from({ length: activeWheelSize }, (_, i) => {
+                      const score = scores.get(i);
+                      const isCurrent = i === currentPos && running;
+                      const isBest = bestPos !== null && i === bestPos;
+                      const barH = score !== undefined
+                        ? Math.max(2, ((score - minScore + 1) / (maxScore - minScore + 1)) * 100)
+                        : 0;
+                      return (
+                        <div key={i} className="flex-1 flex flex-col items-center justify-end h-full group relative">
+                          {score !== undefined && (
+                            <div className="absolute bottom-full mb-1 hidden group-hover:block bg-slate-700 rounded px-2 py-1 text-[9px] z-10 whitespace-nowrap">
+                              Pos {i}: {score} zeros{i === correctPos && ' (CORRECT)'}
+                            </div>
+                          )}
+                          <div
+                            className={`w-full rounded-t-sm transition-all ${
+                              isCurrent ? 'bg-yellow-500' :
+                              isBest ? 'bg-green-500' :
+                              score !== undefined && score > expectedBaseline + 3 ? 'bg-red-500/70' :
+                              score !== undefined ? 'bg-slate-600/50' : 'bg-slate-800/30'
+                            }`}
+                            style={{ height: score !== undefined ? `${barH}%` : '0%' }}
+                          />
+                          {(i % 5 === 0 || isBest) && (
+                            <div className={`text-[7px] mt-0.5 ${isBest ? 'text-green-400 font-bold' : 'text-slate-600'}`}>{i}</div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="flex items-center gap-4 mt-3 text-[10px] text-slate-500">
+                    <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm bg-green-500" /><span>Best candidate</span></div>
+                    <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm bg-red-500/70" /><span>Above baseline</span></div>
+                    <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm bg-slate-600/50" /><span>Near baseline</span></div>
+                  </div>
+                </div>
+
+                {/* Results */}
+                {bestPos !== null && !running && (
+                  <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6">
+                    <h3 className="text-lg font-bold text-white mb-4">Colossus Result</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="bg-green-950/30 border border-green-800/40 rounded-lg p-4">
+                        <div className="text-xs text-green-400/70 uppercase font-bold mb-1">Best Candidate</div>
+                        <div className="text-3xl font-mono font-bold text-green-400">Position {bestPos}</div>
+                        <div className="text-sm text-slate-400 mt-1">Score: {scores.get(bestPos)} zeros</div>
+                      </div>
+                      <div className={`rounded-lg p-4 ${bestPos === correctPos ? 'bg-green-950/30 border border-green-800/40' : 'bg-yellow-950/30 border border-yellow-800/40'}`}>
+                        <div className={`text-xs uppercase font-bold mb-1 ${bestPos === correctPos ? 'text-green-400/70' : 'text-yellow-400/70'}`}>
+                          {bestPos === correctPos ? 'Correct!' : 'Actual Position'}
+                        </div>
+                        <div className={`text-3xl font-mono font-bold ${bestPos === correctPos ? 'text-green-400' : 'text-yellow-400'}`}>
+                          {bestPos === correctPos ? 'MATCH' : `Position ${correctPos}`}
+                        </div>
+                        <div className="text-sm text-slate-400 mt-1">
+                          {bestPos === correctPos
+                            ? 'Colossus found the correct Chi wheel position!'
+                            : `Correct position scored: ${scores.get(correctPos) ?? '?'} zeros`}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 pt-4 border-t border-slate-800">
+                      <h4 className="text-xs font-bold text-slate-400 uppercase mb-2">Top 5 Candidates</h4>
+                      <div className="flex gap-3 flex-wrap">
+                        {[...scores.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5).map(([pos, score]) => (
+                          <div key={pos} className={`px-4 py-2 rounded-lg border text-center ${
+                            pos === correctPos ? 'bg-green-950/40 border-green-700/50' : 'bg-slate-800/50 border-slate-700'
+                          }`}>
+                            <div className={`text-lg font-mono font-bold ${pos === correctPos ? 'text-green-400' : 'text-slate-300'}`}>{pos}</div>
+                            <div className="text-[10px] text-slate-500">{score} zeros</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <p className="text-xs text-slate-500 mt-4">
+                      The operator would note the top candidates, then attack the remaining 4 Chi wheels, and finally the Psi and Motor wheels.
+                    </p>
+                  </div>
+                )}
+
+                {/* Delta explanation */}
+                <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-5">
+                  <h3 className="text-sm font-bold text-white mb-3">The Delta Operation (Tutte's 1+2 Break)</h3>
+                  <div className="font-mono text-xs space-y-2">
+                    <div className="text-slate-400">
+                      <span className="text-slate-500">Cipher[n]:  </span>
+                      {attackBits.slice(0, 8).map((bits, i) => (
+                        <span key={i} className="mr-2">{bits.map((b, j) => <span key={j} className={b ? 'text-green-400' : 'text-slate-600'}>{b}</span>)}</span>
+                      ))}
+                    </div>
+                    <div className="text-slate-400">
+                      <span className="text-slate-500">Cipher[n+1]:</span>
+                      {attackBits.slice(1, 9).map((bits, i) => (
+                        <span key={i} className="mr-2">{bits.map((b, j) => <span key={j} className={b ? 'text-green-400' : 'text-slate-600'}>{b}</span>)}</span>
+                      ))}
+                    </div>
+                    <div className="text-red-400">
+                      <span className="text-slate-500">Delta (XOR):</span>
+                      {deltaStream(attackBits).slice(0, 8).map((bits, i) => (
+                        <span key={i} className="mr-2">{bits.map((b, j) => <span key={j} className={b ? 'text-yellow-400' : 'text-slate-600'}>{b}</span>)}</span>
+                      ))}
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-3">
+                    The delta cancels out the Psi contribution (Psi wheels often don't step), leaving a pattern correlated with the Chi wheel delta.
+                  </p>
+                </div>
+              </>
+            )}
           </div>
-        </div>
+        )}
 
         {/* ITA2 Reference */}
-        <details className="mb-6">
-          <summary className="text-xs text-slate-500 cursor-pointer hover:text-slate-300 transition-colors">
-            Show Baudot/ITA2 encoding table
-          </summary>
+        <details className="mt-6">
+          <summary className="text-xs text-slate-500 cursor-pointer hover:text-slate-300">Show Baudot/ITA2 encoding table</summary>
           <div className="mt-2 bg-slate-900/40 border border-slate-800 rounded-xl p-4">
             <div className="grid grid-cols-9 gap-1 font-mono text-[10px]">
               {Object.entries(ITA2_LETTERS).filter(([k]) => k !== '/').map(([letter, code]) => (
                 <div key={letter} className="text-center py-1">
                   <div className="text-white font-bold">{letter === ' ' ? '␣' : letter}</div>
                   <div className="text-slate-500">
-                    {String(code).padStart(5, '0').split('').map((b, i) => (
-                      <span key={i} className={parseInt(b) ? 'text-green-500' : 'text-slate-700'}>
-                        {((code >> (4 - i)) & 1)}
-                      </span>
+                    {[4, 3, 2, 1, 0].map(bit => (
+                      <span key={bit} className={(code >> bit) & 1 ? 'text-green-500' : 'text-slate-700'}>{(code >> bit) & 1}</span>
                     ))}
                   </div>
                 </div>
@@ -278,254 +585,6 @@ const ColossusApp: React.FC = () => {
             </div>
           </div>
         </details>
-
-        {/* Chi Wheel Selection */}
-        <div className="mb-6">
-          <h3 className="text-sm font-bold text-slate-300 mb-3">Select Chi Wheel to Attack</h3>
-          <div className="flex gap-3">
-            {CHI_SIZES.map((size, i) => (
-              <button
-                key={i}
-                onClick={() => setSelectedWheel(i)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  selectedWheel === i
-                    ? 'bg-red-950/50 text-red-400 border border-red-700/50'
-                    : 'text-slate-500 border border-slate-800 hover:text-white hover:border-slate-600'
-                }`}
-              >
-                χ{i + 1} ({size} pins)
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Chi Wheel Pattern */}
-        <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-4 mb-6">
-          <h4 className="text-xs font-bold text-slate-400 uppercase mb-2">Chi-{selectedWheel + 1} Wheel Pattern ({wheelSize} pins)</h4>
-          <div className="flex gap-[2px] flex-wrap">
-            {demo.chiWheels[selectedWheel].map((bit, i) => (
-              <div
-                key={i}
-                className={`w-4 h-4 rounded-sm text-[8px] flex items-center justify-center font-mono ${
-                  bit ? 'bg-green-900/40 text-green-400' : 'bg-slate-800 text-slate-600'
-                } ${i === correctPos ? 'ring-1 ring-yellow-500' : ''}`}
-              >
-                {bit}
-              </div>
-            ))}
-          </div>
-          <div className="text-[10px] text-slate-600 mt-2">
-            Secret starting position: hidden (the Colossus must find it)
-          </div>
-        </div>
-
-        {/* Controls */}
-        <div className="flex items-center gap-4 mb-6">
-          {!running ? (
-            <button
-              onClick={runColossus}
-              className="flex items-center gap-2 px-6 py-2 bg-red-950/50 border border-red-700/50 rounded-lg text-red-400 font-medium hover:bg-red-900/40 transition-colors"
-            >
-              <Play size={16} /> Run Colossus
-            </button>
-          ) : (
-            <button
-              onClick={stopColossus}
-              className="flex items-center gap-2 px-6 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-300 font-medium hover:bg-slate-700 transition-colors"
-            >
-              <Pause size={16} /> Pause
-            </button>
-          )}
-          <button
-            onClick={resetColossus}
-            className="flex items-center gap-2 px-4 py-2 border border-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors"
-          >
-            <RotateCcw size={16} /> Reset
-          </button>
-          <div className="flex items-center gap-2 ml-auto">
-            <span className="text-xs text-slate-500">Speed</span>
-            <input
-              type="range"
-              min={1}
-              max={100}
-              value={speed}
-              onChange={e => setSpeed(parseInt(e.target.value))}
-              className="w-24 accent-red-500"
-            />
-          </div>
-        </div>
-
-        {/* Score Chart */}
-        <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 mb-6">
-          <h3 className="text-sm font-bold text-white mb-2">
-            Chi-{selectedWheel + 1} Position Scores
-          </h3>
-          <p className="text-xs text-slate-500 mb-4">
-            Each bar shows the count of zeros in the delta-XOR result. Higher = more bias = more likely correct.
-            Baseline (random): ~{expectedBaseline.toFixed(0)} zeros.
-          </p>
-
-          <div className="flex items-end gap-[2px] h-48">
-            {Array.from({ length: wheelSize }, (_, i) => {
-              const score = scores.get(i);
-              const isCurrent = i === currentPos && running;
-              const isBest = i === bestPos;
-              const isCorrect = i === correctPos;
-              const barH = score !== undefined
-                ? Math.max(2, ((score - minScore + 1) / (maxScore - minScore + 1)) * 100)
-                : 0;
-
-              return (
-                <div
-                  key={i}
-                  className="flex-1 flex flex-col items-center justify-end h-full group relative"
-                >
-                  {/* Tooltip */}
-                  {score !== undefined && (
-                    <div className="absolute bottom-full mb-1 hidden group-hover:block bg-slate-700 rounded px-2 py-1 text-[9px] z-10 whitespace-nowrap">
-                      Pos {i}: {score} zeros
-                      {isCorrect && ' (CORRECT)'}
-                    </div>
-                  )}
-                  <div
-                    className={`w-full rounded-t-sm transition-all ${
-                      isCurrent ? 'bg-yellow-500' :
-                      isBest ? 'bg-green-500' :
-                      score !== undefined && score > expectedBaseline + 3 ? 'bg-red-500/70' :
-                      score !== undefined ? 'bg-slate-600/50' :
-                      'bg-slate-800/30'
-                    }`}
-                    style={{ height: score !== undefined ? `${barH}%` : '0%' }}
-                  />
-                  {(i % 5 === 0 || isBest) && (
-                    <div className={`text-[7px] mt-0.5 ${isBest ? 'text-green-400 font-bold' : 'text-slate-600'}`}>
-                      {i}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Baseline indicator */}
-          <div className="flex items-center gap-4 mt-3 text-[10px] text-slate-500">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-sm bg-green-500" />
-              <span>Best candidate</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-sm bg-red-500/70" />
-              <span>Above baseline</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-sm bg-slate-600/50" />
-              <span>Near baseline</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Results */}
-        {bestPos !== null && !running && (
-          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6">
-            <h3 className="text-lg font-bold text-white mb-4">Colossus Result</h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-green-950/30 border border-green-800/40 rounded-lg p-4">
-                <div className="text-xs text-green-400/70 uppercase font-bold mb-1">Best Candidate</div>
-                <div className="text-3xl font-mono font-bold text-green-400">Position {bestPos}</div>
-                <div className="text-sm text-slate-400 mt-1">Score: {scores.get(bestPos)} zeros</div>
-              </div>
-
-              <div className={`rounded-lg p-4 ${bestPos === correctPos ? 'bg-green-950/30 border border-green-800/40' : 'bg-yellow-950/30 border border-yellow-800/40'}`}>
-                <div className={`text-xs uppercase font-bold mb-1 ${bestPos === correctPos ? 'text-green-400/70' : 'text-yellow-400/70'}`}>
-                  {bestPos === correctPos ? 'Correct!' : 'Actual Position'}
-                </div>
-                <div className={`text-3xl font-mono font-bold ${bestPos === correctPos ? 'text-green-400' : 'text-yellow-400'}`}>
-                  {bestPos === correctPos ? 'MATCH' : `Position ${correctPos}`}
-                </div>
-                <div className="text-sm text-slate-400 mt-1">
-                  {bestPos === correctPos
-                    ? 'Colossus found the correct Chi wheel position!'
-                    : `Correct position scored: ${scores.get(correctPos) ?? '?'} zeros`
-                  }
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-4 text-sm text-slate-400">
-              <p>
-                In practice, the Colossus operator would note the top candidates printed by the machine.
-                They would then repeat the process for the other 4 Chi wheels, and finally attempt to break
-                the Psi and Motor wheels — a process that could take hours even with Colossus's speed.
-              </p>
-            </div>
-
-            {/* Top candidates */}
-            <div className="mt-4 pt-4 border-t border-slate-800">
-              <h4 className="text-xs font-bold text-slate-400 uppercase mb-2">Top 5 Candidates</h4>
-              <div className="flex gap-3">
-                {[...scores.entries()]
-                  .sort((a, b) => b[1] - a[1])
-                  .slice(0, 5)
-                  .map(([pos, score]) => (
-                    <div
-                      key={pos}
-                      className={`px-4 py-2 rounded-lg border text-center ${
-                        pos === correctPos
-                          ? 'bg-green-950/40 border-green-700/50'
-                          : 'bg-slate-800/50 border-slate-700'
-                      }`}
-                    >
-                      <div className={`text-lg font-mono font-bold ${pos === correctPos ? 'text-green-400' : 'text-slate-300'}`}>
-                        {pos}
-                      </div>
-                      <div className="text-[10px] text-slate-500">{score} zeros</div>
-                    </div>
-                  ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Delta Operation Explanation */}
-        <div className="mt-6 bg-slate-900/40 border border-slate-800 rounded-xl p-5">
-          <h3 className="text-sm font-bold text-white mb-3">The Delta Operation (Tutte's 1+2 Break)</h3>
-          <div className="font-mono text-xs space-y-2">
-            <div className="text-slate-400">
-              <span className="text-slate-500">Cipher[n]:</span>{' '}
-              {demo.cipherBits.slice(0, 8).map((bits, i) => (
-                <span key={i} className="mr-2">
-                  {bits.map((b, j) => (
-                    <span key={j} className={b ? 'text-green-400' : 'text-slate-600'}>{b}</span>
-                  ))}
-                </span>
-              ))}
-            </div>
-            <div className="text-slate-400">
-              <span className="text-slate-500">Cipher[n+1]:</span>{' '}
-              {demo.cipherBits.slice(1, 9).map((bits, i) => (
-                <span key={i} className="mr-2">
-                  {bits.map((b, j) => (
-                    <span key={j} className={b ? 'text-green-400' : 'text-slate-600'}>{b}</span>
-                  ))}
-                </span>
-              ))}
-            </div>
-            <div className="text-red-400">
-              <span className="text-slate-500">Delta (XOR):</span>{' '}
-              {deltaStream(demo.cipherBits).slice(0, 8).map((bits, i) => (
-                <span key={i} className="mr-2">
-                  {bits.map((b, j) => (
-                    <span key={j} className={b ? 'text-yellow-400' : 'text-slate-600'}>{b}</span>
-                  ))}
-                </span>
-              ))}
-            </div>
-          </div>
-          <p className="text-xs text-slate-500 mt-3">
-            The delta cancels out the Psi wheel contribution (because Psi wheels often don't step), leaving a pattern that correlates with the Chi wheel delta. This is the statistical bias Colossus detects.
-          </p>
-        </div>
       </div>
     </div>
   );

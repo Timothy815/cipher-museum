@@ -29,8 +29,8 @@ function chaocipherStep(state: ChaocipherState, plainChar: string, decrypt: bool
   }
 
   // Permute LEFT alphabet:
-  // 1. Rotate left alphabet so the output position is at index 0, then shift one more
-  const leftShift = leftIndex + 1;
+  // 1. Rotate left alphabet so the output position is at zenith (index 0)
+  const leftShift = leftIndex;
   left = [...left.slice(leftShift), ...left.slice(0, leftShift)];
   // 2. Extract element at index 1, insert it after index 13 (between positions 13 and 14)
   const extracted = left.splice(1, 1)[0];
