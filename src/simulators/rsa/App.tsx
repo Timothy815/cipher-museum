@@ -153,7 +153,7 @@ const App: React.FC = () => {
 
   const inputClass = 'bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-violet-700/50 w-full';
   const labelClass = 'text-xs font-bold text-slate-400 uppercase tracking-wider';
-  const panelClass = 'bg-slate-900/60 border border-slate-800 rounded-xl p-5';
+  const panelClass = 'bg-slate-900/60 border border-slate-800 rounded-xl p-5 overflow-hidden';
 
   // ── Key generation ──────────────────────────────────────────────
 
@@ -385,7 +385,7 @@ const App: React.FC = () => {
           </div>
 
           {/* Computed values step-by-step */}
-          <div className="space-y-2 font-mono text-sm [&_span]:break-all">
+          <div className="space-y-2 font-mono text-sm break-all">
             <div className="bg-slate-900/80 rounded-lg p-3 space-y-1">
               <div className="text-slate-500 text-xs">1. Compute n = p x q</div>
               <div className="text-white">n = {pStr} x {qStr} = <span className="text-violet-300 font-bold">{n.toString()}</span></div>
@@ -434,18 +434,18 @@ const App: React.FC = () => {
 
           {/* Key display */}
           {keyValid && d !== null && (
-            <div className="grid grid-cols-2 gap-4 mt-4">
-              <div className="bg-emerald-950/20 border border-emerald-800/40 rounded-xl p-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              <div className="bg-emerald-950/20 border border-emerald-800/40 rounded-xl p-4 min-w-0">
                 <div className="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-2 flex items-center gap-1.5"><Unlock size={14} /> Public Key</div>
-                <div className="font-mono text-sm text-white space-y-1">
+                <div className="font-mono text-sm text-white space-y-1 break-all">
                   <div>e = <span className="text-emerald-300">{eStr}</span></div>
                   <div>n = <span className="text-emerald-300">{n.toString()}</span></div>
                 </div>
                 <div className="text-[10px] text-slate-500 mt-2">Share this freely — anyone can encrypt with it</div>
               </div>
-              <div className="bg-red-950/20 border border-red-800/40 rounded-xl p-4">
+              <div className="bg-red-950/20 border border-red-800/40 rounded-xl p-4 min-w-0">
                 <div className="text-xs font-bold text-red-400 uppercase tracking-wider mb-2 flex items-center gap-1.5"><Lock size={14} /> Private Key</div>
-                <div className="font-mono text-sm text-white space-y-1">
+                <div className="font-mono text-sm text-white space-y-1 break-all">
                   <div>d = <span className="text-red-300">{d.toString()}</span></div>
                   <div>n = <span className="text-red-300">{n.toString()}</span></div>
                 </div>
@@ -593,7 +593,7 @@ const App: React.FC = () => {
         {/* ── Factoring Challenge ────────────────────────────── */}
         <div className={panelClass}>
           <h2 className="text-sm font-bold text-violet-400 uppercase tracking-wider mb-4">Step 3 — Factoring Challenge</h2>
-          <p className="text-xs text-slate-400 mb-4">
+          <p className="text-xs text-slate-400 mb-4 break-all">
             An attacker knows only the public key <span className="text-white font-mono">(e={eStr}, n={n.toString()})</span>. To break RSA, they must factor <span className="text-white font-mono">n</span> back into <span className="text-white font-mono">p x q</span>, then compute the private key.
           </p>
 
@@ -614,7 +614,7 @@ const App: React.FC = () => {
                   <div className="text-sm font-bold text-red-400 flex items-center gap-2">
                     <ShieldAlert size={16} /> Key Broken!
                   </div>
-                  <div className="font-mono text-xs space-y-1">
+                  <div className="font-mono text-xs space-y-1 break-all">
                     <div className="text-white">Found: {n.toString()} = <span className="text-red-300">{factorResult.p.toString()}</span> x <span className="text-red-300">{factorResult.q.toString()}</span></div>
                     <div className="text-slate-400">Trial divisions tested: <span className="text-white">{factorResult.steps.toLocaleString()}</span></div>
                     <div className="text-slate-400">Time: <span className="text-white">{factorResult.timeMs.toFixed(2)} ms</span></div>
@@ -640,7 +640,7 @@ const App: React.FC = () => {
                   <div className="text-sm font-bold text-emerald-400 flex items-center gap-2">
                     <Shield size={16} /> Key Held!
                   </div>
-                  <div className="font-mono text-xs space-y-1">
+                  <div className="font-mono text-xs space-y-1 break-all">
                     <div className="text-white">Could not factor {n.toString()} within {factorResult.steps.toLocaleString()} trial divisions</div>
                     <div className="text-slate-400">Time: <span className="text-white">{factorResult.timeMs.toFixed(2)} ms</span></div>
                     <div className="text-emerald-400 text-xs mt-1">Larger keys are exponentially harder to break. Real RSA uses 2048-4096 bit keys (600+ digits).</div>
@@ -690,7 +690,7 @@ const App: React.FC = () => {
                       ? <span className="text-[10px] text-violet-400 bg-violet-950/50 px-1.5 py-0.5 rounded border border-violet-800/50">PUBLIC</span>
                       : <span className="text-[10px] text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700">SECRET</span>}
                   </div>
-                  <div className="text-xs text-slate-400 font-mono mt-0.5">{s.detail}</div>
+                  <div className="text-xs text-slate-400 font-mono mt-0.5 break-all">{s.detail}</div>
                 </div>
               </div>
             ))}
