@@ -15,20 +15,35 @@ const ENGLISH_FREQ: Record<string, number> = {
 const ENGLISH_BIGRAMS = ['TH', 'HE', 'IN', 'ER', 'AN', 'RE', 'ON', 'AT', 'EN', 'ND', 'TI', 'ES', 'OR', 'TE', 'OF', 'ED', 'IS', 'IT', 'AL', 'AR'];
 const ENGLISH_TRIGRAMS = ['THE', 'AND', 'ING', 'HER', 'HAT', 'HIS', 'THA', 'ERE', 'FOR', 'ENT', 'ION', 'TER', 'WAS', 'YOU', 'ITH'];
 
-const PRESETS = [
+const SAMPLE_PRESETS = [
   {
-    name: 'Caesar (shift 3)',
-    text: 'WKHUH LV QR GDQJHU WKDW D VWURQJ PDQ ZLOO EH XQDEOH WR PDNH XS KLV PLQG LQ D FULVLV EXW WKHUH LV D HQRUPRXV GDQJHU WKDW D ZHDN RQH ZLOO',
-  },
-  {
-    name: 'Monoalphabetic substitution',
+    name: 'Monoalphabetic',
     text: 'XKJR JT QAX RQAYBK XKZX ZQ JQXRCCJBRQX DZQ SAQQJQB ZQH FJHH TRDO TRQTR AE OQAVCRHBR VJCC URDJQ XA EJX XABHXKRO ZCC XKR UJXT ZQH SJRDRT AE JQEAODZXJAQ KR KZT ZDMYJORH',
   },
-  {
-    name: 'Vigenère (key: SECRET)',
-    text: 'DLGX MW YCWVVBLT DC FVOVVVW XJSX XJMW EMTTVI MEKWWEXI RY XJIX ECP ZLE TSKMWMLV ULI GVRMW XJIX ILHSVM',
-  },
 ];
+
+function caesarEncrypt(text: string, shift: number): string {
+  return text.toUpperCase().split('').map(c => {
+    if (c >= 'A' && c <= 'Z') {
+      return String.fromCharCode(((c.charCodeAt(0) - 65 + shift) % 26 + 26) % 26 + 65);
+    }
+    return c;
+  }).join('');
+}
+
+function vigenereEncrypt(text: string, key: string): string {
+  const k = key.toUpperCase().replace(/[^A-Z]/g, '');
+  if (k.length === 0) return text.toUpperCase();
+  let ki = 0;
+  return text.toUpperCase().split('').map(c => {
+    if (c >= 'A' && c <= 'Z') {
+      const shift = k.charCodeAt(ki % k.length) - 65;
+      ki++;
+      return String.fromCharCode(((c.charCodeAt(0) - 65 + shift) % 26) + 65);
+    }
+    return c;
+  }).join('');
+}
 
 function countLetters(text: string): Record<string, number> {
   const counts: Record<string, number> = {};
@@ -74,26 +89,41 @@ function calcChiSquared(text: string): number {
   return chi;
 }
 
+const DEFAULT_PLAINTEXT = 'THERE IS NO DANGER THAT A STRONG MAN WILL BE UNABLE TO MAKE UP HIS MIND IN A CRISIS BUT THERE IS AN ENORMOUS DANGER THAT A WEAK ONE WILL';
+
 const FrequencyAnalysisApp: React.FC = () => {
-  const [input, setInput] = useState(PRESETS[0].text);
+  const [input, setInput] = useState('');
   const [showInfo, setShowInfo] = useState(false);
   const [tab, setTab] = useState<'letters' | 'bigrams' | 'trigrams'>('letters');
+  const [encryptMode, setEncryptMode] = useState<'caesar' | 'vigenere' | 'custom'>('caesar');
+  const [plaintext, setPlaintext] = useState(DEFAULT_PLAINTEXT);
+  const [caesarShift, setCaesarShift] = useState(3);
+  const [vigKey, setVigKey] = useState('SECRET');
 
-  const clean = useMemo(() => input.toUpperCase().replace(/[^A-Z]/g, ''), [input]);
-  const letterCounts = useMemo(() => countLetters(input), [input]);
+  // Auto-encrypt when parameters change
+  const encryptedText = useMemo(() => {
+    if (encryptMode === 'caesar') return caesarEncrypt(plaintext, caesarShift);
+    if (encryptMode === 'vigenere') return vigenereEncrypt(plaintext, vigKey);
+    return input;
+  }, [encryptMode, plaintext, caesarShift, vigKey, input]);
+
+  // Keep analysis input in sync for caesar/vigenere modes
+  const analysisText = encryptMode === 'custom' ? input : encryptedText;
+
+  const letterCounts = useMemo(() => countLetters(analysisText), [analysisText]);
   const totalLetters = useMemo(() => Object.values(letterCounts).reduce((a, b) => a + b, 0), [letterCounts]);
-  const ioc = useMemo(() => calcIoC(input), [input]);
-  const chiSq = useMemo(() => calcChiSquared(input), [input]);
+  const ioc = useMemo(() => calcIoC(analysisText), [analysisText]);
+  const chiSq = useMemo(() => calcChiSquared(analysisText), [analysisText]);
 
   const bigrams = useMemo(() => {
-    const map = countNgrams(input, 2);
+    const map = countNgrams(analysisText, 2);
     return [...map.entries()].sort((a, b) => b[1] - a[1]).slice(0, 20);
-  }, [input]);
+  }, [analysisText]);
 
   const trigrams = useMemo(() => {
-    const map = countNgrams(input, 3);
+    const map = countNgrams(analysisText, 3);
     return [...map.entries()].sort((a, b) => b[1] - a[1]).slice(0, 15);
-  }, [input]);
+  }, [analysisText]);
 
   const maxCount = Math.max(...Object.values(letterCounts), 1);
   const maxEnglishFreq = Math.max(...Object.values(ENGLISH_FREQ));
@@ -140,29 +170,134 @@ const FrequencyAnalysisApp: React.FC = () => {
           </div>
         )}
 
-        {/* Input */}
-        <div className="mb-6">
-          <div className="flex items-center gap-3 mb-3">
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Ciphertext</label>
-            <div className="flex gap-2">
-              {PRESETS.map(p => (
-                <button
-                  key={p.name}
-                  onClick={() => setInput(p.text)}
-                  className="text-[10px] px-2 py-1 rounded border border-slate-700 text-slate-500 hover:text-red-400 hover:border-red-700/50 transition-colors"
-                >
-                  {p.name}
-                </button>
-              ))}
-            </div>
+        {/* Encrypt Panel */}
+        <div className="mb-6 bg-slate-900/60 border border-slate-800 rounded-xl p-5">
+          {/* Mode selector */}
+          <div className="flex items-center gap-2 mb-4">
+            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mr-2">Cipher</label>
+            {(['caesar', 'vigenere', 'custom'] as const).map(m => (
+              <button
+                key={m}
+                onClick={() => setEncryptMode(m)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  encryptMode === m
+                    ? 'bg-red-950/50 text-red-400 border border-red-700/50'
+                    : 'text-slate-500 hover:text-white border border-slate-700 hover:border-slate-500'
+                }`}
+              >
+                {m === 'caesar' ? 'Caesar' : m === 'vigenere' ? 'Vigenère' : 'Paste Ciphertext'}
+              </button>
+            ))}
+            {SAMPLE_PRESETS.map(p => (
+              <button
+                key={p.name}
+                onClick={() => { setEncryptMode('custom'); setInput(p.text); }}
+                className="text-[10px] px-2 py-1 rounded border border-slate-700 text-slate-500 hover:text-red-400 hover:border-red-700/50 transition-colors ml-auto"
+              >
+                {p.name}
+              </button>
+            ))}
           </div>
-          <textarea
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            className="w-full h-32 bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 font-mono text-sm text-white resize-none focus:outline-none focus:border-red-700/50"
-            placeholder="Paste ciphertext here..."
-          />
-          <div className="flex gap-6 mt-2 text-xs text-slate-500">
+
+          {encryptMode !== 'custom' && (
+            <>
+              {/* Plaintext input */}
+              <div className="mb-3">
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Plaintext</label>
+                <textarea
+                  value={plaintext}
+                  onChange={e => setPlaintext(e.target.value)}
+                  className="w-full h-20 bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-sm text-white resize-none focus:outline-none focus:border-red-700/50"
+                  placeholder="Type plaintext to encrypt..."
+                />
+              </div>
+
+              {/* Cipher parameters */}
+              {encryptMode === 'caesar' && (
+                <div className="flex items-center gap-4 mb-3">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Shift</label>
+                  <input
+                    type="range"
+                    min={1}
+                    max={25}
+                    value={caesarShift}
+                    onChange={e => setCaesarShift(Number(e.target.value))}
+                    className="flex-1 accent-red-500 max-w-xs"
+                  />
+                  <span className="text-lg font-mono font-bold text-red-400 w-8 text-center">{caesarShift}</span>
+                  <div className="flex gap-1">
+                    {[3, 7, 13, 19].map(s => (
+                      <button
+                        key={s}
+                        onClick={() => setCaesarShift(s)}
+                        className={`px-2 py-1 text-[10px] font-mono rounded border transition-colors ${
+                          caesarShift === s
+                            ? 'border-red-700/50 text-red-400 bg-red-950/30'
+                            : 'border-slate-700 text-slate-500 hover:text-white'
+                        }`}
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {encryptMode === 'vigenere' && (
+                <div className="flex items-center gap-4 mb-3">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Key</label>
+                  <input
+                    value={vigKey}
+                    onChange={e => setVigKey(e.target.value.toUpperCase().replace(/[^A-Z]/g, ''))}
+                    className="bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-2 font-mono text-sm text-white focus:outline-none focus:border-red-700/50 w-48"
+                    placeholder="e.g. SECRET"
+                  />
+                  <div className="flex gap-1">
+                    {['KEY', 'SECRET', 'LEMON', 'CRYPTOGRAPHY'].map(k => (
+                      <button
+                        key={k}
+                        onClick={() => setVigKey(k)}
+                        className={`px-2 py-1 text-[10px] font-mono rounded border transition-colors ${
+                          vigKey === k
+                            ? 'border-red-700/50 text-red-400 bg-red-950/30'
+                            : 'border-slate-700 text-slate-500 hover:text-white'
+                        }`}
+                      >
+                        {k}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Ciphertext output */}
+              <div>
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                  Ciphertext
+                  <span className="text-slate-600 font-normal ml-2">
+                    ({encryptMode === 'caesar' ? `Caesar shift ${caesarShift}` : `Vigenère key "${vigKey}"`})
+                  </span>
+                </label>
+                <div className="w-full bg-slate-800/60 border border-slate-700 rounded-lg px-4 py-3 font-mono text-sm text-red-300 min-h-[3rem] break-all">
+                  {encryptedText || <span className="text-slate-600">Encrypted text will appear here...</span>}
+                </div>
+              </div>
+            </>
+          )}
+
+          {encryptMode === 'custom' && (
+            <div>
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Ciphertext</label>
+              <textarea
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                className="w-full h-28 bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-sm text-white resize-none focus:outline-none focus:border-red-700/50"
+                placeholder="Paste ciphertext here..."
+              />
+            </div>
+          )}
+
+          <div className="flex gap-6 mt-3 text-xs text-slate-500">
             <span>{totalLetters} letters</span>
             <span>Chi-squared: <span className={chiSq < 50 ? 'text-green-400' : chiSq < 200 ? 'text-yellow-400' : 'text-red-400'}>{chiSq.toFixed(1)}</span></span>
           </div>
