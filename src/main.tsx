@@ -34,6 +34,10 @@ import DesApp from './simulators/des/App';
 import AesApp from './simulators/aes/App';
 import Salsa20App from './simulators/salsa20/App';
 import Chacha20App from './simulators/chacha20/App';
+import DiffieHellmanApp from './simulators/diffie-hellman/App';
+import RsaApp from './simulators/rsa/App';
+import ElGamalApp from './simulators/elgamal/App';
+import EccApp from './simulators/ecc/App';
 
 const root = document.getElementById('root')!;
 
@@ -75,6 +79,11 @@ ReactDOM.createRoot(root).render(
           <Route path="/aes" element={<AesApp />} />
           <Route path="/salsa20" element={<Salsa20App />} />
           <Route path="/chacha20" element={<Chacha20App />} />
+          {/* Public Key Cryptography */}
+          <Route path="/diffie-hellman" element={<DiffieHellmanApp />} />
+          <Route path="/rsa" element={<RsaApp />} />
+          <Route path="/elgamal" element={<ElGamalApp />} />
+          <Route path="/ecc" element={<EccApp />} />
         </Route>
       </Routes>
     </HashRouter>

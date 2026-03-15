@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind } from 'lucide-react';
+import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind, GitBranch, Key, UserCheck, Circle } from 'lucide-react';
 
 const machines = [
   {
@@ -288,6 +288,12 @@ const colorMap: Record<string, { card: string; icon: string; badge: string; glow
     badge: 'bg-cyan-500/20 text-cyan-300 border-cyan-700/50',
     glow: 'group-hover:shadow-cyan-900/30',
   },
+  violet: {
+    card: 'hover:border-violet-700/60',
+    icon: 'text-violet-400 bg-violet-950/50 border-violet-800/50',
+    badge: 'bg-violet-500/20 text-violet-300 border-violet-700/50',
+    glow: 'group-hover:shadow-violet-900/30',
+  },
 };
 
 const cryptanalysisTools = [
@@ -383,6 +389,49 @@ const modernCrypto = [
     icon: <Wind size={32} />,
     color: 'cyan',
     description: 'Salsa20\'s successor with improved diffusion. Default cipher in TLS 1.3 and WireGuard. Powers HTTPS on billions of mobile devices.',
+  },
+];
+
+const publicKeyCrypto = [
+  {
+    path: '/diffie-hellman',
+    name: 'Diffie-Hellman',
+    subtitle: 'Key Exchange Protocol',
+    country: 'United States',
+    era: '1976',
+    icon: <GitBranch size={32} />,
+    color: 'violet',
+    description: 'The first practical method for two parties to establish a shared secret over a public channel. Color mixing analogy and modular exponentiation with eavesdropper view.',
+  },
+  {
+    path: '/rsa',
+    name: 'RSA',
+    subtitle: 'Asymmetric Encryption',
+    country: 'United States',
+    era: '1977',
+    icon: <Key size={32} />,
+    color: 'violet',
+    description: 'The most famous public key algorithm. Generate keys from primes, encrypt with modular exponentiation, and try to break it by factoring the public modulus.',
+  },
+  {
+    path: '/elgamal',
+    name: 'ElGamal',
+    subtitle: 'Probabilistic Encryption',
+    country: 'United States',
+    era: '1985',
+    icon: <UserCheck size={32} />,
+    color: 'violet',
+    description: 'Public key encryption built on Diffie-Hellman. Same plaintext encrypts differently each time thanks to random nonces. Used in GPG and DSA signatures.',
+  },
+  {
+    path: '/ecc',
+    name: 'Elliptic Curve',
+    subtitle: 'ECC / ECDH',
+    country: 'International',
+    era: '1985',
+    icon: <Circle size={32} />,
+    color: 'violet',
+    description: 'Cryptography on elliptic curves — same security as RSA with far smaller keys. Visualize point addition, scalar multiplication, and ECDH key exchange.',
   },
 ];
 
@@ -536,6 +585,60 @@ const Hub: React.FC = () => {
                 </div>
 
                 <h2 className="text-2xl font-bold text-white mb-2 group-hover:text-cyan-300 transition-colors">
+                  {m.name}
+                </h2>
+                <p className="text-xs font-mono text-slate-500 mb-5 uppercase tracking-wider">
+                  {m.subtitle}
+                </p>
+
+                <p className="text-sm text-slate-400 leading-relaxed">
+                  {m.description}
+                </p>
+
+                <div className="mt-8 text-xs font-semibold text-slate-600 group-hover:text-slate-400 transition-colors">
+                  LAUNCH VISUALIZER &rarr;
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Public Key Cryptography Section */}
+      <div className="w-full max-w-6xl mt-28">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-white mb-4">
+            PUBLIC KEY <span className="text-violet-500">CRYPTOGRAPHY</span>
+          </h2>
+          <p className="text-base text-slate-400 max-w-xl mx-auto leading-relaxed">
+            The mathematics of trust — key exchange, digital signatures, and the asymmetric algorithms that secure every connection on the internet.
+          </p>
+        </div>
+
+        <div className="grid gap-10 md:grid-cols-2">
+          {publicKeyCrypto.map(m => {
+            const c = colorMap[m.color];
+            return (
+              <Link
+                key={m.path}
+                to={m.path}
+                className={`group block bg-slate-900/70 border border-slate-800 rounded-2xl p-12 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl ${c.card} ${c.glow}`}
+              >
+                <div className="flex items-start justify-between mb-6">
+                  <div className={`w-14 h-14 rounded-xl border flex items-center justify-center ${c.icon}`}>
+                    {m.icon}
+                  </div>
+                  <div className="flex gap-2">
+                    <span className={`text-[10px] font-bold px-2 py-1 rounded-full border ${c.badge}`}>
+                      {m.country}
+                    </span>
+                    <span className="text-[10px] font-bold px-2 py-1 rounded-full border bg-slate-800/50 text-slate-400 border-slate-700/50">
+                      {m.era}
+                    </span>
+                  </div>
+                </div>
+
+                <h2 className="text-2xl font-bold text-white mb-2 group-hover:text-violet-300 transition-colors">
                   {m.name}
                 </h2>
                 <p className="text-xs font-mono text-slate-500 mb-5 uppercase tracking-wider">
