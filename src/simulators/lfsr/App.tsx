@@ -44,6 +44,8 @@ const App: React.FC = () => {
   const [speed, setSpeed] = useState(300);
   const [period, setPeriod] = useState<number | null>(null);
   const [plaintext, setPlaintext] = useState('');
+  const [ciphertextHex, setCiphertextHex] = useState('');
+  const [mode, setMode] = useState<'encrypt' | 'decrypt'>('encrypt');
   const [tab, setTab] = useState<'visualize' | 'encrypt'>('visualize');
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -143,9 +145,29 @@ const App: React.FC = () => {
     return ks;
   };
 
-  const ptBits = textToBits(plaintext);
-  const keystream = plaintext ? generateKeystream(ptBits.length) : [];
-  const ctBits = ptBits.map((b, i) => b ^ keystream[i]);
+  function hexToBytes(hex: string): number[] {
+    const clean = hex.replace(/\s/g, '');
+    const bytes: number[] = [];
+    for (let i = 0; i + 1 < clean.length; i += 2) bytes.push(parseInt(clean.slice(i, i + 2), 16) || 0);
+    return bytes;
+  }
+  function bytesToBits(bytes: number[]): number[] {
+    const bits: number[] = [];
+    for (const b of bytes) for (let i = 7; i >= 0; i--) bits.push((b >> i) & 1);
+    return bits;
+  }
+  function bitsToHex(bits: number[]): string {
+    return Array.from({ length: Math.ceil(bits.length / 8) }, (_, i) => {
+      let byte = 0;
+      for (let b = 0; b < 8 && i * 8 + b < bits.length; b++) byte = (byte << 1) | bits[i * 8 + b];
+      return byte.toString(16).padStart(2, '0');
+    }).join(' ');
+  }
+
+  const inputBits = mode === 'encrypt' ? textToBits(plaintext) : bytesToBits(hexToBytes(ciphertextHex));
+  const hasInput = mode === 'encrypt' ? plaintext.length > 0 : ciphertextHex.replace(/\s/g, '').length >= 2;
+  const keystream = hasInput ? generateKeystream(inputBits.length) : [];
+  const outputBitsEnc = inputBits.map((b, i) => b ^ keystream[i]);
 
   return (
     <div className="min-h-screen bg-[#1a1814] text-white p-4 md:p-8">
@@ -359,83 +381,60 @@ const App: React.FC = () => {
             )}
           </>
         ) : (
-          /* Encrypt Mode */
+          /* Encrypt / Decrypt Mode */
           <div className="space-y-4">
             <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5 space-y-4">
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Plaintext</label>
-              <input type="text" value={plaintext} onChange={e => setPlaintext(e.target.value)} maxLength={32} placeholder="Type message..."
-                className="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-cyan-700/50" />
+              <div className="flex gap-2 mb-2">
+                <button onClick={() => setMode('encrypt')} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${mode === 'encrypt' ? 'bg-cyan-950/50 text-cyan-400 border border-cyan-900/40' : 'bg-slate-800 text-slate-400 border border-slate-700 hover:text-white'}`}>Encrypt Text</button>
+                <button onClick={() => setMode('decrypt')} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${mode === 'decrypt' ? 'bg-amber-950/50 text-amber-400 border border-amber-900/40' : 'bg-slate-800 text-slate-400 border border-slate-700 hover:text-white'}`}>Decrypt Hex</button>
+              </div>
 
-              {plaintext && (
+              {mode === 'encrypt' ? (
+                <>
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Plaintext</label>
+                  <textarea value={plaintext} onChange={e => setPlaintext(e.target.value)} placeholder="Type message of any length..."
+                    className="w-full h-20 bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-cyan-700/50 resize-none" />
+                </>
+              ) : (
+                <>
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Ciphertext (hex)</label>
+                  <textarea value={ciphertextHex} onChange={e => setCiphertextHex(e.target.value)} placeholder="Paste hex ciphertext..."
+                    className="w-full h-20 bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-amber-700/50 resize-none" />
+                </>
+              )}
+
+              {hasInput && (
                 <div className="space-y-4">
                   <div>
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">Plaintext Bits</label>
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">{mode === 'encrypt' ? 'Input' : 'Ciphertext'} Bits</label>
                     <div className="font-mono text-xs flex flex-wrap gap-[1px]">
-                      {ptBits.map((b, i) => (
+                      {inputBits.slice(0, 256).map((b, i) => (
                         <span key={i} className={`${b ? 'text-white' : 'text-slate-600'}${i > 0 && i % 8 === 0 ? ' ml-2' : ''}`}>{b}</span>
                       ))}
+                      {inputBits.length > 256 && <span className="text-slate-600 ml-2">... ({inputBits.length} total)</span>}
                     </div>
                   </div>
                   <div>
                     <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">Keystream (LFSR Output)</label>
                     <div className="font-mono text-xs flex flex-wrap gap-[1px]">
-                      {keystream.map((b, i) => (
+                      {keystream.slice(0, 256).map((b, i) => (
                         <span key={i} className={`${b ? 'text-cyan-400' : 'text-cyan-900'}${i > 0 && i % 8 === 0 ? ' ml-2' : ''}`}>{b}</span>
                       ))}
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">XOR Operation</label>
-                    <div className="font-mono text-xs overflow-x-auto">
-                      <div className="inline-grid gap-y-0.5" style={{ gridTemplateColumns: `repeat(${ptBits.length + Math.floor(ptBits.length / 8)}, auto)` }}>
-                        {ptBits.map((b, i) => (
-                          <React.Fragment key={`pt-${i}`}>
-                            {i > 0 && i % 8 === 0 && <span className="w-2" />}
-                            <span className={b ? 'text-white' : 'text-slate-600'}>{b}</span>
-                          </React.Fragment>
-                        ))}
-                        {ptBits.map((_, i) => (
-                          <React.Fragment key={`xor-${i}`}>
-                            {i > 0 && i % 8 === 0 && <span className="w-2" />}
-                            <span className="text-cyan-600">⊕</span>
-                          </React.Fragment>
-                        ))}
-                        {keystream.map((b, i) => (
-                          <React.Fragment key={`ks-${i}`}>
-                            {i > 0 && i % 8 === 0 && <span className="w-2" />}
-                            <span className={b ? 'text-cyan-400' : 'text-cyan-900'}>{b}</span>
-                          </React.Fragment>
-                        ))}
-                        {ptBits.map((_, i) => (
-                          <React.Fragment key={`bar-${i}`}>
-                            {i > 0 && i % 8 === 0 && <span className="w-2" />}
-                            <span className="text-slate-700">─</span>
-                          </React.Fragment>
-                        ))}
-                        {ctBits.map((b, i) => (
-                          <React.Fragment key={`ct-${i}`}>
-                            {i > 0 && i % 8 === 0 && <span className="w-2" />}
-                            <span className={b ? 'text-yellow-400' : 'text-yellow-900'}>{b}</span>
-                          </React.Fragment>
-                        ))}
-                      </div>
+                      {keystream.length > 256 && <span className="text-cyan-700 ml-2">... ({keystream.length} total)</span>}
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">Ciphertext (hex)</label>
-                      <div className="bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-sm text-yellow-400">
-                        {Array.from({ length: Math.ceil(ctBits.length / 8) }, (_, i) => {
-                          let byte = 0;
-                          for (let b = 0; b < 8 && i * 8 + b < ctBits.length; b++) byte = (byte << 1) | ctBits[i * 8 + b];
-                          return byte.toString(16).padStart(2, '0');
-                        }).join(' ')}
+                      <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">{mode === 'encrypt' ? 'Ciphertext' : 'Decrypted Plaintext'} (hex)</label>
+                      <div className="bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-sm text-yellow-400 break-all select-all cursor-pointer" onClick={e => { if (mode === 'encrypt') { setCiphertextHex(bitsToHex(outputBitsEnc).replace(/ /g, '')); setMode('decrypt'); } }}>
+                        {bitsToHex(outputBitsEnc)}
                       </div>
+                      {mode === 'encrypt' && <p className="text-[10px] text-slate-600 mt-1">Click to copy to decrypt tab</p>}
                     </div>
                     <div>
-                      <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">Ciphertext (decoded)</label>
-                      <div className="bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-sm text-yellow-400">
-                        {bitsToText(ctBits)}
+                      <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">{mode === 'encrypt' ? 'Ciphertext' : 'Decrypted Plaintext'} (text)</label>
+                      <div className="bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-sm text-yellow-400 break-all">
+                        {bitsToText(outputBitsEnc)}
                       </div>
                     </div>
                   </div>

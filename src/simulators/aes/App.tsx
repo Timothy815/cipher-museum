@@ -156,9 +156,8 @@ function computeAllSteps(plaintext: number[], key: number[]): AESStep[] {
 // ── Helpers ───────────────────────────────────────────────────────
 function hex(b: number): string { return b.toString(16).padStart(2, '0'); }
 
-function parseInput(text: string): number[] {
+function parseKey(text: string): number[] {
   const bytes: number[] = [];
-  // If it looks like hex (only hex chars & even length), parse as hex
   const cleaned = text.replace(/\s/g, '');
   if (/^[0-9a-fA-F]+$/.test(cleaned) && cleaned.length % 2 === 0 && cleaned.length <= 32) {
     for (let i = 0; i < 32; i += 2) {
@@ -170,6 +169,94 @@ function parseInput(text: string): number[] {
   }
   while (bytes.length < 16) bytes.push(0);
   return bytes.slice(0, 16);
+}
+
+function textToBlocks(text: string): number[][] {
+  const bytes: number[] = [];
+  for (let i = 0; i < text.length; i++) bytes.push(text.charCodeAt(i) & 0xff);
+  const padLen = 16 - (bytes.length % 16);
+  for (let i = 0; i < padLen; i++) bytes.push(padLen);
+  const blocks: number[][] = [];
+  for (let i = 0; i < bytes.length; i += 16) blocks.push(bytes.slice(i, i + 16));
+  return blocks;
+}
+
+function hexToBlocks(hex: string): number[][] {
+  const clean = hex.replace(/\s/g, '');
+  if (!/^[0-9a-fA-F]*$/.test(clean) || clean.length === 0) return [];
+  const padded = clean.length % 32 === 0 ? clean : clean + '0'.repeat(32 - (clean.length % 32));
+  const blocks: number[][] = [];
+  for (let i = 0; i < padded.length; i += 32) {
+    const block: number[] = [];
+    for (let j = 0; j < 32; j += 2) block.push(parseInt(padded.slice(i + j, i + j + 2), 16));
+    blocks.push(block);
+  }
+  return blocks;
+}
+
+function removePkcs(bytes: number[]): number[] {
+  if (bytes.length === 0) return bytes;
+  const padLen = bytes[bytes.length - 1];
+  if (padLen >= 1 && padLen <= 16 && bytes.slice(-padLen).every(b => b === padLen)) return bytes.slice(0, -padLen);
+  return bytes;
+}
+
+function aesEncryptBlock(plainBytes: number[], keyBytes: number[]): number[] {
+  const rks = keyExpansion(keyBytes);
+  let state = textToState(plainBytes);
+  state = addRoundKey(state, rks[0]);
+  for (let round = 1; round <= 10; round++) {
+    state = subBytes(state);
+    state = shiftRows(state);
+    if (round < 10) state = mixColumns(state);
+    state = addRoundKey(state, rks[round]);
+  }
+  const out: number[] = [];
+  for (let c = 0; c < 4; c++) for (let r = 0; r < 4; r++) out.push(state[c][r]);
+  return out;
+}
+
+// AES inverse operations for decryption
+const INV_SBOX: number[] = new Array(256);
+for (let i = 0; i < 256; i++) INV_SBOX[SBOX[i]] = i;
+
+function invSubBytes(s: State): State {
+  const out = cloneState(s);
+  for (let c = 0; c < 4; c++) for (let r = 0; r < 4; r++) out[c][r] = INV_SBOX[s[c][r]];
+  return out;
+}
+
+function invShiftRows(s: State): State {
+  const out = cloneState(s);
+  for (let r = 1; r < 4; r++) for (let c = 0; c < 4; c++) out[c][r] = s[(c - r + 4) % 4][r];
+  return out;
+}
+
+function invMixColumns(s: State): State {
+  const out = cloneState(s);
+  for (let c = 0; c < 4; c++) {
+    const a = s[c];
+    out[c][0] = gmul(a[0],14) ^ gmul(a[1],11) ^ gmul(a[2],13) ^ gmul(a[3],9);
+    out[c][1] = gmul(a[0],9) ^ gmul(a[1],14) ^ gmul(a[2],11) ^ gmul(a[3],13);
+    out[c][2] = gmul(a[0],13) ^ gmul(a[1],9) ^ gmul(a[2],14) ^ gmul(a[3],11);
+    out[c][3] = gmul(a[0],11) ^ gmul(a[1],13) ^ gmul(a[2],9) ^ gmul(a[3],14);
+  }
+  return out;
+}
+
+function aesDecryptBlock(cipherBytes: number[], keyBytes: number[]): number[] {
+  const rks = keyExpansion(keyBytes);
+  let state = textToState(cipherBytes);
+  state = addRoundKey(state, rks[10]);
+  for (let round = 9; round >= 0; round--) {
+    state = invShiftRows(state);
+    state = invSubBytes(state);
+    state = addRoundKey(state, rks[round]);
+    if (round > 0) state = invMixColumns(state);
+  }
+  const out: number[] = [];
+  for (let c = 0; c < 4; c++) for (let r = 0; r < 4; r++) out.push(state[c][r]);
+  return out;
 }
 
 // ── MixColumns visualization matrix ──────────────────────────────
@@ -184,10 +271,22 @@ const AESSimulator: React.FC = () => {
   const [stepIndex, setStepIndex] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(800);
+  const [decrypt, setDecrypt] = useState(false);
+  const [inspectBlock, setInspectBlock] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const plainBytes = parseInput(plainInput);
-  const keyBytes = parseInput(keyInput);
+  const keyBytes = parseKey(keyInput);
+
+  // Multi-block
+  const allBlocks = decrypt ? hexToBlocks(plainInput) : textToBlocks(plainInput);
+  const firstBlock = allBlocks[inspectBlock] ?? allBlocks[0] ?? new Array(16).fill(0);
+  const plainBytes = firstBlock;
+
+  // Full encrypt/decrypt
+  const fullOutput = allBlocks.map(block => decrypt ? aesDecryptBlock(block, keyBytes) : aesEncryptBlock(block, keyBytes)).flat();
+  const fullOutputHex = fullOutput.map(b => hex(b)).join('');
+  const fullOutputText = decrypt ? removePkcs(fullOutput).map(b => b >= 32 && b < 127 ? String.fromCharCode(b) : '·').join('') : '';
+
   const steps = computeAllSteps(plainBytes, keyBytes);
   const roundKeys = keyExpansion(keyBytes);
   const currentStep = steps[stepIndex] ?? steps[0];
@@ -290,14 +389,20 @@ const AESSimulator: React.FC = () => {
         {/* Input Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Plaintext (16 chars or 32 hex digits)</label>
-            <input
+            <div className="flex items-center gap-3 mb-2">
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{decrypt ? 'Ciphertext (hex)' : 'Plaintext (any length)'}</label>
+              <button onClick={() => { setDecrypt(!decrypt); setPlainInput(decrypt ? '' : fullOutputHex); setInspectBlock(0); reset(); }}
+                className={`flex items-center gap-1 px-3 py-1 rounded-lg border text-xs font-bold transition-colors ${decrypt ? 'bg-amber-950/40 border-amber-700/50 text-amber-400' : 'bg-cyan-950/40 border-cyan-700/50 text-cyan-400'}`}>
+                {decrypt ? 'Decrypt' : 'Encrypt'}
+              </button>
+            </div>
+            <textarea
               value={plainInput}
-              onChange={e => { setPlainInput(e.target.value); reset(); }}
-              className="w-full mt-2 bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-cyan-700/50"
-              maxLength={32}
+              onChange={e => { setPlainInput(e.target.value); reset(); setInspectBlock(0); }}
+              className="w-full h-20 mt-1 bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-cyan-700/50 resize-none"
+              placeholder={decrypt ? 'Paste hex ciphertext...' : 'Type any message...'}
             />
-            <p className="text-xs text-slate-500 mt-1 font-mono">{plainBytes.map(hex).join(' ')}</p>
+            <p className="text-xs text-slate-500 mt-1 font-mono">{allBlocks.length} block{allBlocks.length !== 1 ? 's' : ''} × 128 bits (ECB{!decrypt ? ', PKCS padded' : ''})</p>
           </div>
           <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
             <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Key (16 chars or 32 hex digits)</label>
@@ -308,6 +413,29 @@ const AESSimulator: React.FC = () => {
               maxLength={32}
             />
             <p className="text-xs text-slate-500 mt-1 font-mono">{keyBytes.map(hex).join(' ')}</p>
+            {/* Full output */}
+            <div className="mt-3 pt-3 border-t border-slate-800">
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">{decrypt ? 'Decrypted Output' : 'Full Ciphertext'}</label>
+              <div className="bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 font-mono text-xs text-cyan-300 break-all select-all cursor-pointer max-h-20 overflow-y-auto"
+                onClick={() => { if (!decrypt) { setDecrypt(true); setPlainInput(fullOutputHex); setInspectBlock(0); reset(); } }}>
+                {decrypt ? (fullOutputText || fullOutputHex) : fullOutputHex}
+              </div>
+              {!decrypt && <p className="text-[10px] text-slate-600 mt-1">Click to copy to decrypt mode</p>}
+            </div>
+            {/* Block selector */}
+            {allBlocks.length > 1 && (
+              <div className="mt-2 flex items-center gap-2">
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Block:</span>
+                <div className="flex gap-1 flex-wrap">
+                  {allBlocks.map((_, i) => (
+                    <button key={i} onClick={() => { setInspectBlock(i); reset(); }}
+                      className={`px-2 py-0.5 rounded text-xs font-mono ${inspectBlock === i ? 'bg-cyan-950/50 text-cyan-400 border border-cyan-800' : 'bg-slate-800 text-slate-500 border border-slate-700'}`}>
+                      {i + 1}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

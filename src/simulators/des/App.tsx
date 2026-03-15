@@ -164,10 +164,34 @@ function desProcess(plainBytes: number[], keyBytes: number[], decrypt: boolean):
   return { inputBits, afterIP, rounds, beforeFP, outputBits, roundKeys: orderedKeys };
 }
 
+function textToBlocks(text: string): number[][] {
+  const bytes: number[] = [];
+  for (let i = 0; i < text.length; i++) bytes.push(text.charCodeAt(i) & 0xFF);
+  // PKCS#5 padding
+  const padLen = 8 - (bytes.length % 8);
+  for (let i = 0; i < padLen; i++) bytes.push(padLen);
+  const blocks: number[][] = [];
+  for (let i = 0; i < bytes.length; i += 8) blocks.push(bytes.slice(i, i + 8));
+  return blocks;
+}
+
 function textToBytes(text: string): number[] {
   const bytes: number[] = [];
   for (let i = 0; i < 8; i++) bytes.push(i < text.length ? text.charCodeAt(i) & 0xFF : 0);
   return bytes;
+}
+
+function hexToBlocks(hex: string): number[][] {
+  const clean = hex.replace(/\s/g, '');
+  if (!/^[0-9a-fA-F]*$/.test(clean) || clean.length === 0) return [];
+  const padded = clean.length % 16 === 0 ? clean : clean + '0'.repeat(16 - (clean.length % 16));
+  const blocks: number[][] = [];
+  for (let i = 0; i < padded.length; i += 16) {
+    const block: number[] = [];
+    for (let j = 0; j < 16; j += 2) block.push(parseInt(padded.slice(i + j, i + j + 2), 16));
+    blocks.push(block);
+  }
+  return blocks;
 }
 
 function hexToBytes(hex: string): number[] | null {
@@ -182,6 +206,25 @@ function bytesToHex(bytes: number[]): string {
   return bytes.map(b => b.toString(16).toUpperCase().padStart(2, '0')).join('');
 }
 
+function removePkcs5(bytes: number[]): number[] {
+  if (bytes.length === 0) return bytes;
+  const padLen = bytes[bytes.length - 1];
+  if (padLen >= 1 && padLen <= 8 && bytes.slice(-padLen).every(b => b === padLen)) {
+    return bytes.slice(0, -padLen);
+  }
+  return bytes;
+}
+
+function bitsToBytes(bits: number[]): number[] {
+  const bytes: number[] = [];
+  for (let i = 0; i < bits.length; i += 8) {
+    let b = 0;
+    for (let j = 0; j < 8 && i + j < bits.length; j++) b = (b << 1) | bits[i + j];
+    bytes.push(b);
+  }
+  return bytes;
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 const App: React.FC = () => {
@@ -194,10 +237,29 @@ const App: React.FC = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [speed, setSpeed] = useState(500);
   const [showKeySchedule, setShowKeySchedule] = useState(false);
+  const [inspectBlock, setInspectBlock] = useState(0);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const inputBytes = hexMode ? (hexToBytes(plaintext) ?? textToBytes(plaintext.slice(0, 8))) : textToBytes(plaintext.slice(0, 8));
   const keyBytes = hexMode ? (hexToBytes(keyText) ?? textToBytes(keyText.slice(0, 8))) : textToBytes(keyText.slice(0, 8));
+
+  // Multi-block support
+  const allBlocks = decrypt
+    ? hexToBlocks(plaintext)
+    : (hexMode ? hexToBlocks(plaintext) : textToBlocks(plaintext));
+  const firstBlock = allBlocks[inspectBlock] ?? allBlocks[0] ?? textToBytes('');
+  const inputBytes = firstBlock;
+
+  // Full encrypt/decrypt all blocks
+  const fullOutput = allBlocks.map(block => {
+    const r = desProcess(block, keyBytes, decrypt);
+    return bitsToBytes(r.outputBits);
+  }).flat();
+
+  const fullOutputHex = bytesToHex(fullOutput);
+  const fullOutputText = decrypt
+    ? removePkcs5(fullOutput).map(b => b >= 32 && b < 127 ? String.fromCharCode(b) : '·').join('')
+    : '';
+
   const result = desProcess(inputBytes, keyBytes, decrypt);
   const { roundKeys, cd } = generateRoundKeys(keyBytes);
 
@@ -259,33 +321,58 @@ const App: React.FC = () => {
 
         {/* Input Panel */}
         <div className={panelClass}>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <span className={labelClass}>{decrypt ? 'Ciphertext' : 'Plaintext'}</span>
-                <button onClick={() => setHexMode(!hexMode)} className="text-xs px-2 py-0.5 rounded border border-slate-700 text-slate-400 hover:text-cyan-400 hover:border-cyan-800">
-                  {hexMode ? 'HEX' : 'TEXT'}
-                </button>
+                <span className={labelClass}>{decrypt ? 'Ciphertext (hex)' : 'Plaintext'}</span>
+                {!decrypt && (
+                  <button onClick={() => setHexMode(!hexMode)} className="text-xs px-2 py-0.5 rounded border border-slate-700 text-slate-400 hover:text-cyan-400 hover:border-cyan-800">
+                    {hexMode ? 'HEX' : 'TEXT'}
+                  </button>
+                )}
               </div>
-              <input value={plaintext} onChange={e => setPlaintext(hexMode ? e.target.value.slice(0, 16) : e.target.value.slice(0, 8))} className={inputClass} placeholder={hexMode ? '16 hex chars' : 'Up to 8 chars'} />
-              <div className="text-xs text-slate-600 mt-1 font-mono">{bytesToHex(inputBytes)}</div>
+              <textarea value={plaintext} onChange={e => { setPlaintext(e.target.value); setInspectBlock(0); }}
+                className={`${inputClass} h-20 resize-none`}
+                placeholder={decrypt ? 'Paste hex ciphertext...' : (hexMode ? 'Hex input (any length)...' : 'Type any message...')} />
+              <div className="text-xs text-slate-600 mt-1 font-mono">{allBlocks.length} block{allBlocks.length !== 1 ? 's' : ''} × 64 bits (ECB mode{!decrypt ? ', PKCS#5 padded' : ''})</div>
             </div>
             <div>
               <span className={`${labelClass} block mb-2`}>Key (8 chars / 16 hex)</span>
-              <input value={keyText} onChange={e => setKeyText(hexMode ? e.target.value.slice(0, 16) : e.target.value.slice(0, 8))} className={inputClass} placeholder={hexMode ? '16 hex chars' : '8 characters'} />
+              <input value={keyText} onChange={e => setKeyText(e.target.value.slice(0, 16))} className={inputClass} placeholder="8 characters or 16 hex" />
               <div className="text-xs text-slate-600 mt-1 font-mono">{bytesToHex(keyBytes)}</div>
-            </div>
-            <div className="flex items-center gap-3">
-              <button onClick={() => setDecrypt(!decrypt)} className={`flex items-center gap-2 px-4 py-3 rounded-lg border font-bold text-sm transition-colors ${decrypt ? 'bg-amber-950/40 border-amber-700/50 text-amber-400' : 'bg-cyan-950/40 border-cyan-700/50 text-cyan-400'}`}>
-                {decrypt ? <Unlock size={16} /> : <Lock size={16} />}
-                {decrypt ? 'Decrypt' : 'Encrypt'}
-              </button>
-              <div className="flex-1 text-right">
-                <span className={labelClass}>Output</span>
-                <div className="font-mono text-cyan-300 text-sm mt-1">{bitsToHex(result.outputBits)}</div>
+              <div className="flex items-center gap-3 mt-3">
+                <button onClick={() => { setDecrypt(!decrypt); setPlaintext(decrypt ? '' : fullOutputHex); setInspectBlock(0); }} className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border font-bold text-sm transition-colors ${decrypt ? 'bg-amber-950/40 border-amber-700/50 text-amber-400' : 'bg-cyan-950/40 border-cyan-700/50 text-cyan-400'}`}>
+                  {decrypt ? <Unlock size={16} /> : <Lock size={16} />}
+                  {decrypt ? 'Decrypt' : 'Encrypt'}
+                </button>
               </div>
             </div>
           </div>
+          {/* Full output */}
+          <div className="mt-4 pt-4 border-t border-slate-800">
+            <span className={`${labelClass} block mb-2`}>{decrypt ? 'Decrypted Output' : 'Full Ciphertext (hex)'}</span>
+            <div className="bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-sm text-cyan-300 break-all select-all cursor-pointer"
+              onClick={() => { if (!decrypt) { setDecrypt(true); setPlaintext(fullOutputHex); setInspectBlock(0); } }}>
+              {decrypt ? fullOutputText || fullOutputHex : fullOutputHex}
+            </div>
+            {!decrypt && <p className="text-[10px] text-slate-600 mt-1">Click to copy to decrypt mode</p>}
+            {decrypt && fullOutputText && <div className="mt-1 text-xs text-slate-500 font-mono">hex: {fullOutputHex}</div>}
+          </div>
+          {/* Block selector for inspection */}
+          {allBlocks.length > 1 && (
+            <div className="mt-3 flex items-center gap-2">
+              <span className={labelClass}>Inspect Block:</span>
+              <div className="flex gap-1 flex-wrap">
+                {allBlocks.map((_, i) => (
+                  <button key={i} onClick={() => setInspectBlock(i)}
+                    className={`px-2 py-1 rounded text-xs font-mono ${inspectBlock === i ? 'bg-cyan-950/50 text-cyan-400 border border-cyan-800' : 'bg-slate-800 text-slate-500 border border-slate-700 hover:text-white'}`}>
+                    {i + 1}
+                  </button>
+                ))}
+              </div>
+              <span className="text-xs text-slate-600 font-mono">{bytesToHex(firstBlock)}</span>
+            </div>
+          )}
         </div>
 
         {/* Controls */}

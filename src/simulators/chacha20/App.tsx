@@ -135,6 +135,8 @@ function generateSnapshots(key: number[], counter: number, nonce: number[]): Rou
 
 const App: React.FC = () => {
   const [plaintext, setPlaintext] = useState('ChaCha20 is blazing fast!');
+  const [ciphertextHex, setCiphertextHex] = useState('');
+  const [mode, setMode] = useState<'encrypt' | 'decrypt'>('encrypt');
   const [keyHex, setKeyHex] = useState(() => randomHex(32));
   const [nonceHex, setNonceHex] = useState(() => randomHex(12));
   const [counter, setCounter] = useState(1);
@@ -160,13 +162,22 @@ const App: React.FC = () => {
   }, [keyWords, nonceWords, counter]);
 
   const encryption = useMemo(() => {
-    if (!keyWords || !nonceWords || !plaintext) return null;
-    const plainBytes = textToBytes(plaintext);
-    const cipherBytes = chacha20Encrypt(plainBytes, keyWords, nonceWords, counter);
+    if (!keyWords || !nonceWords) return null;
+    let inputBytes: number[];
+    if (mode === 'encrypt') {
+      if (!plaintext) return null;
+      inputBytes = textToBytes(plaintext);
+    } else {
+      const clean = ciphertextHex.replace(/[^0-9a-fA-F]/g, '');
+      if (clean.length < 2) return null;
+      inputBytes = [];
+      for (let i = 0; i + 1 < clean.length; i += 2) inputBytes.push(parseInt(clean.slice(i, i + 2), 16));
+    }
+    const cipherBytes = chacha20Encrypt(inputBytes, keyWords, nonceWords, counter);
     const block = chacha20Block(keyWords, counter, nonceWords);
     const ksBytes = wordsToBytesLE(block);
-    return { plainBytes, cipherBytes, ksBytes };
-  }, [plaintext, keyWords, nonceWords, counter]);
+    return { plainBytes: inputBytes, cipherBytes, ksBytes };
+  }, [plaintext, ciphertextHex, mode, keyWords, nonceWords, counter]);
 
   const safeStep = snapshots ? Math.min(stepIdx, snapshots.length - 1) : 0;
   const snap = snapshots?.[safeStep];
@@ -236,14 +247,27 @@ const App: React.FC = () => {
         {/* Inputs */}
         <div className="grid md:grid-cols-2 gap-4 mb-6">
           <div>
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">Plaintext</label>
-            <textarea
-              value={plaintext}
-              onChange={e => setPlaintext(e.target.value)}
-              className="w-full h-20 bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-cyan-700/50 resize-none"
-              spellCheck={false}
-              placeholder="Enter plaintext..."
-            />
+            <div className="flex items-center gap-2 mb-2">
+              <button onClick={() => setMode('encrypt')} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${mode === 'encrypt' ? 'bg-cyan-950/50 text-cyan-400 border border-cyan-900/40' : 'bg-slate-800 text-slate-400 border border-slate-700 hover:text-white'}`}>Encrypt Text</button>
+              <button onClick={() => setMode('decrypt')} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${mode === 'decrypt' ? 'bg-amber-950/50 text-amber-400 border border-amber-900/40' : 'bg-slate-800 text-slate-400 border border-slate-700 hover:text-white'}`}>Decrypt Hex</button>
+            </div>
+            {mode === 'encrypt' ? (
+              <textarea
+                value={plaintext}
+                onChange={e => setPlaintext(e.target.value)}
+                className="w-full h-20 bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-cyan-700/50 resize-none"
+                spellCheck={false}
+                placeholder="Enter plaintext (any length)..."
+              />
+            ) : (
+              <textarea
+                value={ciphertextHex}
+                onChange={e => setCiphertextHex(e.target.value)}
+                className="w-full h-20 bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-amber-700/50 resize-none"
+                spellCheck={false}
+                placeholder="Paste hex ciphertext..."
+              />
+            )}
           </div>
           <div>
             <div className="flex justify-between items-center mb-2">
@@ -413,7 +437,7 @@ const App: React.FC = () => {
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="pr-3 text-slate-500 text-[10px] uppercase tracking-wider">Plain</td>
+                    <td className="pr-3 text-slate-500 text-[10px] uppercase tracking-wider">{mode === 'encrypt' ? 'Plain' : 'Cipher'}</td>
                     {encryption.plainBytes.slice(0, 16).map((b, i) => (
                       <td key={i} className="text-center px-1 text-stone-300">{b.toString(16).padStart(2, '0')}</td>
                     ))}
@@ -425,7 +449,7 @@ const App: React.FC = () => {
                     ))}
                   </tr>
                   <tr>
-                    <td className="pr-3 text-slate-500 text-[10px] uppercase tracking-wider">⊕ Cipher</td>
+                    <td className="pr-3 text-slate-500 text-[10px] uppercase tracking-wider">⊕ {mode === 'encrypt' ? 'Cipher' : 'Plain'}</td>
                     {encryption.cipherBytes.slice(0, 16).map((b, i) => (
                       <td key={i} className="text-center px-1 text-cyan-300 font-bold">{b.toString(16).padStart(2, '0')}</td>
                     ))}
@@ -438,10 +462,19 @@ const App: React.FC = () => {
             </div>
 
             <div className="mt-4">
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Full Ciphertext (hex)</label>
-              <div className="bg-slate-950/60 rounded-lg p-3 font-mono text-xs text-cyan-300 break-all">
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                {mode === 'encrypt' ? 'Full Ciphertext (hex)' : 'Decrypted Output'}
+              </label>
+              {mode === 'decrypt' && (
+                <div className="bg-slate-950/60 rounded-lg p-3 font-mono text-sm text-emerald-300 break-all mb-2">
+                  {encryption.cipherBytes.map(b => b >= 32 && b < 127 ? String.fromCharCode(b) : '·').join('')}
+                </div>
+              )}
+              <div className="bg-slate-950/60 rounded-lg p-3 font-mono text-xs text-cyan-300 break-all select-all cursor-pointer"
+                onClick={() => { if (mode === 'encrypt') { setCiphertextHex(bytesToHex(encryption.cipherBytes)); setMode('decrypt'); } }}>
                 {bytesToHex(encryption.cipherBytes)}
               </div>
+              {mode === 'encrypt' && <p className="text-[10px] text-slate-600 mt-1">Click to copy to decrypt mode</p>}
             </div>
           </div>
         )}
