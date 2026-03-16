@@ -177,6 +177,7 @@ const App: React.FC = () => {
   };
 
   // ── Key handling ────────────────────────────────────────────────
+  // Trace persists until the NEXT key is pressed (not cleared on key up)
   const handleKeyDown = useCallback((char: string) => {
     if (pressedKey) return;
     setHistory(prev => [...prev, state]);
@@ -190,7 +191,7 @@ const App: React.FC = () => {
   }, [state, pressedKey]);
 
   const handleKeyUp = useCallback(() => {
-    setTrace(null);
+    // Keep trace visible — only clear pressedKey so next key can fire
     setPressedKey(null);
   }, []);
 
@@ -456,7 +457,7 @@ const App: React.FC = () => {
             {wirings.map((wiring, g) => {
               const x1 = COL_X[g] + WIRE_PAD;
               const x2 = COL_X[g + 1] - WIRE_PAD;
-              const cp = (x2 - x1) * 0.4;
+              const cp = (x2 - x1) * 0.15;
               const fwIdx = activeForward ? activeForward[g][0] : -1;
               const rtIdx = activeReturn ? activeReturn[g][0] : -1;
 
