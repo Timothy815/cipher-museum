@@ -28,6 +28,8 @@ const SIMULATORS = [
   { path: '/otp', label: 'One-Time Pad', country: 'International', icon: <ShieldCheck size={14} /> },
   { path: '/cx52', label: 'CX-52 (Hagelin)', country: 'Switzerland', icon: <Settings size={14} /> },
   { path: '/kl7', label: 'KL-7 (ADONIS)', country: 'NATO', icon: <Layers size={14} /> },
+  { path: '/kl7-wiring', label: 'KL-7 Wiring Explorer', country: 'Educational', icon: <Route size={14} /> },
+  { path: '/sigaba-wiring', label: 'SIGABA Wiring Explorer', country: 'Educational', icon: <Route size={14} /> },
   { path: '/chaocipher', label: 'Chaocipher', country: 'United States', icon: <Shuffle size={14} /> },
 ];
 

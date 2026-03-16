@@ -104,6 +104,16 @@ const machines = [
     description: '15-rotor cipher machine. The only major WWII cipher device never broken by an adversary.',
   },
   {
+    path: '/sigaba-wiring',
+    name: 'SIGABA Wiring Explorer',
+    subtitle: '3-Bank Signal Tracer',
+    country: 'Educational',
+    era: '1941',
+    icon: <Route size={32} />,
+    color: 'red',
+    description: 'Visualize SIGABA\'s three rotor banks: 5 cipher rotors encrypt the signal, while 5 control and 5 index rotors determine which cipher rotors step. See why it was never broken.',
+  },
+  {
     path: '/fialka',
     name: 'Fialka M-125',
     subtitle: 'Soviet Electromechanical Cipher',
@@ -252,6 +262,16 @@ const machines = [
     icon: <Layers size={32} />,
     color: 'blue',
     description: 'NATO\'s primary cipher machine for 30 years. 8 rotors from a set of 12 with irregular notch-driven stepping. Compromised by the Walker spy ring.',
+  },
+  {
+    path: '/kl7-wiring',
+    name: 'KL-7 Wiring Explorer',
+    subtitle: '8-Rotor Signal Tracer',
+    country: 'Educational',
+    era: '1952',
+    icon: <Route size={32} />,
+    color: 'blue',
+    description: 'Trace the signal through all 8 KL-7 rotors. No reflector — the signal passes forward only, creating a non-reciprocal cipher. See how notch-driven stepping creates irregular rotor movement.',
   },
   {
     path: '/chaocipher',
