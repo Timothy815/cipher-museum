@@ -94,6 +94,16 @@ const machines = [
     description: 'Japanese diplomatic cipher machine using stepping switches instead of rotors. Broken by the SIS.',
   },
   {
+    path: '/purple-wiring',
+    name: 'Purple Wiring',
+    subtitle: 'Split-Alphabet Signal Tracer',
+    country: 'Educational',
+    era: '1939',
+    icon: <Route size={32} />,
+    color: 'purple',
+    description: 'Visualize Purple\'s fatal design flaw: vowels and consonants encrypted separately. See signal flow through the sixes switch and three chained twenties switches.',
+  },
+  {
     path: '/sigaba',
     name: 'SIGABA',
     subtitle: 'ECM Mark II',
@@ -162,6 +172,16 @@ const machines = [
     icon: <Radio size={32} />,
     color: 'red',
     description: 'Japan\'s first cipher machine. Split alphabet into "sixes" and "twenties" using telephone stepping switches. Predecessor to Purple.',
+  },
+  {
+    path: '/red-wiring',
+    name: 'RED Wiring',
+    subtitle: 'Split-Alphabet Signal Tracer',
+    country: 'Educational',
+    era: '1931',
+    icon: <Route size={32} />,
+    color: 'red',
+    description: 'Trace signals through RED\'s simpler split-alphabet design. Single switch per group — the vulnerability that let the SIS break it by 1935.',
   },
   {
     path: '/hebern',

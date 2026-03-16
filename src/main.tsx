@@ -48,6 +48,8 @@ import RsaApp from './simulators/rsa/App';
 import ElGamalApp from './simulators/elgamal/App';
 import EccApp from './simulators/ecc/App';
 import TriviumApp from './simulators/trivium/App';
+import PurpleWiringApp from './simulators/purple-wiring/App';
+import RedWiringApp from './simulators/red-wiring/App';
 
 const root = document.getElementById('root')!;
 
@@ -104,6 +106,8 @@ ReactDOM.createRoot(root).render(
           <Route path="/elgamal" element={<ElGamalApp />} />
           <Route path="/ecc" element={<EccApp />} />
           <Route path="/trivium" element={<TriviumApp />} />
+          <Route path="/purple-wiring" element={<PurpleWiringApp />} />
+          <Route path="/red-wiring" element={<RedWiringApp />} />
         </Route>
       </Routes>
     </HashRouter>
