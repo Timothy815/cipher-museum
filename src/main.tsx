@@ -6,6 +6,10 @@ import Layout from './Layout';
 import Hub from './Hub';
 import EnigmaM4App from './simulators/enigma-m4/App';
 import EnigmaWiringApp from './simulators/enigma-wiring/App';
+import HebernWiringApp from './simulators/hebern-wiring/App';
+import EnigmaIWiringApp from './simulators/enigma-i-wiring/App';
+import TypexWiringApp from './simulators/typex-wiring/App';
+import NemaWiringApp from './simulators/nema-wiring/App';
 import LorenzApp from './simulators/lorenz-sz42/App';
 import M209App from './simulators/m209/App';
 import PurpleApp from './simulators/purple/App';
@@ -51,6 +55,10 @@ ReactDOM.createRoot(root).render(
           <Route path="/" element={<Hub />} />
           <Route path="/enigma-m4" element={<EnigmaM4App />} />
           <Route path="/enigma-wiring" element={<EnigmaWiringApp />} />
+          <Route path="/hebern-wiring" element={<HebernWiringApp />} />
+          <Route path="/enigma-i-wiring" element={<EnigmaIWiringApp />} />
+          <Route path="/typex-wiring" element={<TypexWiringApp />} />
+          <Route path="/nema-wiring" element={<NemaWiringApp />} />
           <Route path="/lorenz-sz42" element={<LorenzApp />} />
           <Route path="/m209" element={<M209App />} />
           <Route path="/purple" element={<PurpleApp />} />
