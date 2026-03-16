@@ -253,8 +253,6 @@ export const WiringDiagram: React.FC<WiringDiagramProps> = ({
             {/* Active return wire */}
             {activeReturn && (() => {
               const [inI, outI] = activeReturn[g];
-              const isSame = activeForward && activeForward[g][0] === inI;
-              if (isSame) return null;
               return (
                 <path
                   d={`M ${x1} ${letterY(inI)} C ${x1 + cp} ${letterY(inI)}, ${x2 - cp} ${letterY(outI)}, ${x2} ${letterY(outI)}`}
