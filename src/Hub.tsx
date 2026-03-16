@@ -124,6 +124,16 @@ const machines = [
     description: '10-rotor Soviet cipher with reversible rotors, punch card keying, and irregular stepping. Used by all Warsaw Pact nations.',
   },
   {
+    path: '/fialka-wiring',
+    name: 'Fialka Wiring Explorer',
+    subtitle: '10-Rotor Signal Tracer',
+    country: 'Educational',
+    era: '1956',
+    icon: <Route size={32} />,
+    color: 'rose',
+    description: 'Trace the signal through all 10 Fialka rotors and the reflector. See how reversible rotors and irregular stepping create one of the most complex rotor cipher systems ever built.',
+  },
+  {
     path: '/nema',
     name: 'NEMA',
     subtitle: 'NEue MAschine — Swiss Cipher',

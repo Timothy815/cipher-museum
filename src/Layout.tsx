@@ -15,6 +15,7 @@ const SIMULATORS = [
   { path: '/purple', label: 'Purple', country: 'Japan', icon: <Lock size={14} /> },
   { path: '/sigaba', label: 'SIGABA', country: 'United States', icon: <Shield size={14} /> },
   { path: '/fialka', label: 'Fialka M-125', country: 'Soviet Union', icon: <Flower2 size={14} /> },
+  { path: '/fialka-wiring', label: 'Fialka Wiring Explorer', country: 'Educational', icon: <Route size={14} /> },
   { path: '/nema', label: 'NEMA', country: 'Switzerland', icon: <Plus size={14} /> },
   { path: '/red', label: 'RED (Type 91)', country: 'Japan', icon: <Radio size={14} /> },
   { path: '/hebern', label: 'Hebern Electric', country: 'United States', icon: <Zap size={14} /> },
