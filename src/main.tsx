@@ -5,6 +5,7 @@ import './index.css';
 import Layout from './Layout';
 import Hub from './Hub';
 import EnigmaM4App from './simulators/enigma-m4/App';
+import EnigmaWiringApp from './simulators/enigma-wiring/App';
 import LorenzApp from './simulators/lorenz-sz42/App';
 import M209App from './simulators/m209/App';
 import PurpleApp from './simulators/purple/App';
@@ -49,6 +50,7 @@ ReactDOM.createRoot(root).render(
         <Route element={<Layout />}>
           <Route path="/" element={<Hub />} />
           <Route path="/enigma-m4" element={<EnigmaM4App />} />
+          <Route path="/enigma-wiring" element={<EnigmaWiringApp />} />
           <Route path="/lorenz-sz42" element={<LorenzApp />} />
           <Route path="/m209" element={<M209App />} />
           <Route path="/purple" element={<PurpleApp />} />

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind, GitBranch, Key, UserCheck, Circle, SlidersHorizontal } from 'lucide-react';
+import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind, GitBranch, Key, UserCheck, Circle, SlidersHorizontal, Route } from 'lucide-react';
 
 const machines = [
   {
@@ -22,6 +22,16 @@ const machines = [
     icon: <Cog size={32} />,
     color: 'yellow',
     description: 'The iconic 3-rotor Enigma. Broken by Polish mathematicians and Alan Turing at Bletchley Park. The most famous cipher machine in history.',
+  },
+  {
+    path: '/enigma-wiring',
+    name: 'Enigma Wiring Explorer',
+    subtitle: 'Interactive Signal Tracer',
+    country: 'Educational',
+    era: 'M4',
+    icon: <Route size={32} />,
+    color: 'amber',
+    description: 'See the Enigma\'s electrical pathway in real time. Inspired by the Pringles Can Enigma — an "unrolled" M4 showing colored wires through all 4 rotors and reflector.',
   },
   {
     path: '/lorenz-sz42',
