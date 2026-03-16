@@ -8,6 +8,7 @@ const SIMULATORS = [
   { path: '/enigma-wiring', label: 'Enigma Wiring Explorer', country: 'Educational', icon: <Route size={14} /> },
   { path: '/enigma-i-wiring', label: 'Enigma I Wiring Explorer', country: 'Educational', icon: <Route size={14} /> },
   { path: '/lorenz-sz42', label: 'Lorenz SZ42', country: 'Germany', icon: <Cpu size={14} /> },
+  { path: '/lorenz-wiring', label: 'Lorenz Visualizer', country: 'Educational', icon: <Route size={14} /> },
   { path: '/typex', label: 'Typex', country: 'Britain', icon: <Crown size={14} /> },
   { path: '/typex-wiring', label: 'Typex Wiring Explorer', country: 'Educational', icon: <Route size={14} /> },
   { path: '/nema-wiring', label: 'NEMA Wiring Explorer', country: 'Educational', icon: <Route size={14} /> },

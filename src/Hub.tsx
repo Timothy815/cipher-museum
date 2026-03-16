@@ -54,6 +54,16 @@ const machines = [
     description: '12-wheel teleprinter cipher used for strategic communications. Broken by Colossus at Bletchley Park.',
   },
   {
+    path: '/lorenz-wiring',
+    name: 'Lorenz Visualizer',
+    subtitle: 'XOR Signal Flow — 12 Wheels',
+    country: 'Educational',
+    era: 'Visualization',
+    icon: <Route size={32} />,
+    color: 'blue',
+    description: 'Watch the Lorenz SZ42\'s 5-bit signal flow in real time. See how Chi and Psi wheels produce the keystream, and how Motor wheels control irregular Psi stepping.',
+  },
+  {
     path: '/typex',
     name: 'Typex',
     subtitle: 'Type X Mk II — British Cipher Machine',
