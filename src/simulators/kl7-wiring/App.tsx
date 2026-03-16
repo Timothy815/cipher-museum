@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { RotateCcw, ChevronUp, ChevronDown } from 'lucide-react';
+import { RotateCcw, ChevronUp, ChevronDown, Lock, Unlock } from 'lucide-react';
 import { WiringDiagram, WiringTrace } from '../shared/WiringDiagram';
 
 // ── KL-7 Constants ────────────────────────────────────────────────
@@ -66,18 +66,31 @@ function traceFullSignal(
   inputChar: string,
   rotorIds: number[],
   positions: number[],
+  mode: 'ENCIPHER' | 'DECIPHER',
 ): WiringTrace {
   const inIdx = inputChar.charCodeAt(0) - 65;
   const forward: number[] = [inIdx];
 
   let signal = inIdx;
-  for (let i = 0; i < 8; i++) {
-    const r = ROTOR_BANK[rotorIds[i]];
-    const pos = positions[i];
-    signal = mod(signal + pos);
-    signal = r.wiring[signal];
-    signal = mod(signal - pos);
-    forward.push(signal);
+  if (mode === 'ENCIPHER') {
+    for (let i = 0; i < 8; i++) {
+      const r = ROTOR_BANK[rotorIds[i]];
+      const pos = positions[i];
+      signal = mod(signal + pos);
+      signal = r.wiring[signal];
+      signal = mod(signal - pos);
+      forward.push(signal);
+    }
+  } else {
+    // Decipher: pass through rotors in reverse order using inverse wiring
+    for (let i = 7; i >= 0; i--) {
+      const r = ROTOR_BANK[rotorIds[i]];
+      const pos = positions[i];
+      signal = mod(signal + pos);
+      signal = r.inverseWiring[signal];
+      signal = mod(signal - pos);
+      forward.push(signal);
+    }
   }
 
   return {
@@ -109,29 +122,39 @@ const App: React.FC = () => {
   const [pressedKey, setPressedKey] = useState<string | null>(null);
   const [tape, setTape] = useState('');
   const [history, setHistory] = useState<{ positions: number[] }[]>([]);
+  const [mode, setMode] = useState<'ENCIPHER' | 'DECIPHER'>('ENCIPHER');
 
   // Compute effective wirings for diagram (8 gaps)
-  const effectiveWirings = useMemo(
-    () => rotorIds.map((rid, i) => computeEffectiveWiring(ROTOR_BANK[rid].wiring, positions[i])),
-    [rotorIds, positions],
-  );
+  const effectiveWirings = useMemo(() => {
+    if (mode === 'ENCIPHER') {
+      return rotorIds.map((rid, i) => computeEffectiveWiring(ROTOR_BANK[rid].wiring, positions[i]));
+    } else {
+      // Decipher: reverse rotor order, use inverse wirings
+      const reversed = [...rotorIds].reverse();
+      const reversedPos = [...positions].reverse();
+      return reversed.map((rid, i) => computeEffectiveWiring(ROTOR_BANK[rid].inverseWiring, reversedPos[i]));
+    }
+  }, [rotorIds, positions, mode]);
 
   // 9 columns (INPUT + 8 rotors), 8 gaps
+  const displayOrder = mode === 'ENCIPHER' ? rotorIds : [...rotorIds].reverse();
+  const displayPositions = mode === 'ENCIPHER' ? positions : [...positions].reverse();
+
   const columns = useMemo(() => [
     { label: 'INPUT' },
-    ...rotorIds.map((rid, i) => ({
-      label: `R${i + 1}`,
+    ...displayOrder.map((rid, i) => ({
+      label: `R${mode === 'ENCIPHER' ? i + 1 : 8 - i}`,
       sublabel: `#${rid + 1}`,
     })),
     { label: 'OUTPUT' },
-  ], [rotorIds]);
+  ], [displayOrder, mode]);
 
   const gapLabels = useMemo(
-    () => rotorIds.map((rid, i) => ({
-      name: `ROTOR ${i + 1}`,
-      detail: `#${rid + 1} (${toChar(positions[i])})`,
+    () => displayOrder.map((rid, i) => ({
+      name: `ROTOR ${mode === 'ENCIPHER' ? i + 1 : 8 - i}`,
+      detail: `#${rid + 1} (${toChar(displayPositions[i])})`,
     })),
-    [rotorIds, positions],
+    [displayOrder, displayPositions, mode],
   );
 
   // ── Key handling ────────────────────────────────────────────────
@@ -139,12 +162,12 @@ const App: React.FC = () => {
     if (pressedKey) return;
     setHistory(prev => [...prev, { positions }]);
     const newPos = stepPositions(positions, rotorIds);
-    const sig = traceFullSignal(char, rotorIds, newPos);
+    const sig = traceFullSignal(char, rotorIds, newPos, mode);
     setTrace(sig);
     setPressedKey(char);
     setTape(prev => prev + sig.outputChar);
     setPositions(newPos);
-  }, [positions, rotorIds, pressedKey]);
+  }, [positions, rotorIds, pressedKey, mode]);
 
   const handleKeyUp = useCallback(() => {
     setPressedKey(null);
@@ -209,11 +232,36 @@ const App: React.FC = () => {
             </h1>
             <p className="text-xs text-slate-500 font-mono tracking-widest">ADONIS — 8 ROTORS, NO REFLECTOR</p>
           </div>
-          <button onClick={handleReset}
-            className="p-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 hover:text-white transition-colors"
-            title="Reset">
-            <RotateCcw size={18} />
+          <div className="flex gap-2">
+            <button onClick={handleReset}
+              className="p-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 hover:text-white transition-colors"
+              title="Reset">
+              <RotateCcw size={18} />
+            </button>
+          </div>
+        </div>
+
+        {/* Mode Toggle */}
+        <div className="flex items-center gap-3 mb-6">
+          <button onClick={() => { setMode('ENCIPHER'); setTrace(null); }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-colors ${
+              mode === 'ENCIPHER'
+                ? 'bg-blue-950/40 border border-blue-700/50 text-blue-400'
+                : 'bg-slate-800 border border-slate-700 text-slate-400 hover:text-blue-400'
+            }`}>
+            <Lock size={16} /> Encipher
           </button>
+          <button onClick={() => { setMode('DECIPHER'); setTrace(null); }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-colors ${
+              mode === 'DECIPHER'
+                ? 'bg-blue-950/40 border border-blue-700/50 text-blue-400'
+                : 'bg-slate-800 border border-slate-700 text-slate-400 hover:text-blue-400'
+            }`}>
+            <Unlock size={16} /> Decipher
+          </button>
+          <span className="text-xs text-slate-500 font-mono">
+            {mode === 'ENCIPHER' ? 'Signal: R1→R2→...→R8' : 'Signal: R8→R7→...→R1 (inverse wirings)'}
+          </span>
         </div>
 
         {/* Rotor Selection and Position Controls */}
@@ -274,10 +322,10 @@ const App: React.FC = () => {
           <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-4 mb-6">
             <div className="flex items-center gap-1.5 font-mono text-sm flex-wrap">
               <span className="text-amber-400 font-bold">{trace.inputChar}</span>
-              {rotorIds.map((rid, i) => (
+              {displayOrder.map((rid, i) => (
                 <React.Fragment key={i}>
                   <span className="text-slate-600">→</span>
-                  <span className="text-blue-400 text-[10px]">[R{i + 1}]</span>
+                  <span className="text-blue-400 text-[10px]">[R{mode === 'ENCIPHER' ? i + 1 : 8 - i}&sup;{mode === 'DECIPHER' ? '⁻¹' : ''}]</span>
                 </React.Fragment>
               ))}
               <span className="text-slate-600">→</span>
