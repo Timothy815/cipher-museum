@@ -135,31 +135,25 @@ const App: React.FC = () => {
   const reflMap = useMemo(() => reflectorMapping(state.reflector), [state.reflector]);
 
   // ── Active wire indices ─────────────────────────────────────────
-  // Physical layout: gap 0=GREEK, gap 1=LEFT, gap 2=MIDDLE, gap 3=RIGHT
-  // Forward signal goes RIGHT→MIDDLE→LEFT→GREEK (right to left in diagram)
-  // forward[0]=input(entry), forward[1]=after RIGHT, forward[2]=after MID, forward[3]=after LEFT, forward[4]=after GREEK
-  // Gap 3 (RIGHT): entry→after RIGHT = forward[0]→forward[1]
-  // Gap 2 (MIDDLE): after RIGHT→after MID = forward[1]→forward[2]
-  // Gap 1 (LEFT): after MID→after LEFT = forward[2]→forward[3]
-  // Gap 0 (GREEK): after LEFT→after GREEK = forward[3]→forward[4]
+  // Physical layout (L→R): GREEK(gap0), LEFT(gap1), MIDDLE(gap2), RIGHT(gap3)
+  // Columns (L→R): col0(refl side), col1, col2, col3, col4(entry)
+  // Forward signal: entry(col4) → RIGHT(gap3) → MID(gap2) → LEFT(gap1) → GREEK(gap0) → reflector
+  // forward[0]=entry(col4), forward[1]=afterRIGHT(col3), forward[2]=afterMID(col2), forward[3]=afterLEFT(col1), forward[4]=afterGREEK(col0)
+  // Active wire = [leftColIdx, rightColIdx] for each gap
   const activeForward: [number, number][] | null = trace ? [
-    [trace.forward[3], trace.forward[4]],
-    [trace.forward[2], trace.forward[3]],
-    [trace.forward[1], trace.forward[2]],
-    [trace.forward[0], trace.forward[1]],
+    [trace.forward[4], trace.forward[3]],  // gap0(GREEK): col0=forward[4], col1=forward[3]
+    [trace.forward[3], trace.forward[2]],  // gap1(LEFT):  col1=forward[3], col2=forward[2]
+    [trace.forward[2], trace.forward[1]],  // gap2(MID):   col2=forward[2], col3=forward[1]
+    [trace.forward[1], trace.forward[0]],  // gap3(RIGHT): col3=forward[1], col4=forward[0]
   ] : null;
 
-  // Return signal goes GREEK→LEFT→MIDDLE→RIGHT (left to right in diagram)
-  // backward[0]=after reflector, backward[1]=after GREEK inv, backward[2]=after LEFT inv, backward[3]=after MID inv, backward[4]=after RIGHT inv
-  // Gap 0 (GREEK): backward[0]→backward[1]
-  // Gap 1 (LEFT): backward[1]→backward[2]
-  // Gap 2 (MIDDLE): backward[2]→backward[3]
-  // Gap 3 (RIGHT): backward[3]→backward[4]
+  // Return signal: reflector → GREEK(gap0) → LEFT(gap1) → MID(gap2) → RIGHT(gap3) → entry
+  // backward[0]=afterRefl(col0), backward[1]=afterGREEKinv(col1), backward[2]=afterLEFTinv(col2), backward[3]=afterMIDinv(col3), backward[4]=afterRIGHTinv(col4)
   const activeReturn: [number, number][] | null = trace ? [
-    [trace.backward[0], trace.backward[1]],
-    [trace.backward[1], trace.backward[2]],
-    [trace.backward[2], trace.backward[3]],
-    [trace.backward[3], trace.backward[4]],
+    [trace.backward[0], trace.backward[1]],  // gap0: col0→col1
+    [trace.backward[1], trace.backward[2]],  // gap1: col1→col2
+    [trace.backward[2], trace.backward[3]],  // gap2: col2→col3
+    [trace.backward[3], trace.backward[4]],  // gap3: col3→col4
   ] : null;
 
   // ── Highlighted letters at each column ──────────────────────────
@@ -469,8 +463,12 @@ const App: React.FC = () => {
               </g>
             ))}
 
-            {/* Gap wires */}
-            {wirings.map((wiring, g) => {
+            {/* Gap wires — invert wirings for display since signal flows R→L but beziers draw L→R */}
+            {wirings.map(w => {
+              const inv = new Array(26);
+              for (let i = 0; i < 26; i++) inv[w[i]] = i;
+              return inv;
+            }).map((wiring, g) => {
               const x1 = COL_X[g] + WIRE_PAD;
               const x2 = COL_X[g + 1] - WIRE_PAD;
               const cp = (x2 - x1) * 0.15;
