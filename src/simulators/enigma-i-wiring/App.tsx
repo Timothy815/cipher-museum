@@ -172,27 +172,28 @@ const App: React.FC = () => {
   const [plugboardText, setPlugboardText] = useState('');
 
   // ── Computed wirings for WiringDiagram ────────────────────────
-  // Gaps: Right rotor, Middle rotor, Left rotor (left-to-right in diagram)
+  // Physical layout: Left, Middle, Right (left-to-right in diagram)
+  // Reflector on the left, entry on the right
   const wirings = useMemo(() => [
-    effectiveWiring(state.rotors[2]), // Right
-    effectiveWiring(state.rotors[1]), // Middle
     effectiveWiring(state.rotors[0]), // Left
+    effectiveWiring(state.rotors[1]), // Middle
+    effectiveWiring(state.rotors[2]), // Right
   ], [state.rotors]);
 
   const reflMap = useMemo(() => reflectorMapping(state.reflector), [state.reflector]);
 
   // ── WiringDiagram props ───────────────────────────────────────
   const columns = [
+    { label: '\u2022' },
+    { label: '\u2022' },
+    { label: '\u2022' },
     { label: 'ENTRY' },
-    { label: '\u2022' },
-    { label: '\u2022' },
-    { label: '\u2022' },
   ];
 
   const gapLabels = [
-    { name: 'RIGHT', detail: state.rotors[2].type },
-    { name: 'MIDDLE', detail: state.rotors[1].type },
     { name: 'LEFT', detail: state.rotors[0].type },
+    { name: 'MIDDLE', detail: state.rotors[1].type },
+    { name: 'RIGHT', detail: state.rotors[2].type },
   ];
 
   // ── Convert trace to WiringTrace for the shared component ─────
@@ -411,6 +412,7 @@ const App: React.FC = () => {
             wirings={wirings}
             reflector={reflMap}
             reflectorLabel={state.reflector}
+            reflectorSide="left"
             trace={wiringTrace}
             accentColor="#92400e"
           />

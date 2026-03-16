@@ -165,30 +165,30 @@ const App: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
 
   // ── Computed wirings for the WiringDiagram ────────────────────────
-  // Gap order: Right(3), Mid(2), Left(1), Leftmost(0)
+  // Physical order: Leftmost(0), Left(1), Mid(2), Right(3) — reflector on left
   const wirings = useMemo(() => [
-    effectiveWiring(ROTORS[state.rotors[3].rotorIdx].wiring, state.rotors[3].position, state.rotors[3].ringSetting),
-    effectiveWiring(ROTORS[state.rotors[2].rotorIdx].wiring, state.rotors[2].position, state.rotors[2].ringSetting),
-    effectiveWiring(ROTORS[state.rotors[1].rotorIdx].wiring, state.rotors[1].position, state.rotors[1].ringSetting),
     effectiveWiring(ROTORS[state.rotors[0].rotorIdx].wiring, state.rotors[0].position, state.rotors[0].ringSetting),
+    effectiveWiring(ROTORS[state.rotors[1].rotorIdx].wiring, state.rotors[1].position, state.rotors[1].ringSetting),
+    effectiveWiring(ROTORS[state.rotors[2].rotorIdx].wiring, state.rotors[2].position, state.rotors[2].ringSetting),
+    effectiveWiring(ROTORS[state.rotors[3].rotorIdx].wiring, state.rotors[3].position, state.rotors[3].ringSetting),
   ], [state.rotors]);
 
   const reflMap = useMemo(() => reflectorMapping(), []);
 
   // ── Columns and gap labels for WiringDiagram ──────────────────────
   const columns = [
+    { label: '\u2022' },
+    { label: '\u2022' },
+    { label: '\u2022' },
+    { label: '\u2022' },
     { label: 'ENTRY' },
-    { label: '\u2022' },
-    { label: '\u2022' },
-    { label: '\u2022' },
-    { label: '\u2022' },
   ];
 
   const gapLabels = [
-    { name: 'RIGHT', detail: `R${state.rotors[3].rotorIdx + 1}` },
-    { name: 'MIDDLE', detail: `R${state.rotors[2].rotorIdx + 1}` },
-    { name: 'LEFT', detail: `R${state.rotors[1].rotorIdx + 1}` },
     { name: 'LEFTMOST', detail: `R${state.rotors[0].rotorIdx + 1}` },
+    { name: 'LEFT', detail: `R${state.rotors[1].rotorIdx + 1}` },
+    { name: 'MIDDLE', detail: `R${state.rotors[2].rotorIdx + 1}` },
+    { name: 'RIGHT', detail: `R${state.rotors[3].rotorIdx + 1}` },
   ];
 
   // ── Key handling ──────────────────────────────────────────────────
@@ -402,6 +402,7 @@ const App: React.FC = () => {
             wirings={wirings}
             reflector={reflMap}
             reflectorLabel="UKW"
+            reflectorSide="left"
             trace={trace}
             accentColor="#0284c7"
           />

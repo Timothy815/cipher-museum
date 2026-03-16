@@ -13,7 +13,7 @@ const KEYBOARD_LAYOUT = ['QWERTZUIO', 'ASDFGHJK', 'PYXCVBNML'];
 // ── SVG Layout ─────────────────────────────────────────────────────
 const SVG_W = 920;
 const SVG_H = 640;
-const COL_X = [60, 240, 420, 600, 780];
+const COL_X = [140, 300, 460, 620, 780];
 const LETTER_Y0 = 55;
 const LETTER_DY = 21;
 const WIRE_PAD = 16;
@@ -124,45 +124,61 @@ const App: React.FC = () => {
   const [plugboardText, setPlugboardText] = useState('');
 
   // ── Computed wirings ────────────────────────────────────────────
-  // Gap g uses rotor at internal index [3,2,1,0][g]
+  // Physical layout: GREEK(0) on left, RIGHT(3) on right
   const wirings = useMemo(() => [
-    effectiveWiring(state.rotors[3]),
-    effectiveWiring(state.rotors[2]),
-    effectiveWiring(state.rotors[1]),
     effectiveWiring(state.rotors[0]),
+    effectiveWiring(state.rotors[1]),
+    effectiveWiring(state.rotors[2]),
+    effectiveWiring(state.rotors[3]),
   ], [state.rotors]);
 
   const reflMap = useMemo(() => reflectorMapping(state.reflector), [state.reflector]);
 
   // ── Active wire indices ─────────────────────────────────────────
-  // For gap g: [leftRowIdx, rightRowIdx]
+  // Physical layout: gap 0=GREEK, gap 1=LEFT, gap 2=MIDDLE, gap 3=RIGHT
+  // Forward signal goes RIGHT→MIDDLE→LEFT→GREEK (right to left in diagram)
+  // forward[0]=input(entry), forward[1]=after RIGHT, forward[2]=after MID, forward[3]=after LEFT, forward[4]=after GREEK
+  // Gap 3 (RIGHT): entry→after RIGHT = forward[0]→forward[1]
+  // Gap 2 (MIDDLE): after RIGHT→after MID = forward[1]→forward[2]
+  // Gap 1 (LEFT): after MID→after LEFT = forward[2]→forward[3]
+  // Gap 0 (GREEK): after LEFT→after GREEK = forward[3]→forward[4]
   const activeForward: [number, number][] | null = trace ? [
-    [trace.forward[0], trace.forward[1]],
-    [trace.forward[1], trace.forward[2]],
-    [trace.forward[2], trace.forward[3]],
     [trace.forward[3], trace.forward[4]],
+    [trace.forward[2], trace.forward[3]],
+    [trace.forward[1], trace.forward[2]],
+    [trace.forward[0], trace.forward[1]],
   ] : null;
 
+  // Return signal goes GREEK→LEFT→MIDDLE→RIGHT (left to right in diagram)
+  // backward[0]=after reflector, backward[1]=after GREEK inv, backward[2]=after LEFT inv, backward[3]=after MID inv, backward[4]=after RIGHT inv
+  // Gap 0 (GREEK): backward[0]→backward[1]
+  // Gap 1 (LEFT): backward[1]→backward[2]
+  // Gap 2 (MIDDLE): backward[2]→backward[3]
+  // Gap 3 (RIGHT): backward[3]→backward[4]
   const activeReturn: [number, number][] | null = trace ? [
-    [trace.backward[4], trace.backward[3]],
-    [trace.backward[3], trace.backward[2]],
-    [trace.backward[2], trace.backward[1]],
-    [trace.backward[1], trace.backward[0]],
+    [trace.backward[0], trace.backward[1]],
+    [trace.backward[1], trace.backward[2]],
+    [trace.backward[2], trace.backward[3]],
+    [trace.backward[3], trace.backward[4]],
   ] : null;
 
   // ── Highlighted letters at each column ──────────────────────────
+  // Physical layout: col 0=reflector side (GREEK), col 4=entry side (RIGHT)
+  // forward[0]=entry(col4), forward[1]=afterRIGHT(col3), forward[2]=afterMID(col2), forward[3]=afterLEFT(col1), forward[4]=afterGREEK(col0)
+  // backward[0]=afterRefl(col0), backward[1]=afterGREEKinv(col1), backward[2]=afterLEFTinv(col2), backward[3]=afterMIDinv(col3), backward[4]=afterRIGHTinv(col4)
   const highlights = useMemo(() => {
     if (!trace) return new Map<string, string>();
     const m = new Map<string, string>();
-    // Forward
-    for (let c = 0; c < 5; c++) {
-      m.set(`${c}-${trace.forward[c]}`, c === 0 ? 'input' : 'forward');
+    // Forward: signal goes right→left (col4→col0)
+    for (let i = 0; i < 5; i++) {
+      const col = 4 - i; // forward[0]→col4(entry), forward[4]→col0(greek out)
+      m.set(`${col}-${trace.forward[i]}`, col === 4 ? 'input' : 'forward');
     }
-    // Return
-    for (let c = 4; c >= 0; c--) {
-      const idx = trace.backward[4 - c];
-      const key = `${c}-${idx}`;
-      if (!m.has(key)) m.set(key, c === 0 ? 'output' : 'return');
+    // Return: signal goes left→right (col0→col4)
+    for (let i = 0; i < 5; i++) {
+      const col = i; // backward[0]→col0, backward[4]→col4(output)
+      const key = `${col}-${trace.backward[i]}`;
+      if (!m.has(key)) m.set(key, col === 4 ? 'output' : 'return');
     }
     return m;
   }, [trace]);
@@ -264,14 +280,14 @@ const App: React.FC = () => {
     setPlugboardText('');
   };
 
-  // Gap labels
+  // Gap labels — physical order: GREEK, LEFT, MIDDLE, RIGHT
   const gapRotorNames = [
-    state.rotors[3].type,
-    state.rotors[2].type,
-    state.rotors[1].type,
     state.rotors[0].type,
+    state.rotors[1].type,
+    state.rotors[2].type,
+    state.rotors[3].type,
   ];
-  const gapSlotNames = ['RIGHT', 'MIDDLE', 'LEFT', 'GREEK'];
+  const gapSlotNames = ['GREEK', 'LEFT', 'MIDDLE', 'RIGHT'];
 
   return (
     <div className="flex-1 bg-slate-950 flex flex-col items-center px-4 py-8 text-slate-200">
@@ -363,10 +379,10 @@ const App: React.FC = () => {
         {/* ── Rotor Position Windows ──────────────────────────── */}
         <div className="flex justify-center gap-6 sm:gap-10 mb-4">
           {[
-            { idx: 3, label: 'Right' },
-            { idx: 2, label: 'Mid' },
-            { idx: 1, label: 'Left' },
             { idx: 0, label: 'Greek' },
+            { idx: 1, label: 'Left' },
+            { idx: 2, label: 'Mid' },
+            { idx: 3, label: 'Right' },
           ].map(({ idx, label }) => (
             <div key={idx} className="flex flex-col items-center">
               <div className="text-[9px] text-slate-600 font-bold uppercase">{label}</div>
@@ -401,16 +417,16 @@ const App: React.FC = () => {
               </filter>
             </defs>
 
-            {/* Column headers */}
-            <text x={COL_X[0]} y={20} textAnchor="middle" fill="#64748b" fontSize={10} fontWeight="bold" fontFamily="monospace">ENTRY</text>
-            {[1, 2, 3, 4].map(c => (
+            {/* Column headers — physical layout: reflector on left, entry on right */}
+            {[0, 1, 2, 3].map(c => (
               <text key={c} x={COL_X[c]} y={20} textAnchor="middle" fill="#64748b" fontSize={9} fontWeight="bold" fontFamily="monospace" opacity={0.5}>
                 {'•'}
               </text>
             ))}
+            <text x={COL_X[4]} y={20} textAnchor="middle" fill="#64748b" fontSize={10} fontWeight="bold" fontFamily="monospace">ENTRY</text>
 
-            {/* Reflector label */}
-            <text x={COL_X[4] + 40} y={20} textAnchor="start" fill="#7c3aed" fontSize={10} fontWeight="bold" fontFamily="monospace">
+            {/* Reflector label — on the left */}
+            <text x={COL_X[0] - 40} y={20} textAnchor="end" fill="#7c3aed" fontSize={10} fontWeight="bold" fontFamily="monospace">
               UKW-{state.reflector === ReflectorType.B_Thin ? 'B' : 'C'}
             </text>
 
@@ -509,9 +525,9 @@ const App: React.FC = () => {
               );
             })}
 
-            {/* Reflector arcs */}
+            {/* Reflector arcs — on the left side (col 0) */}
             {(() => {
-              const x = COL_X[4] + WIRE_PAD;
+              const x = COL_X[0] - WIRE_PAD;
               const drawn = new Set<number>();
               return reflMap.map((outIdx, inIdx) => {
                 if (drawn.has(inIdx)) return null;
@@ -527,7 +543,7 @@ const App: React.FC = () => {
                 );
                 return (
                   <path key={inIdx}
-                    d={`M ${x} ${y1} C ${x + bulge} ${y1}, ${x + bulge} ${y2}, ${x} ${y2}`}
+                    d={`M ${x} ${y1} C ${x - bulge} ${y1}, ${x - bulge} ${y2}, ${x} ${y2}`}
                     stroke={isActive ? '#a78bfa' : `rgba(100, 116, 139, ${trace ? 0.04 : 0.1})`}
                     strokeWidth={isActive ? 2.5 : 1} fill="none"
                     filter={isActive ? 'url(#glow-refl)' : undefined} />
@@ -535,21 +551,21 @@ const App: React.FC = () => {
               });
             })()}
 
-            {/* Input / Output indicators */}
+            {/* Input / Output indicators — on the right side (col 4 = ENTRY) */}
             {trace && (
               <g>
                 {/* Input arrow & label */}
                 <polygon
-                  points={`${COL_X[0] - WIRE_PAD - 6},${letterY(trace.forward[0]) - 4} ${COL_X[0] - WIRE_PAD - 6},${letterY(trace.forward[0]) + 4} ${COL_X[0] - WIRE_PAD},${letterY(trace.forward[0])}`}
+                  points={`${COL_X[4] + WIRE_PAD + 6},${letterY(trace.forward[0]) - 4} ${COL_X[4] + WIRE_PAD + 6},${letterY(trace.forward[0]) + 4} ${COL_X[4] + WIRE_PAD},${letterY(trace.forward[0])}`}
                   fill="#f59e0b" />
-                <text x={COL_X[0] - WIRE_PAD - 10} y={letterY(trace.forward[0]) + 1}
-                  textAnchor="end" dominantBaseline="central"
+                <text x={COL_X[4] + WIRE_PAD + 10} y={letterY(trace.forward[0]) + 1}
+                  textAnchor="start" dominantBaseline="central"
                   fontSize={13} fontWeight="bold" fontFamily="monospace" fill="#f59e0b">
                   {trace.inputChar}
                 </text>
                 {trace.pbIn && (
-                  <text x={COL_X[0] - WIRE_PAD - 10} y={letterY(trace.forward[0]) + 13}
-                    textAnchor="end" dominantBaseline="central"
+                  <text x={COL_X[4] + WIRE_PAD + 10} y={letterY(trace.forward[0]) + 13}
+                    textAnchor="start" dominantBaseline="central"
                     fontSize={8} fontFamily="monospace" fill="#ec4899">
                     PB→{trace.pbIn}
                   </text>
@@ -557,16 +573,16 @@ const App: React.FC = () => {
 
                 {/* Output arrow & label */}
                 <polygon
-                  points={`${COL_X[0] - WIRE_PAD},${letterY(trace.backward[4]) - 4} ${COL_X[0] - WIRE_PAD},${letterY(trace.backward[4]) + 4} ${COL_X[0] - WIRE_PAD - 6},${letterY(trace.backward[4])}`}
+                  points={`${COL_X[4] + WIRE_PAD},${letterY(trace.backward[4]) - 4} ${COL_X[4] + WIRE_PAD},${letterY(trace.backward[4]) + 4} ${COL_X[4] + WIRE_PAD + 6},${letterY(trace.backward[4])}`}
                   fill="#10b981" />
-                <text x={COL_X[0] - WIRE_PAD - 10} y={letterY(trace.backward[4]) + 1}
-                  textAnchor="end" dominantBaseline="central"
+                <text x={COL_X[4] + WIRE_PAD + 10} y={letterY(trace.backward[4]) + 1}
+                  textAnchor="start" dominantBaseline="central"
                   fontSize={13} fontWeight="bold" fontFamily="monospace" fill="#10b981">
                   {trace.outputChar}
                 </text>
                 {trace.pbOut && (
-                  <text x={COL_X[0] - WIRE_PAD - 10} y={letterY(trace.backward[4]) - 11}
-                    textAnchor="end" dominantBaseline="central"
+                  <text x={COL_X[4] + WIRE_PAD + 10} y={letterY(trace.backward[4]) - 11}
+                    textAnchor="start" dominantBaseline="central"
                     fontSize={8} fontFamily="monospace" fill="#ec4899">
                     PB→{trace.pbOut}
                   </text>

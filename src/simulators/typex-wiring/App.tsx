@@ -189,33 +189,33 @@ const App: React.FC = () => {
   const [tape, setTape] = useState('');
   const [showSettings, setShowSettings] = useState(false);
 
-  // ── Computed wirings for the 5 gaps ────────────────────────────
+  // ── Computed wirings for the 5 gaps (physical: SLOW, MEDIUM, FAST, SB, SA) ──
   const wirings = useMemo(() => [
-    computeEffectiveWiring(STATORS[state.stator0], 0, 0),
-    computeEffectiveWiring(STATORS[state.stator1], 0, 0),
-    computeEffectiveWiring(ROTORS[state.fast.id].wiring, state.fast.position, state.fast.ringSetting),
-    computeEffectiveWiring(ROTORS[state.medium.id].wiring, state.medium.position, state.medium.ringSetting),
     computeEffectiveWiring(ROTORS[state.slow.id].wiring, state.slow.position, state.slow.ringSetting),
+    computeEffectiveWiring(ROTORS[state.medium.id].wiring, state.medium.position, state.medium.ringSetting),
+    computeEffectiveWiring(ROTORS[state.fast.id].wiring, state.fast.position, state.fast.ringSetting),
+    computeEffectiveWiring(STATORS[state.stator1], 0, 0),
+    computeEffectiveWiring(STATORS[state.stator0], 0, 0),
   ], [state]);
 
   const reflMap = useMemo(() => reflectorMapping(), []);
 
   // ── Column and gap definitions for WiringDiagram ───────────────
   const columns = [
+    { label: '\u2022' },
+    { label: '\u2022' },
+    { label: '\u2022' },
+    { label: '\u2022' },
+    { label: '\u2022' },
     { label: 'ENTRY' },
-    { label: '\u2022' },
-    { label: '\u2022' },
-    { label: '\u2022' },
-    { label: '\u2022' },
-    { label: '\u2022' },
   ];
 
   const gapLabels = [
-    { name: 'STATOR A', detail: state.stator0, isStator: true },
-    { name: 'STATOR B', detail: state.stator1, isStator: true },
-    { name: 'FAST', detail: state.fast.id },
-    { name: 'MEDIUM', detail: state.medium.id },
     { name: 'SLOW', detail: state.slow.id },
+    { name: 'MEDIUM', detail: state.medium.id },
+    { name: 'FAST', detail: state.fast.id },
+    { name: 'STATOR B', detail: state.stator1, isStator: true },
+    { name: 'STATOR A', detail: state.stator0, isStator: true },
   ];
 
   // ── Key handling ──────────────────────────────────────────────
@@ -427,6 +427,7 @@ const App: React.FC = () => {
             wirings={wirings}
             reflector={reflMap}
             reflectorLabel="UKW"
+            reflectorSide="left"
             trace={trace}
             accentColor="#059669"
           />

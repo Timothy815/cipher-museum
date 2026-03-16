@@ -142,10 +142,10 @@ const App: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
 
   // ── Computed wirings for each gap ──────────────────────────────
-  // Gap 0 = rightmost rotor (id 10), ... gap 9 = leftmost rotor (id 1)
-  // Columns: 0=ENTRY, 1..10 = after each rotor (right to left)
+  // Gap 0 = leftmost rotor (id 1), ... gap 9 = rightmost rotor (id 10)
+  // Columns: 0=after reflector (rotor 1 output), ... 10=ENTRY
   const wirings = useMemo(() =>
-    [9, 8, 7, 6, 5, 4, 3, 2, 1, 0].map(i =>
+    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(i =>
       computeEffectiveWiring(
         ROTOR_WIRINGS[rotors[i].id].wiring,
         rotors[i].reversed,
@@ -157,28 +157,38 @@ const App: React.FC = () => {
   const reflMap = useMemo(() => reflectorMapping(), []);
 
   // ── Active wire indices for each gap ──────────────────────────
+  // Display gap g corresponds to rotor index g (0=rotor1, 9=rotor10)
+  // forward trace goes right-to-left: forward[0]=entry at col 10, forward[10]=reflector side at col 0
+  // So display gap g (between col g and col g+1) corresponds to trace gap (NUM_GAPS - 1 - g)
   const activeForward: [number, number][] | null = trace
-    ? Array.from({ length: NUM_GAPS }, (_, g) => [trace.forward[g], trace.forward[g + 1]] as [number, number])
+    ? Array.from({ length: NUM_GAPS }, (_, g) => {
+        const traceGap = NUM_GAPS - 1 - g;
+        return [trace.forward[traceGap + 1], trace.forward[traceGap]] as [number, number];
+      })
     : null;
 
   const activeReturn: [number, number][] | null = trace
-    ? Array.from({ length: NUM_GAPS }, (_, g) => [
-        trace.backward[NUM_GAPS - g],
-        trace.backward[NUM_GAPS - 1 - g],
-      ] as [number, number])
+    ? Array.from({ length: NUM_GAPS }, (_, g) => {
+        const traceGap = NUM_GAPS - 1 - g;
+        return [trace.backward[NUM_GAPS - 1 - traceGap], trace.backward[NUM_GAPS - traceGap]] as [number, number];
+      })
     : null;
 
   // ── Highlighted letters ───────────────────────────────────────
+  // Display col c maps to trace index (NUM_COLS - 1 - c)
+  // Col NUM_COLS-1 = ENTRY (input/output), Col 0 = reflector side
   const highlights = useMemo(() => {
     const m = new Map<string, string>();
     if (!trace) return m;
     for (let c = 0; c < NUM_COLS; c++) {
-      m.set(`${c}-${trace.forward[c]}`, c === 0 ? 'input' : 'forward');
+      const traceIdx = NUM_COLS - 1 - c;
+      m.set(`${c}-${trace.forward[traceIdx]}`, c === NUM_COLS - 1 ? 'input' : 'forward');
     }
-    for (let c = NUM_COLS - 1; c >= 0; c--) {
-      const idx = trace.backward[NUM_COLS - 1 - c];
+    for (let c = 0; c < NUM_COLS; c++) {
+      const traceIdx = NUM_COLS - 1 - c;
+      const idx = trace.backward[NUM_COLS - 1 - traceIdx];
       const key = `${c}-${idx}`;
-      if (!m.has(key)) m.set(key, c === 0 ? 'output' : 'return');
+      if (!m.has(key)) m.set(key, c === NUM_COLS - 1 ? 'output' : 'return');
     }
     return m;
   }, [trace]);
@@ -193,8 +203,8 @@ const App: React.FC = () => {
   };
 
   // ── Gap labels ────────────────────────────────────────────────
-  // Gap 0 is rightmost rotor, gap 9 is leftmost
-  const gapRotorIds = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
+  // Gap 0 is leftmost rotor (rotor 1), gap 9 is rightmost (rotor 10)
+  const gapRotorIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
   // ── Key handling (trace persists between keypresses) ──────────
   const handleKeyDown = useCallback((char: string) => {
@@ -306,7 +316,7 @@ const App: React.FC = () => {
           <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 mb-6 space-y-4">
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
               {Array.from({ length: 10 }, (_, i) => {
-                const ri = 9 - i; // display order: rotor 10 (rightmost) first
+                const ri = i; // display order: rotor 1 (leftmost) first
                 const r = rotors[ri];
                 return (
                   <div key={ri} className="space-y-2">
@@ -355,7 +365,7 @@ const App: React.FC = () => {
         {/* Rotor Position Windows */}
         <div className="flex justify-center gap-2 sm:gap-3 mb-4 flex-wrap">
           {Array.from({ length: 10 }, (_, i) => {
-            const ri = 9 - i; // display right to left
+            const ri = i; // display left to right: rotor 1 (leftmost) first
             const r = rotors[ri];
             return (
               <div key={ri} className="flex flex-col items-center">
@@ -394,22 +404,22 @@ const App: React.FC = () => {
             </defs>
 
             {/* Column headers */}
-            <text x={COL_X[0]} y={18} textAnchor="middle" fill="#64748b" fontSize={10} fontWeight="bold" fontFamily="monospace">ENTRY</text>
+            <text x={COL_X[NUM_COLS - 1]} y={18} textAnchor="middle" fill="#64748b" fontSize={10} fontWeight="bold" fontFamily="monospace">ENTRY</text>
             {Array.from({ length: 10 }, (_, c) => (
-              <text key={c + 1} x={COL_X[c + 1]} y={18} textAnchor="middle" fill="#64748b" fontSize={9} fontWeight="bold" fontFamily="monospace" opacity={0.4}>
+              <text key={c} x={COL_X[c]} y={18} textAnchor="middle" fill="#64748b" fontSize={9} fontWeight="bold" fontFamily="monospace" opacity={0.4}>
                 {'·'}
               </text>
             ))}
 
             {/* Reflector label */}
-            <text x={COL_X[NUM_COLS - 1] + 40} y={18} textAnchor="start" fill="#7c3aed" fontSize={10} fontWeight="bold" fontFamily="monospace">
+            <text x={COL_X[0] - 40} y={18} textAnchor="end" fill="#7c3aed" fontSize={10} fontWeight="bold" fontFamily="monospace">
               UKW
             </text>
 
             {/* Gap slot labels */}
             {gapRotorIds.map((rotorId, g) => {
               const cx = (COL_X[g] + COL_X[g + 1]) / 2;
-              const r = rotors[10 - rotorId]; // map to actual index
+              const r = rotors[rotorId - 1]; // map to actual index
               return (
                 <g key={`gap-lbl-${g}`}>
                   <text x={cx} y={33} textAnchor="middle" fill="#9f1239" fontSize={7} fontWeight="bold" fontFamily="monospace" opacity={0.7}>
@@ -448,6 +458,11 @@ const App: React.FC = () => {
 
             {/* Gap wires */}
             {wirings.map((wiring, g) => {
+              // Invert the wiring for display: signal enters from right col, exits at left col
+              // wiring[inIdx] = outIdx (forward), so inverse: for each outIdx, find inIdx
+              const invWiring = new Array(26);
+              for (let i = 0; i < 26; i++) invWiring[wiring[i]] = i;
+
               const x1 = COL_X[g] + WIRE_PAD;
               const x2 = COL_X[g + 1] - WIRE_PAD;
               const cp = (x2 - x1) * 0.15;
@@ -457,12 +472,12 @@ const App: React.FC = () => {
               return (
                 <g key={`gap-${g}`}>
                   {/* Background wires */}
-                  {wiring.map((outIdx, inIdx) => {
-                    if (inIdx === fwIdx || inIdx === rtIdx) return null;
+                  {invWiring.map((rightIdx: number, leftIdx: number) => {
+                    if (leftIdx === fwIdx || leftIdx === rtIdx) return null;
                     return (
-                      <path key={inIdx}
-                        d={`M ${x1} ${letterY(inIdx)} C ${x1 + cp} ${letterY(inIdx)}, ${x2 - cp} ${letterY(outIdx)}, ${x2} ${letterY(outIdx)}`}
-                        stroke={`hsla(${wireHue(inIdx)}, 40%, 45%, ${trace ? 0.04 : 0.13})`}
+                      <path key={leftIdx}
+                        d={`M ${x1} ${letterY(leftIdx)} C ${x1 + cp} ${letterY(leftIdx)}, ${x2 - cp} ${letterY(rightIdx)}, ${x2} ${letterY(rightIdx)}`}
+                        stroke={`hsla(${wireHue(rightIdx)}, 40%, 45%, ${trace ? 0.04 : 0.13})`}
                         strokeWidth={1} fill="none" />
                     );
                   })}
@@ -502,7 +517,7 @@ const App: React.FC = () => {
 
             {/* Reflector arcs */}
             {(() => {
-              const x = COL_X[NUM_COLS - 1] + WIRE_PAD;
+              const x = COL_X[0] - WIRE_PAD;
               const drawn = new Set<number>();
               return reflMap.map((outIdx, inIdx) => {
                 if (drawn.has(inIdx)) return null;
@@ -518,7 +533,7 @@ const App: React.FC = () => {
                 );
                 return (
                   <path key={inIdx}
-                    d={`M ${x} ${y1} C ${x + bulge} ${y1}, ${x + bulge} ${y2}, ${x} ${y2}`}
+                    d={`M ${x} ${y1} C ${x - bulge} ${y1}, ${x - bulge} ${y2}, ${x} ${y2}`}
                     stroke={isActive ? '#a78bfa' : `rgba(100, 116, 139, ${trace ? 0.04 : 0.1})`}
                     strokeWidth={isActive ? 2.5 : 1} fill="none"
                     filter={isActive ? 'url(#glow-refl)' : undefined} />
@@ -529,22 +544,22 @@ const App: React.FC = () => {
             {/* Input / Output indicators */}
             {trace && (
               <g>
-                {/* Input arrow & label */}
+                {/* Input arrow & label (entry is at col NUM_COLS-1, rightmost) */}
                 <polygon
-                  points={`${COL_X[0] - WIRE_PAD - 6},${letterY(trace.forward[0]) - 4} ${COL_X[0] - WIRE_PAD - 6},${letterY(trace.forward[0]) + 4} ${COL_X[0] - WIRE_PAD},${letterY(trace.forward[0])}`}
+                  points={`${COL_X[NUM_COLS - 1] + WIRE_PAD + 6},${letterY(trace.forward[0]) - 4} ${COL_X[NUM_COLS - 1] + WIRE_PAD + 6},${letterY(trace.forward[0]) + 4} ${COL_X[NUM_COLS - 1] + WIRE_PAD},${letterY(trace.forward[0])}`}
                   fill="#f59e0b" />
-                <text x={COL_X[0] - WIRE_PAD - 10} y={letterY(trace.forward[0]) + 1}
-                  textAnchor="end" dominantBaseline="central"
+                <text x={COL_X[NUM_COLS - 1] + WIRE_PAD + 10} y={letterY(trace.forward[0]) + 1}
+                  textAnchor="start" dominantBaseline="central"
                   fontSize={13} fontWeight="bold" fontFamily="monospace" fill="#f59e0b">
                   {trace.inputChar}
                 </text>
 
-                {/* Output arrow & label (returns to column 0) */}
+                {/* Output arrow & label (returns to rightmost column) */}
                 <polygon
-                  points={`${COL_X[0] - WIRE_PAD},${letterY(trace.backward[NUM_GAPS]) - 4} ${COL_X[0] - WIRE_PAD},${letterY(trace.backward[NUM_GAPS]) + 4} ${COL_X[0] - WIRE_PAD - 6},${letterY(trace.backward[NUM_GAPS])}`}
+                  points={`${COL_X[NUM_COLS - 1] + WIRE_PAD},${letterY(trace.backward[NUM_GAPS]) - 4} ${COL_X[NUM_COLS - 1] + WIRE_PAD},${letterY(trace.backward[NUM_GAPS]) + 4} ${COL_X[NUM_COLS - 1] + WIRE_PAD + 6},${letterY(trace.backward[NUM_GAPS])}`}
                   fill="#10b981" />
-                <text x={COL_X[0] - WIRE_PAD - 10} y={letterY(trace.backward[NUM_GAPS]) + 1}
-                  textAnchor="end" dominantBaseline="central"
+                <text x={COL_X[NUM_COLS - 1] + WIRE_PAD + 10} y={letterY(trace.backward[NUM_GAPS]) + 1}
+                  textAnchor="start" dominantBaseline="central"
                   fontSize={13} fontWeight="bold" fontFamily="monospace" fill="#10b981">
                   {trace.outputChar}
                 </text>
@@ -582,7 +597,7 @@ const App: React.FC = () => {
               {trace.forward.slice(1).map((idx, i) => (
                 <React.Fragment key={`f${i}`}>
                   <span className="text-slate-600">→</span>
-                  <span className="text-rose-400/60 text-[9px]">[R{gapRotorIds[i]}]</span>
+                  <span className="text-rose-400/60 text-[9px]">[R{10 - i}]</span>
                   <span className="text-amber-300">{toChar(idx)}</span>
                 </React.Fragment>
               ))}
