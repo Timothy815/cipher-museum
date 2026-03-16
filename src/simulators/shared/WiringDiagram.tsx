@@ -134,15 +134,15 @@ export const WiringDiagram: React.FC<WiringDiagramProps> = ({
   return (
     <svg viewBox={`0 0 ${svgW} ${svgH}`} className="w-full h-auto" style={{ minWidth: Math.min(600, svgW) }}>
       <defs>
-        <filter id="glow-fwd">
+        <filter id="glow-fwd" filterUnits="userSpaceOnUse">
           <feGaussianBlur stdDeviation="2.5" result="b" />
           <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
         </filter>
-        <filter id="glow-ret">
+        <filter id="glow-ret" filterUnits="userSpaceOnUse">
           <feGaussianBlur stdDeviation="2.5" result="b" />
           <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
         </filter>
-        <filter id="glow-refl">
+        <filter id="glow-refl" filterUnits="userSpaceOnUse">
           <feGaussianBlur stdDeviation="3" result="b" />
           <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
         </filter>

@@ -389,15 +389,15 @@ const App: React.FC = () => {
         <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-2 sm:p-3 mb-6 overflow-x-auto">
           <svg viewBox={`0 0 ${SVG_W} ${SVG_H}`} className="w-full h-auto" style={{ minWidth: 800 }}>
             <defs>
-              <filter id="glow-fwd">
+              <filter id="glow-fwd" filterUnits="userSpaceOnUse">
                 <feGaussianBlur stdDeviation="2.5" result="b" />
                 <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
               </filter>
-              <filter id="glow-ret">
+              <filter id="glow-ret" filterUnits="userSpaceOnUse">
                 <feGaussianBlur stdDeviation="2.5" result="b" />
                 <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
               </filter>
-              <filter id="glow-refl">
+              <filter id="glow-refl" filterUnits="userSpaceOnUse">
                 <feGaussianBlur stdDeviation="3" result="b" />
                 <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
               </filter>
