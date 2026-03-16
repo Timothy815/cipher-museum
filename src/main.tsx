@@ -47,6 +47,7 @@ import DiffieHellmanApp from './simulators/diffie-hellman/App';
 import RsaApp from './simulators/rsa/App';
 import ElGamalApp from './simulators/elgamal/App';
 import EccApp from './simulators/ecc/App';
+import TriviumApp from './simulators/trivium/App';
 
 const root = document.getElementById('root')!;
 
@@ -102,6 +103,7 @@ ReactDOM.createRoot(root).render(
           <Route path="/rsa" element={<RsaApp />} />
           <Route path="/elgamal" element={<ElGamalApp />} />
           <Route path="/ecc" element={<EccApp />} />
+          <Route path="/trivium" element={<TriviumApp />} />
         </Route>
       </Routes>
     </HashRouter>

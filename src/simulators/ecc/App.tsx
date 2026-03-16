@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { Info, X, Play, RotateCcw } from 'lucide-react';
+import { Info, X, Play, RotateCcw, Lock, Unlock, Shuffle, Copy, Check } from 'lucide-react';
 
 // ── Types ────────────────────────────────────────────────────────────
 type Point = { x: bigint; y: bigint } | 'infinity';
@@ -129,7 +129,43 @@ const FIELD_PRESETS = [
   { label: 'p=97, a=2, b=3', p: 97, a: 2, b: 3 },
 ];
 
-type Tab = 'curve' | 'field' | 'ecdh';
+function pointNeg(P: Point, p: bigint): Point {
+  if (P === 'infinity') return 'infinity';
+  return { x: P.x, y: mod(-P.y, p) };
+}
+
+function pointSub(P: Point, Q: Point, a: bigint, p: bigint): Point {
+  return pointAdd(P, pointNeg(Q, p), a, p);
+}
+
+function randomBigInt(min: bigint, max: bigint): bigint {
+  const range = Number(max - min);
+  return min + BigInt(Math.floor(Math.random() * range));
+}
+
+// Koblitz-style encoding: map byte m to curve point
+// Try x = m*K + j for j=0..K-1, return first (x,y) on the curve
+function encodeToPoint(m: number, a: bigint, b: bigint, p: bigint, K: number = 100): Point {
+  const bp = BigInt(p);
+  for (let j = 0; j < K; j++) {
+    const x = mod(BigInt(m * K + j), bp);
+    const rhs = mod(x * x * x + a * x + b, bp);
+    // Euler criterion: rhs^((p-1)/2) === 1 means quadratic residue
+    for (let y = 0n; y < bp; y++) {
+      if (mod(y * y, bp) === rhs) {
+        return { x, y };
+      }
+    }
+  }
+  return 'infinity'; // fallback — shouldn't happen with reasonable K and p
+}
+
+function decodeFromPoint(P: Point, K: number = 100): number {
+  if (P === 'infinity') return 0;
+  return Math.floor(Number(P.x) / K);
+}
+
+type Tab = 'curve' | 'field' | 'ecdh' | 'encrypt';
 
 // ── Component ────────────────────────────────────────────────────────
 const App: React.FC = () => {
@@ -152,6 +188,14 @@ const App: React.FC = () => {
 
   // ECDH state
   const [ecdhSecret, setEcdhSecret] = useState({ a: 7, b: 11 });
+
+  // EC-ElGamal state
+  const [egMode, setEgMode] = useState<'encrypt' | 'decrypt'>('encrypt');
+  const [egPrivateKey, setEgPrivateKey] = useState(7);
+  const [egPlaintext, setEgPlaintext] = useState('Hi');
+  const [egCiphertextInput, setEgCiphertextInput] = useState('');
+  const [egEncryptCounter, setEgEncryptCounter] = useState(0);
+  const [egCopied, setEgCopied] = useState(false);
 
   const inputClass = 'bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-violet-700/50 w-full';
   const panelClass = 'bg-slate-900/60 border border-slate-800 rounded-xl p-5';
@@ -235,6 +279,76 @@ const App: React.FC = () => {
 
   const fmtPt = (p: Point) => p === 'infinity' ? 'O (infinity)' : `(${p.x}, ${p.y})`;
 
+  // ── EC-ElGamal computed ────────────────────────────────────────────
+  const egPublicKey = useMemo(() => {
+    if (!generator) return 'infinity' as Point;
+    return scalarMul(BigInt(egPrivateKey), generator, BigInt(fa), BigInt(fp));
+  }, [generator, egPrivateKey, fa, fp]);
+
+  // Need p large enough for Koblitz encoding (m*100 < p)
+  const egMaxByte = Math.floor(fp / 100);
+  const egCanEncode = egMaxByte >= 1;
+
+  type EgCipherPair = { C1: Point; C2: Point; k: bigint; M: Point; mByte: number };
+
+  const egEncrypted = useMemo((): EgCipherPair[] => {
+    void egEncryptCounter;
+    if (egMode !== 'encrypt' || !egPlaintext || !generator || !egCanEncode) return [];
+    const bytes = new TextEncoder().encode(egPlaintext);
+    const bigFa = BigInt(fa), bigFb = BigInt(fb), bigFp = BigInt(fp);
+    return Array.from(bytes).map(byte => {
+      // Clamp byte to encodable range
+      const mByte = byte % (egMaxByte + 1);
+      const M = encodeToPoint(mByte, bigFa, bigFb, bigFp);
+      const k = randomBigInt(2n, BigInt(fp) - 1n);
+      const C1 = scalarMul(k, generator!, bigFa, bigFp);
+      const C2 = pointAdd(M, scalarMul(k, egPublicKey, bigFa, bigFp), bigFa, bigFp);
+      return { C1, C2, k, M, mByte };
+    });
+  }, [egMode, egPlaintext, generator, egPublicKey, fa, fb, fp, egEncryptCounter, egCanEncode, egMaxByte]);
+
+  const egCiphertextStr = useMemo(() =>
+    egEncrypted.map(e => {
+      const c1s = e.C1 === 'infinity' ? 'O' : `${e.C1.x},${e.C1.y}`;
+      const c2s = e.C2 === 'infinity' ? 'O' : `${e.C2.x},${e.C2.y}`;
+      return `[${c1s}|${c2s}]`;
+    }).join(' '),
+    [egEncrypted]
+  );
+
+  const egDecrypted = useMemo((): { pairs: { C1: Point; C2: Point; S: Point; M: Point; mByte: number }[]; text: string } | null => {
+    if (egMode !== 'decrypt' || !egCiphertextInput.trim()) return null;
+    const bigFa = BigInt(fa), bigFp = BigInt(fp);
+    const pairRegex = /\[([^\]]+)\]/g;
+    const pairs: { C1: Point; C2: Point; S: Point; M: Point; mByte: number }[] = [];
+    let match;
+    while ((match = pairRegex.exec(egCiphertextInput)) !== null) {
+      const parts = match[1].split('|');
+      if (parts.length !== 2) continue;
+      const parsePoint = (s: string): Point => {
+        if (s.trim() === 'O') return 'infinity';
+        const coords = s.split(',').map(v => BigInt(v.trim()));
+        if (coords.length !== 2) return 'infinity';
+        return { x: coords[0], y: coords[1] };
+      };
+      const C1 = parsePoint(parts[0]);
+      const C2 = parsePoint(parts[1]);
+      const S = scalarMul(BigInt(egPrivateKey), C1, bigFa, bigFp);
+      const M = pointSub(C2, S, bigFa, bigFp);
+      const mByte = decodeFromPoint(M);
+      pairs.push({ C1, C2, S, M, mByte });
+    }
+    const bytes = new Uint8Array(pairs.map(pr => pr.mByte));
+    const text = new TextDecoder().decode(bytes);
+    return { pairs, text };
+  }, [egMode, egCiphertextInput, egPrivateKey, fa, fp]);
+
+  const handleEgCopy = useCallback(() => {
+    navigator.clipboard.writeText(egCiphertextStr);
+    setEgCopied(true);
+    setTimeout(() => setEgCopied(false), 1500);
+  }, [egCiphertextStr]);
+
   // ── Render ─────────────────────────────────────────────────────────
   return (
     <div className="flex-1 bg-[#1a1814] text-white flex flex-col items-center px-6 py-4 sm:px-10 md:px-16 md:py-8">
@@ -268,7 +382,7 @@ const App: React.FC = () => {
 
         {/* Tab bar */}
         <div className="flex gap-2">
-          {([['curve', 'Real Curve'], ['field', 'Finite Field'], ['ecdh', 'ECDH Exchange']] as [Tab, string][]).map(([t, l]) => (
+          {([['curve', 'Real Curve'], ['field', 'Finite Field'], ['ecdh', 'ECDH Exchange'], ['encrypt', 'EC-ElGamal']] as [Tab, string][]).map(([t, l]) => (
             <button key={t} onClick={() => setTab(t)}
               className={`px-4 py-2 rounded-lg text-sm font-bold transition-colors ${tab === t ? 'bg-violet-950/40 text-violet-400 border border-violet-800' : 'bg-slate-900/60 text-slate-400 border border-slate-800 hover:border-violet-700/50'}`}>
               {l}
@@ -678,6 +792,230 @@ const App: React.FC = () => {
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* ═══ TAB D: EC-ElGamal Encryption ═══ */}
+        {tab === 'encrypt' && (
+          <>
+            <div className={panelClass}>
+              <h2 className="text-sm font-bold text-violet-400 uppercase tracking-wider mb-4">EC-ElGamal Encryption</h2>
+              <p className="text-xs text-slate-400 mb-4">
+                Encrypt and decrypt messages using elliptic curve ElGamal. Messages are encoded as curve points using Koblitz encoding,
+                then masked with the recipient's public key. Uses the curve from the Finite Field tab: y&sup2; &equiv; x&sup3; + {fa}x + {fb} (mod {fp}).
+              </p>
+
+              {!egCanEncode && (
+                <div className="bg-amber-950/30 border border-amber-700/40 rounded-xl p-4 text-sm text-amber-400 mb-4">
+                  Prime p = {fp} is too small for Koblitz encoding (need p &ge; 200). Switch to the Finite Field tab and select a larger prime, or use the preset p=97 with limited character range.
+                </div>
+              )}
+
+              {/* Key Setup */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                <div>
+                  <label className={`${labelClass} block mb-1`}>Curve</label>
+                  <div className="text-xs font-mono text-slate-400">y&sup2; &equiv; x&sup3; + {fa}x + {fb} mod {fp}</div>
+                </div>
+                <div>
+                  <label className={`${labelClass} block mb-1`}>Generator G</label>
+                  <div className="text-xs font-mono text-violet-400">{generator ? `(${generator.x}, ${generator.y})` : 'none'}</div>
+                </div>
+                <div>
+                  <label className={`${labelClass} block mb-1`}>Private Key d</label>
+                  <input type="number" min={2} max={fieldPoints.length}
+                    value={egPrivateKey}
+                    onChange={e => setEgPrivateKey(Math.max(2, Number(e.target.value) || 2))}
+                    className={inputClass} />
+                </div>
+                <div>
+                  <label className={`${labelClass} block mb-1`}>Public Key Q = dG</label>
+                  <div className="text-xs font-mono text-violet-300 bg-slate-900/80 border border-violet-900/30 rounded-lg px-4 py-3">
+                    {fmtPt(egPublicKey)}
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-slate-900/80 rounded-lg p-3 font-mono text-xs space-y-1 mb-4">
+                <div className="text-slate-500">Public: <span className="text-white">curve, G, Q = {fmtPt(egPublicKey)}</span></div>
+                <div className="text-slate-500">Private: <span className="text-violet-400 font-bold">d = {egPrivateKey}</span></div>
+                <div className="text-slate-500">Encodable range: <span className="text-white">byte values 0–{egMaxByte} (Koblitz K=100, p={fp})</span></div>
+              </div>
+
+              {/* Mode Toggle */}
+              <div className="flex items-center gap-3 mb-5">
+                <button onClick={() => setEgMode('encrypt')}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-colors ${egMode === 'encrypt' ? 'bg-violet-950/40 border border-violet-700/50 text-violet-400' : 'bg-slate-800 border border-slate-700 text-slate-400 hover:text-violet-400'}`}>
+                  <Lock size={16} /> Encrypt
+                </button>
+                <button onClick={() => setEgMode('decrypt')}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-colors ${egMode === 'decrypt' ? 'bg-violet-950/40 border border-violet-700/50 text-violet-400' : 'bg-slate-800 border border-slate-700 text-slate-400 hover:text-violet-400'}`}>
+                  <Unlock size={16} /> Decrypt
+                </button>
+              </div>
+
+              {egMode === 'encrypt' ? (
+                <div className="space-y-4">
+                  <div>
+                    <label className={`${labelClass} block mb-1`}>Plaintext Message</label>
+                    <input value={egPlaintext}
+                      onChange={e => setEgPlaintext(e.target.value)}
+                      placeholder="Type a message..."
+                      className={inputClass} />
+                    <div className="text-[10px] text-slate-600 mt-1">
+                      Each character is encoded as a curve point via Koblitz encoding, then encrypted with a fresh random k
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button onClick={() => setEgEncryptCounter(c => c + 1)}
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold bg-violet-950/40 border border-violet-700/50 text-violet-400 hover:bg-violet-950/60 transition-colors">
+                      <Shuffle size={16} /> Re-encrypt (New Random k)
+                    </button>
+                    <div className="flex items-center text-xs text-slate-500">
+                      Probabilistic: same plaintext, different ciphertext each time
+                    </div>
+                  </div>
+
+                  {egEncrypted.length > 0 && (
+                    <>
+                      <div>
+                        <h3 className="text-xs font-bold text-violet-400 uppercase tracking-wider mb-2">
+                          Step-by-Step (first {Math.min(3, egEncrypted.length)} characters)
+                        </h3>
+                        <div className="space-y-2">
+                          {egEncrypted.slice(0, 3).map((e, i) => (
+                            <div key={i} className="bg-slate-900/80 rounded-lg p-3 font-mono text-xs space-y-1">
+                              <div className="text-slate-400">
+                                Char {i}: <span className="text-white">'{String.fromCharCode(e.mByte)}'</span> = byte <span className="text-white">{e.mByte}</span>
+                              </div>
+                              <div className="text-slate-500">
+                                M = encode({e.mByte}) = <span className="text-amber-400">{fmtPt(e.M)}</span>
+                              </div>
+                              <div className="text-slate-500">
+                                Random k = <span className="text-amber-400">{e.k.toString()}</span>
+                              </div>
+                              <div className="text-slate-500">
+                                C1 = kG = {e.k.toString()} &times; G = <span className="text-violet-300">{fmtPt(e.C1)}</span>
+                              </div>
+                              <div className="text-slate-500">
+                                C2 = M + kQ = {fmtPt(e.M)} + {e.k.toString()} &times; Q = <span className="text-violet-300">{fmtPt(e.C2)}</span>
+                              </div>
+                            </div>
+                          ))}
+                          {egEncrypted.length > 3 && (
+                            <div className="text-xs text-slate-600 font-mono pl-3">... and {egEncrypted.length - 3} more character(s)</div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <label className={labelClass}>Ciphertext</label>
+                          <button onClick={handleEgCopy}
+                            className="flex items-center gap-1 px-2 py-1 rounded text-xs bg-slate-800 border border-slate-700 text-slate-400 hover:text-violet-400 transition-colors">
+                            {egCopied ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
+                            {egCopied ? 'Copied' : 'Copy'}
+                          </button>
+                        </div>
+                        <div className="bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-xs text-violet-300 break-all max-h-32 overflow-y-auto">
+                          {egCiphertextStr}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div>
+                    <label className={`${labelClass} block mb-1`}>Ciphertext</label>
+                    <textarea value={egCiphertextInput}
+                      onChange={e => setEgCiphertextInput(e.target.value)}
+                      placeholder="Paste ciphertext: [x1,y1|x2,y2] [x1,y1|x2,y2] ..."
+                      className={`${inputClass} h-24 resize-none`} />
+                    <div className="text-[10px] text-slate-600 mt-1">
+                      Format: [C1x,C1y|C2x,C2y] pairs — paste from encrypt output
+                    </div>
+                  </div>
+
+                  {egDecrypted && egDecrypted.pairs.length > 0 && (
+                    <>
+                      <div>
+                        <h3 className="text-xs font-bold text-violet-400 uppercase tracking-wider mb-2">
+                          Step-by-Step (first {Math.min(3, egDecrypted.pairs.length)} pairs)
+                        </h3>
+                        <div className="space-y-2">
+                          {egDecrypted.pairs.slice(0, 3).map((pr, i) => (
+                            <div key={i} className="bg-slate-900/80 rounded-lg p-3 font-mono text-xs space-y-1">
+                              <div className="text-slate-400">
+                                Pair {i}: C1 = <span className="text-violet-300">{fmtPt(pr.C1)}</span>, C2 = <span className="text-violet-300">{fmtPt(pr.C2)}</span>
+                              </div>
+                              <div className="text-slate-500">
+                                S = d &times; C1 = {egPrivateKey} &times; {fmtPt(pr.C1)} = <span className="text-white">{fmtPt(pr.S)}</span>
+                              </div>
+                              <div className="text-slate-500">
+                                M = C2 - S = {fmtPt(pr.C2)} - {fmtPt(pr.S)} = <span className="text-amber-400">{fmtPt(pr.M)}</span>
+                              </div>
+                              <div className="text-slate-500">
+                                decode(M) = <span className="text-emerald-400 font-bold">{pr.mByte}</span> = '{String.fromCharCode(pr.mByte)}'
+                              </div>
+                            </div>
+                          ))}
+                          {egDecrypted.pairs.length > 3 && (
+                            <div className="text-xs text-slate-600 font-mono pl-3">... and {egDecrypted.pairs.length - 3} more pair(s)</div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="bg-emerald-950/30 border border-emerald-700/40 rounded-xl p-4">
+                        <label className="text-xs font-bold text-emerald-400 uppercase tracking-wider block mb-1">Recovered Plaintext</label>
+                        <div className="font-mono text-lg text-white">{egDecrypted.text}</div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* How EC-ElGamal works */}
+            <div className={panelClass}>
+              <h2 className="text-sm font-bold text-violet-400 uppercase tracking-wider mb-4">How EC-ElGamal Works</h2>
+              <div className="space-y-3">
+                {[
+                  { step: 1, label: 'Key generation', detail: 'Choose curve, generator G, and group order n. Pick random private key d. Compute public key Q = dG.', tag: 'SETUP' },
+                  { step: 2, label: 'Encode message as point', detail: `Koblitz encoding: for byte value m, find x = 100m + j (j=0,1,...) such that (x, y) is on the curve. Decode: m = floor(x / 100).`, tag: 'ENCODE' },
+                  { step: 3, label: 'Encrypt: choose random k', detail: 'Pick ephemeral k for each character. Compute C1 = kG (ephemeral public key) and C2 = M + kQ (masked message point).', tag: 'ENCRYPT' },
+                  { step: 4, label: 'Send (C1, C2)', detail: 'The ciphertext is a pair of curve points per character. Ciphertext is 4x the plaintext size (two points per byte).', tag: 'PUBLIC' },
+                  { step: 5, label: 'Decrypt: compute shared point', detail: 'S = d·C1 = d·(kG) = k·(dG) = kQ — the same shared point the sender used.', tag: 'DECRYPT' },
+                  { step: 6, label: 'Recover message point', detail: 'M = C2 - S. Subtract the shared point to unmask the original message point, then decode back to a byte.', tag: 'DECRYPT' },
+                ].map(s => (
+                  <div key={s.step} className="flex items-start gap-3">
+                    <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 bg-violet-950/50 text-violet-400 border border-violet-800">
+                      {s.step}
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium text-white flex items-center gap-2">
+                        {s.label}
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded border ${
+                          s.tag === 'SETUP' ? 'text-slate-500 bg-slate-800 border-slate-700' :
+                          s.tag === 'ENCODE' ? 'text-amber-400 bg-amber-950/50 border-amber-800/50' :
+                          s.tag === 'ENCRYPT' ? 'text-violet-400 bg-violet-950/50 border-violet-800/50' :
+                          s.tag === 'DECRYPT' ? 'text-emerald-400 bg-emerald-950/50 border-emerald-800/50' :
+                          'text-cyan-400 bg-cyan-950/50 border-cyan-800/50'
+                        }`}>{s.tag}</span>
+                      </div>
+                      <div className="text-xs text-slate-400 font-mono mt-0.5">{s.detail}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-4 bg-slate-900/80 rounded-lg p-3 font-mono text-xs text-slate-400">
+                <span className="text-violet-400">vs Integer ElGamal:</span> Instead of multiplying message by shared secret in Z*p,
+                EC-ElGamal <em>adds</em> the message point to a shared curve point. The "trapdoor" is the Elliptic Curve Discrete Log Problem (ECDLP):
+                given Q and G, finding d such that Q = dG is computationally infeasible for large curves.
               </div>
             </div>
           </>

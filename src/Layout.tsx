@@ -48,6 +48,7 @@ const MODERN_CRYPTO = [
   { path: '/aes', label: 'AES', country: 'Modern Crypto', icon: <Grid3x3Icon size={14} /> },
   { path: '/salsa20', label: 'Salsa20', country: 'Modern Crypto', icon: <Droplets size={14} /> },
   { path: '/chacha20', label: 'ChaCha20', country: 'Modern Crypto', icon: <Wind size={14} /> },
+  { path: '/trivium', label: 'Trivium', country: 'Modern Crypto', icon: <GitBranch size={14} /> },
 ];
 
 const PUBLIC_KEY = [

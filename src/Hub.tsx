@@ -480,6 +480,16 @@ const modernCrypto = [
     color: 'cyan',
     description: 'Salsa20\'s successor with improved diffusion. Default cipher in TLS 1.3 and WireGuard. Powers HTTPS on billions of mobile devices.',
   },
+  {
+    path: '/trivium',
+    name: 'Trivium',
+    subtitle: 'eSTREAM Lightweight Cipher',
+    country: 'Belgium',
+    era: '2005',
+    icon: <GitBranch size={32} />,
+    color: 'cyan',
+    description: 'Three coupled nonlinear feedback shift registers in just 288 bits. Designed for extreme hardware efficiency. eSTREAM Profile 2 winner. Watch the registers clock and generate keystream.',
+  },
 ];
 
 const publicKeyCrypto = [
