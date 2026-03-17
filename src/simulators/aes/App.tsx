@@ -21,7 +21,7 @@ const SBOX: number[] = [
   0x8c,0xa1,0x89,0x0d,0xbf,0xe6,0x42,0x68,0x41,0x99,0x2d,0x0f,0xb0,0x54,0xbb,0x16,
 ];
 
-const RCON: number[] = [0x01,0x02,0x04,0x08,0x10,0x20,0x40,0x80,0x1b,0x36];
+const RCON: number[] = [0x01,0x02,0x04,0x08,0x10,0x20,0x40,0x80,0x1b,0x36,0x6c,0xd8,0xab,0x4d];
 
 // ── GF(2^8) arithmetic ────────────────────────────────────────────
 function gmul(a: number, b: number): number {
@@ -86,18 +86,23 @@ function addRoundKey(s: State, rk: State): State {
 }
 
 function keyExpansion(key: number[]): State[] {
+  const Nk = 8; // AES-256: 8 words (32 bytes)
+  const Nr = 14; // 14 rounds
   const w: number[][] = [];
-  for (let i = 0; i < 4; i++) w[i] = [key[4*i], key[4*i+1], key[4*i+2], key[4*i+3]];
-  for (let i = 4; i < 44; i++) {
+  for (let i = 0; i < Nk; i++) w[i] = [key[4*i] ?? 0, key[4*i+1] ?? 0, key[4*i+2] ?? 0, key[4*i+3] ?? 0];
+  for (let i = Nk; i < 4 * (Nr + 1); i++) {
     let temp = [...w[i - 1]];
-    if (i % 4 === 0) {
+    if (i % Nk === 0) {
       temp = [SBOX[temp[1]], SBOX[temp[2]], SBOX[temp[3]], SBOX[temp[0]]];
-      temp[0] ^= RCON[(i / 4) - 1];
+      temp[0] ^= RCON[(i / Nk) - 1];
+    } else if (i % Nk === 4) {
+      // AES-256 extra SubBytes on word 4 of each 8-word group
+      temp = [SBOX[temp[0]], SBOX[temp[1]], SBOX[temp[2]], SBOX[temp[3]]];
     }
-    w[i] = w[i - 4].map((b, j) => b ^ temp[j]);
+    w[i] = w[i - Nk].map((b, j) => b ^ temp[j]);
   }
   const roundKeys: State[] = [];
-  for (let r = 0; r <= 10; r++) {
+  for (let r = 0; r <= Nr; r++) {
     const rk: State = Array.from({ length: 4 }, (_, c) => [...w[r * 4 + c]]);
     roundKeys.push(rk);
   }
@@ -126,7 +131,7 @@ function computeAllSteps(plaintext: number[], key: number[]): AESStep[] {
   steps.push({ round: 0, kind: 'initial', label: 'Initial AddRoundKey', stateBefore: cloneState(state), stateAfter: cloneState(after0), roundKey: cloneState(rks[0]) });
   state = after0;
 
-  for (let round = 1; round <= 10; round++) {
+  for (let round = 1; round <= 14; round++) {
     // SubBytes
     const afterSub = subBytes(state);
     steps.push({ round, kind: 'subBytes', label: `Round ${round} — SubBytes`, stateBefore: cloneState(state), stateAfter: cloneState(afterSub) });
@@ -137,8 +142,8 @@ function computeAllSteps(plaintext: number[], key: number[]): AESStep[] {
     steps.push({ round, kind: 'shiftRows', label: `Round ${round} — ShiftRows`, stateBefore: cloneState(state), stateAfter: cloneState(afterShift) });
     state = afterShift;
 
-    // MixColumns (skip round 10)
-    if (round < 10) {
+    // MixColumns (skip final round)
+    if (round < 14) {
       const afterMix = mixColumns(state);
       steps.push({ round, kind: 'mixColumns', label: `Round ${round} — MixColumns`, stateBefore: cloneState(state), stateAfter: cloneState(afterMix) });
       state = afterMix;
@@ -159,16 +164,16 @@ function hex(b: number): string { return b.toString(16).padStart(2, '0'); }
 function parseKey(text: string): number[] {
   const bytes: number[] = [];
   const cleaned = text.replace(/\s/g, '');
-  if (/^[0-9a-fA-F]+$/.test(cleaned) && cleaned.length % 2 === 0 && cleaned.length <= 32) {
-    for (let i = 0; i < 32; i += 2) {
+  if (/^[0-9a-fA-F]+$/.test(cleaned) && cleaned.length % 2 === 0 && cleaned.length <= 64) {
+    for (let i = 0; i < 64; i += 2) {
       const h = cleaned.substring(i, i + 2);
       bytes.push(h ? parseInt(h, 16) : 0);
     }
   } else {
-    for (let i = 0; i < 16; i++) bytes.push(i < text.length ? text.charCodeAt(i) & 0xff : 0);
+    for (let i = 0; i < 32; i++) bytes.push(i < text.length ? text.charCodeAt(i) & 0xff : 0);
   }
-  while (bytes.length < 16) bytes.push(0);
-  return bytes.slice(0, 16);
+  while (bytes.length < 32) bytes.push(0);
+  return bytes.slice(0, 32);
 }
 
 function textToBlocks(text: string): number[][] {
@@ -205,10 +210,10 @@ function aesEncryptBlock(plainBytes: number[], keyBytes: number[]): number[] {
   const rks = keyExpansion(keyBytes);
   let state = textToState(plainBytes);
   state = addRoundKey(state, rks[0]);
-  for (let round = 1; round <= 10; round++) {
+  for (let round = 1; round <= 14; round++) {
     state = subBytes(state);
     state = shiftRows(state);
-    if (round < 10) state = mixColumns(state);
+    if (round < 14) state = mixColumns(state);
     state = addRoundKey(state, rks[round]);
   }
   const out: number[] = [];
@@ -247,8 +252,8 @@ function invMixColumns(s: State): State {
 function aesDecryptBlock(cipherBytes: number[], keyBytes: number[]): number[] {
   const rks = keyExpansion(keyBytes);
   let state = textToState(cipherBytes);
-  state = addRoundKey(state, rks[10]);
-  for (let round = 9; round >= 0; round--) {
+  state = addRoundKey(state, rks[14]);
+  for (let round = 13; round >= 0; round--) {
     state = invShiftRows(state);
     state = invSubBytes(state);
     state = addRoundKey(state, rks[round]);
@@ -265,7 +270,7 @@ const MIX_MATRIX = [[2,3,1,1],[1,2,3,1],[1,1,2,3],[3,1,1,2]];
 // ── Component ─────────────────────────────────────────────────────
 const AESSimulator: React.FC = () => {
   const [plainInput, setPlainInput] = useState('Two One Nine Two');
-  const [keyInput, setKeyInput] = useState('Thats my Kung Fu');
+  const [keyInput, setKeyInput] = useState('Thats my Kung Fu Thats AES-256!!');
   const [showInfo, setShowInfo] = useState(false);
   const [showKeySchedule, setShowKeySchedule] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
@@ -356,8 +361,8 @@ const AESSimulator: React.FC = () => {
         {/* Header */}
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-cyan-400">AES-128 Simulator</h1>
-            <p className="text-slate-400 text-sm mt-1">Advanced Encryption Standard — Rijndael Block Cipher</p>
+            <h1 className="text-3xl font-bold text-cyan-400">AES-256 Simulator</h1>
+            <p className="text-slate-400 text-sm mt-1">Advanced Encryption Standard — 256-bit Rijndael Block Cipher</p>
           </div>
           <button onClick={() => setShowInfo(!showInfo)} className="p-2 rounded-lg bg-slate-800/60 border border-slate-700 hover:border-cyan-700/50 transition-colors">
             {showInfo ? <X size={20} className="text-cyan-400" /> : <Info size={20} className="text-cyan-400" />}
@@ -372,13 +377,13 @@ const AESSimulator: React.FC = () => {
               In 1997, NIST launched a competition to replace the aging DES standard. Fifteen candidates were submitted — MARS, RC6, Rijndael, Serpent, and Twofish made the final five. In October 2000, <strong className="text-white">Rijndael</strong>, designed by Belgian cryptographers Joan Daemen and Vincent Rijmen, was selected as the Advanced Encryption Standard.
             </p>
             <p>
-              AES operates on a 4×4 matrix of bytes called the <strong className="text-white">State</strong>. For AES-128, 10 rounds of four operations transform plaintext into ciphertext. Each round applies SubBytes (S-box substitution for confusion), ShiftRows (byte permutation for row diffusion), MixColumns (column mixing in GF(2^8) for column diffusion), and AddRoundKey (XOR with derived key material). The final round omits MixColumns.
+              AES operates on a 4×4 matrix of bytes called the <strong className="text-white">State</strong>. For AES-256, 14 rounds of four operations transform plaintext into ciphertext. Each round applies SubBytes (S-box substitution for confusion), ShiftRows (byte permutation for row diffusion), MixColumns (column mixing in GF(2^8) for column diffusion), and AddRoundKey (XOR with derived key material). The final round omits MixColumns.
             </p>
             <p>
               <strong className="text-white">GF(2^8) Arithmetic:</strong> MixColumns multiplies in the Galois Field GF(2^8) with irreducible polynomial x^8 + x^4 + x^3 + x + 1 (0x11B). Multiplication by 2 is a left-shift; if the high bit was set, XOR with 0x1B. Multiplication by 3 is xtime(a) XOR a.
             </p>
             <p>
-              <strong className="text-white">Why AES replaced DES:</strong> DES's 56-bit key was brute-forced in under 24 hours by 1999. AES's 128-bit key space (2^128 possibilities) is computationally infeasible to brute-force with any foreseeable technology.
+              <strong className="text-white">Why AES replaced DES:</strong> DES's 56-bit key was brute-forced in under 24 hours by 1999. AES-256's 256-bit key space (2^256 possibilities) is computationally infeasible to brute-force with any foreseeable technology, and provides a wide security margin against quantum attacks.
             </p>
             <p>
               <strong className="text-white">Where AES is used today:</strong> TLS/HTTPS (virtually all web traffic), full-disk encryption (BitLocker, FileVault), WiFi (WPA2/WPA3), VPNs (IPsec, WireGuard), file encryption (7-Zip, GPG), messaging (Signal Protocol), and hardware-accelerated via AES-NI instructions on modern CPUs.
@@ -405,12 +410,12 @@ const AESSimulator: React.FC = () => {
             <p className="text-xs text-slate-500 mt-1 font-mono">{allBlocks.length} block{allBlocks.length !== 1 ? 's' : ''} × 128 bits (ECB{!decrypt ? ', PKCS padded' : ''})</p>
           </div>
           <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 md:p-8">
-            <label className="text-sm font-bold text-slate-400 uppercase tracking-wider">Key (16 chars or 32 hex digits)</label>
+            <label className="text-sm font-bold text-slate-400 uppercase tracking-wider">Key (32 chars or 64 hex digits)</label>
             <input
               value={keyInput}
               onChange={e => { setKeyInput(e.target.value); reset(); }}
               className="w-full mt-2 bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-base text-white focus:outline-none focus:border-cyan-700/50"
-              maxLength={32}
+              maxLength={64}
             />
             <p className="text-xs text-slate-500 mt-1 font-mono">{keyBytes.map(hex).join(' ')}</p>
             {/* Full output */}
@@ -554,7 +559,7 @@ const AESSimulator: React.FC = () => {
 
         {/* Ciphertext Output */}
         <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 md:p-8">
-          <label className="text-sm font-bold text-slate-400 uppercase tracking-wider">Ciphertext (after all 10 rounds)</label>
+          <label className="text-sm font-bold text-slate-400 uppercase tracking-wider">Ciphertext (after all 14 rounds)</label>
           <div className="mt-2 font-mono text-sm text-cyan-300 tracking-wider">
             {(() => {
               const final = steps[steps.length - 1]?.stateAfter;
@@ -570,7 +575,7 @@ const AESSimulator: React.FC = () => {
         <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 md:p-8">
           <button onClick={() => setShowKeySchedule(!showKeySchedule)} className="flex items-center gap-2 text-sm text-cyan-400 hover:text-cyan-300 transition-colors">
             {showKeySchedule ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
-            <span className="text-xs font-bold uppercase tracking-wider">Key Expansion Schedule (11 Round Keys)</span>
+            <span className="text-xs font-bold uppercase tracking-wider">Key Expansion Schedule (15 Round Keys)</span>
           </button>
           {showKeySchedule && (
             <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
