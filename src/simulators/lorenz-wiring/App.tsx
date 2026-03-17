@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { RefreshCw, Info, Cpu, Play, ChevronUp, ChevronDown } from 'lucide-react';
+import { RefreshCw, Info, Cpu, Play, ChevronUp, ChevronDown, Delete } from 'lucide-react';
 
 // ─── Baudot / ITA2 ───────────────────────────────────────────────
 const BAUDOT_MAP: Record<string, number[]> = {
@@ -298,17 +298,28 @@ function App() {
   const [positions, setPositions] = useState<number[]>(WHEEL_DEFS.map(() => 0));
   const [trace, setTrace] = useState<SignalTrace | null>(null);
   const [history, setHistory] = useState<{ char: string; out: string }[]>([]);
+  const [positionHistory, setPositionHistory] = useState<number[][]>([]);
   const [showInfo, setShowInfo] = useState(false);
+  const [showBaudot, setShowBaudot] = useState(false);
   const tapeRef = useRef<HTMLDivElement>(null);
 
   const handleChar = useCallback((char: string) => {
     const upper = char.toUpperCase();
     if (!BAUDOT_MAP[upper]) return;
+    setPositionHistory(prev => [...prev, positions]);
     const { trace: t, newPositions } = traceSignal(upper, positions);
     setTrace(t);
     setPositions(newPositions);
     setHistory(prev => [...prev, { char: upper, out: t.outputChar }]);
   }, [positions]);
+
+  const handleBackspace = useCallback(() => {
+    if (positionHistory.length === 0) return;
+    setPositions(positionHistory[positionHistory.length - 1]);
+    setPositionHistory(prev => prev.slice(0, -1));
+    setHistory(prev => prev.slice(0, -1));
+    setTrace(null);
+  }, [positionHistory]);
 
   useEffect(() => {
     const isInputFocused = () => {
@@ -317,6 +328,7 @@ function App() {
     };
     const onKeyDown = (e: KeyboardEvent) => {
       if (isInputFocused()) return;
+      if (e.key === 'Backspace') { e.preventDefault(); handleBackspace(); return; }
       const c = e.key === ' ' ? ' ' : e.key.toUpperCase();
       if (VALID_CHARS.includes(c) && !e.repeat && !e.metaKey && !e.ctrlKey && !e.altKey) {
         if (c === ' ') e.preventDefault();
@@ -325,7 +337,7 @@ function App() {
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [handleChar]);
+  }, [handleChar, handleBackspace]);
 
   useEffect(() => {
     if (tapeRef.current) tapeRef.current.scrollLeft = tapeRef.current.scrollWidth;
@@ -335,12 +347,14 @@ function App() {
     setPositions(WHEEL_DEFS.map(() => 0));
     setTrace(null);
     setHistory([]);
+    setPositionHistory([]);
   };
 
   const handleRandomize = () => {
     setPositions(WHEEL_DEFS.map(w => Math.floor(Math.random() * w.size)));
     setTrace(null);
     setHistory([]);
+    setPositionHistory([]);
   };
 
   const handleWheelChange = (idx: number, delta: number) => {
@@ -409,8 +423,42 @@ function App() {
               {['.', ',', '-', '!', '/'].map(c => (
                 <button key={c} onClick={() => handleChar(c)} className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg font-mono text-sm font-bold bg-slate-700 text-slate-300 hover:bg-slate-600 shadow-md active:translate-y-0.5 transition-all select-none">{c}</button>
               ))}
+              <button onClick={handleBackspace} className="h-9 sm:h-10 px-3 rounded-lg text-sm font-bold bg-slate-700 text-slate-300 hover:bg-red-900/50 hover:text-red-400 shadow-md active:translate-y-0.5 transition-all select-none" title="Backspace">
+                <Delete size={16} />
+              </button>
             </div>
           </div>
+        </div>
+
+        {/* Baudot Code Table */}
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl">
+          <button onClick={() => setShowBaudot(!showBaudot)} className="flex items-center gap-2 w-full">
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">ITA2 / Baudot Code Table</span>
+            <span className="text-slate-600 text-xs">{showBaudot ? '▾' : '▸'}</span>
+          </button>
+          {showBaudot && (
+            <div className="mt-4 grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
+              {Object.entries(BAUDOT_MAP).map(([ch, bits]) => {
+                const isActive = trace?.inputChar === ch || trace?.outputChar === ch;
+                return (
+                  <div key={ch} className={`flex items-center gap-2 px-2 py-1.5 rounded-lg border ${
+                    isActive ? 'bg-blue-950/40 border-blue-700/50' : 'bg-slate-800/40 border-slate-800/50'
+                  }`}>
+                    <span className={`font-mono font-bold text-sm w-5 text-center ${isActive ? 'text-blue-300' : 'text-slate-300'}`}>
+                      {ch === ' ' ? '\u2423' : ch}
+                    </span>
+                    <div className="flex gap-px">
+                      {bits.map((b, i) => (
+                        <span key={i} className={`w-3.5 h-5 flex items-center justify-center text-[9px] font-mono font-bold rounded-sm ${
+                          b ? (isActive ? 'bg-blue-600 text-white' : 'bg-slate-600 text-slate-200') : (isActive ? 'bg-slate-700 text-slate-400' : 'bg-slate-900 text-slate-600')
+                        }`}>{b}</span>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Tape */}

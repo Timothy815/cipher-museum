@@ -39,13 +39,16 @@ export interface WiringDiagramProps {
   reflectorSide?: 'left' | 'right';  // which side to draw reflector arcs, default 'right'
   trace: WiringTrace | null;
   accentColor?: string;         // for gap headers, default '#92400e'
+  columnOffsets?: number[];     // per-column rotation offset for displaying rotated alphabets
 }
 
 // ── Component ──────────────────────────────────────────────────────
 export const WiringDiagram: React.FC<WiringDiagramProps> = ({
   columns, gapLabels, wirings, reflector, reflectorLabel, reflectorSide = 'right', trace,
-  accentColor = '#92400e',
+  accentColor = '#92400e', columnOffsets,
 }) => {
+  const mod26 = (n: number) => ((n % 26) + 26) % 26;
+  const getOffset = (col: number) => columnOffsets ? (columnOffsets[col] ?? 0) : 0;
   const numCols = columns.length;
   const numGaps = numCols - 1;
 
@@ -193,8 +196,10 @@ export const WiringDiagram: React.FC<WiringDiagramProps> = ({
       {/* Column letters */}
       {colX.map((cx, c) => (
         <g key={`col-${c}`}>
-          {ALPHABET.split('').map((letter, i) => {
-            const hl = highlights.get(`${c}-${i}`);
+          {ALPHABET.split('').map((_, i) => {
+            const off = getOffset(c);
+            const letter = ALPHABET[mod26(i + off)];
+            const hl = highlights.get(`${c}-${mod26(i + off)}`);
             const y = letterY(i);
             return (
               <g key={i}>
@@ -224,18 +229,22 @@ export const WiringDiagram: React.FC<WiringDiagramProps> = ({
         const x1 = colX[g] + WIRE_PAD;
         const x2 = colX[g + 1] - WIRE_PAD;
         const cp = (x2 - x1) * 0.15;
-        const fwIdx = activeForward ? activeForward[g][0] : -1;
-        const rtIdx = activeReturn ? activeReturn[g][0] : -1;
+        const leftOff = getOffset(g);
+        const rightOff = getOffset(g + 1);
+        const fwContactIdx = activeForward ? activeForward[g][0] : -1;
+        const rtContactIdx = activeReturn ? activeReturn[g][0] : -1;
 
         return (
           <g key={`gap-${g}`}>
             {/* Background wires */}
             {wiring.map((outIdx, inIdx) => {
-              if (inIdx === fwIdx || inIdx === rtIdx) return null;
+              if (inIdx === fwContactIdx || inIdx === rtContactIdx) return null;
+              const vIn = mod26(inIdx - leftOff);
+              const vOut = mod26(outIdx - rightOff);
               return (
                 <path key={inIdx}
-                  d={`M ${x1} ${letterY(inIdx)} C ${x1 + cp} ${letterY(inIdx)}, ${x2 - cp} ${letterY(outIdx)}, ${x2} ${letterY(outIdx)}`}
-                  stroke={`hsla(${wireHue(inIdx)}, 40%, 45%, ${trace ? 0.04 : 0.13})`}
+                  d={`M ${x1} ${letterY(vIn)} C ${x1 + cp} ${letterY(vIn)}, ${x2 - cp} ${letterY(vOut)}, ${x2} ${letterY(vOut)}`}
+                  stroke={`hsla(${wireHue(inIdx)}, 40%, 45%, ${trace ? 0.12 : 0.22})`}
                   strokeWidth={1} fill="none" />
               );
             })}
@@ -243,9 +252,11 @@ export const WiringDiagram: React.FC<WiringDiagramProps> = ({
             {/* Active forward wire */}
             {activeForward && (() => {
               const [inI, outI] = activeForward[g];
+              const vIn = mod26(inI - leftOff);
+              const vOut = mod26(outI - rightOff);
               return (
                 <path
-                  d={`M ${x1} ${letterY(inI)} C ${x1 + cp} ${letterY(inI)}, ${x2 - cp} ${letterY(outI)}, ${x2} ${letterY(outI)}`}
+                  d={`M ${x1} ${letterY(vIn)} C ${x1 + cp} ${letterY(vIn)}, ${x2 - cp} ${letterY(vOut)}, ${x2} ${letterY(vOut)}`}
                   stroke="#f59e0b" strokeWidth={2.5} fill="none" filter="url(#glow-fwd)" />
               );
             })()}
@@ -253,9 +264,11 @@ export const WiringDiagram: React.FC<WiringDiagramProps> = ({
             {/* Active return wire */}
             {activeReturn && (() => {
               const [inI, outI] = activeReturn[g];
+              const vIn = mod26(inI - leftOff);
+              const vOut = mod26(outI - rightOff);
               return (
                 <path
-                  d={`M ${x1} ${letterY(inI)} C ${x1 + cp} ${letterY(inI)}, ${x2 - cp} ${letterY(outI)}, ${x2} ${letterY(outI)}`}
+                  d={`M ${x1} ${letterY(vIn)} C ${x1 + cp} ${letterY(vIn)}, ${x2 - cp} ${letterY(vOut)}, ${x2} ${letterY(vOut)}`}
                   stroke="#06b6d4" strokeWidth={2.5} fill="none" filter="url(#glow-ret)" />
               );
             })()}
@@ -274,15 +287,19 @@ export const WiringDiagram: React.FC<WiringDiagramProps> = ({
       {/* Reflector arcs */}
       {reflector && (() => {
         const isLeft = reflectorSide === 'left';
+        const reflCol = isLeft ? 0 : numCols - 1;
+        const reflOff = getOffset(reflCol);
         const x = isLeft ? colX[0] - WIRE_PAD : colX[numCols - 1] + WIRE_PAD;
         const drawn = new Set<number>();
         return reflector.map((outIdx, inIdx) => {
           if (drawn.has(inIdx)) return null;
           drawn.add(inIdx);
           drawn.add(outIdx);
-          const y1 = letterY(inIdx);
-          const y2 = letterY(outIdx);
-          const dist = Math.abs(outIdx - inIdx);
+          const vIn = mod26(inIdx - reflOff);
+          const vOut = mod26(outIdx - reflOff);
+          const y1 = letterY(vIn);
+          const y2 = letterY(vOut);
+          const dist = Math.abs(vOut - vIn);
           const bulge = 12 + dist * 2.8;
           const isActive = trace && trace.reflIn !== undefined && (
             (trace.reflIn === inIdx && trace.reflOut === outIdx) ||
@@ -292,7 +309,7 @@ export const WiringDiagram: React.FC<WiringDiagramProps> = ({
           return (
             <path key={inIdx}
               d={`M ${x} ${y1} C ${x + bDir} ${y1}, ${x + bDir} ${y2}, ${x} ${y2}`}
-              stroke={isActive ? '#a78bfa' : `rgba(100, 116, 139, ${trace ? 0.04 : 0.1})`}
+              stroke={isActive ? '#a78bfa' : `rgba(100, 116, 139, ${trace ? 0.12 : 0.2})`}
               strokeWidth={isActive ? 2.5 : 1} fill="none"
               filter={isActive ? 'url(#glow-refl)' : undefined} />
           );
@@ -308,21 +325,23 @@ export const WiringDiagram: React.FC<WiringDiagramProps> = ({
         const ePad = isEntryRight ? WIRE_PAD : -WIRE_PAD;
         const eDir = isEntryRight ? 1 : -1; // +1 = arrows/text to the right, -1 = to the left
         const eAnchor = isEntryRight ? 'start' as const : 'end' as const;
-        const inputIdx = fwAtCol(entryCol);
+        const inputContact = fwAtCol(entryCol);
+        const inputVis = mod26(inputContact - getOffset(eCol));
+        const outputVis = mod26(outputIdx - getOffset(hasReturn ? eCol : numCols - 1));
 
         return (
           <g>
             {/* Input arrow */}
             <polygon
-              points={`${eX + ePad + eDir * 6},${letterY(inputIdx) - 4} ${eX + ePad + eDir * 6},${letterY(inputIdx) + 4} ${eX + ePad},${letterY(inputIdx)}`}
+              points={`${eX + ePad + eDir * 6},${letterY(inputVis) - 4} ${eX + ePad + eDir * 6},${letterY(inputVis) + 4} ${eX + ePad},${letterY(inputVis)}`}
               fill="#f59e0b" />
-            <text x={eX + ePad + eDir * 10} y={letterY(inputIdx) + 1}
+            <text x={eX + ePad + eDir * 10} y={letterY(inputVis) + 1}
               textAnchor={eAnchor} dominantBaseline="central"
               fontSize={13} fontWeight="bold" fontFamily="monospace" fill="#f59e0b">
               {trace.inputChar}
             </text>
             {trace.pbSwapIn && (
-              <text x={eX + ePad + eDir * 10} y={letterY(inputIdx) + 13}
+              <text x={eX + ePad + eDir * 10} y={letterY(inputVis) + 13}
                 textAnchor={eAnchor} dominantBaseline="central"
                 fontSize={8} fontFamily="monospace" fill="#ec4899">
                 PB→{trace.pbSwapIn}
@@ -334,15 +353,15 @@ export const WiringDiagram: React.FC<WiringDiagramProps> = ({
               // Reflector mode: output returns to entry side
               <g>
                 <polygon
-                  points={`${eX + ePad},${letterY(outputIdx) - 4} ${eX + ePad},${letterY(outputIdx) + 4} ${eX + ePad + eDir * 6},${letterY(outputIdx)}`}
+                  points={`${eX + ePad},${letterY(outputVis) - 4} ${eX + ePad},${letterY(outputVis) + 4} ${eX + ePad + eDir * 6},${letterY(outputVis)}`}
                   fill="#10b981" />
-                <text x={eX + ePad + eDir * 10} y={letterY(outputIdx) + 1}
+                <text x={eX + ePad + eDir * 10} y={letterY(outputVis) + 1}
                   textAnchor={eAnchor} dominantBaseline="central"
                   fontSize={13} fontWeight="bold" fontFamily="monospace" fill="#10b981">
                   {trace.outputChar}
                 </text>
                 {trace.pbSwapOut && (
-                  <text x={eX + ePad + eDir * 10} y={letterY(outputIdx) - 11}
+                  <text x={eX + ePad + eDir * 10} y={letterY(outputVis) - 11}
                     textAnchor={eAnchor} dominantBaseline="central"
                     fontSize={8} fontFamily="monospace" fill="#ec4899">
                     PB→{trace.pbSwapOut}
@@ -353,9 +372,9 @@ export const WiringDiagram: React.FC<WiringDiagramProps> = ({
               // Forward-only: output at opposite side from entry
               <g>
                 <polygon
-                  points={`${colX[numCols - 1] + WIRE_PAD},${letterY(outputIdx) - 4} ${colX[numCols - 1] + WIRE_PAD},${letterY(outputIdx) + 4} ${colX[numCols - 1] + WIRE_PAD + 6},${letterY(outputIdx)}`}
+                  points={`${colX[numCols - 1] + WIRE_PAD},${letterY(outputVis) - 4} ${colX[numCols - 1] + WIRE_PAD},${letterY(outputVis) + 4} ${colX[numCols - 1] + WIRE_PAD + 6},${letterY(outputVis)}`}
                   fill="#10b981" />
-                <text x={colX[numCols - 1] + WIRE_PAD + 10} y={letterY(outputIdx) + 1}
+                <text x={colX[numCols - 1] + WIRE_PAD + 10} y={letterY(outputVis) + 1}
                   textAnchor="start" dominantBaseline="central"
                   fontSize={13} fontWeight="bold" fontFamily="monospace" fill="#10b981">
                   {trace.outputChar}

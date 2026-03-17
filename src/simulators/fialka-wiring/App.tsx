@@ -477,7 +477,7 @@ const App: React.FC = () => {
                     return (
                       <path key={leftIdx}
                         d={`M ${x1} ${letterY(leftIdx)} C ${x1 + cp} ${letterY(leftIdx)}, ${x2 - cp} ${letterY(rightIdx)}, ${x2} ${letterY(rightIdx)}`}
-                        stroke={`hsla(${wireHue(rightIdx)}, 40%, 45%, ${trace ? 0.04 : 0.13})`}
+                        stroke={`hsla(${wireHue(rightIdx)}, 40%, 45%, ${trace ? 0.12 : 0.22})`}
                         strokeWidth={1} fill="none" />
                     );
                   })}
@@ -532,7 +532,7 @@ const App: React.FC = () => {
                 return (
                   <path key={inIdx}
                     d={`M ${x} ${y1} C ${x - bulge} ${y1}, ${x - bulge} ${y2}, ${x} ${y2}`}
-                    stroke={isActive ? '#a78bfa' : `rgba(100, 116, 139, ${trace ? 0.04 : 0.1})`}
+                    stroke={isActive ? '#a78bfa' : `rgba(100, 116, 139, ${trace ? 0.12 : 0.2})`}
                     strokeWidth={isActive ? 2.5 : 1} fill="none"
                     filter={isActive ? 'url(#glow-refl)' : undefined} />
                 );

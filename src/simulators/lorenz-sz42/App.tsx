@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Settings, Eraser, Info, RefreshCw, Cpu } from 'lucide-react';
+import { Settings, Eraser, Info, RefreshCw, Cpu, Delete } from 'lucide-react';
 import { LorenzMachine } from './services/lorenzService';
 import { INITIAL_WHEELS, BAUDOT_MAP } from './constants';
 import { WheelConfig } from './types';
@@ -28,10 +28,14 @@ function App() {
   const [showInfo, setShowInfo] = useState(false);
 
   const outputTapeRef = useRef<HTMLDivElement>(null);
+  const wheelHistory = useRef<WheelConfig[][]>([]);
 
   const processChar = useCallback((char: string) => {
     const upper = char.toUpperCase();
     if (!VALID_CHARS.includes(upper)) return;
+
+    // Save current wheel state before processing
+    wheelHistory.current.push(JSON.parse(JSON.stringify(machineRef.current.getCurrentState())));
 
     const result = machineRef.current.processCharacter(upper);
     if (result.outputChar) {
@@ -59,6 +63,17 @@ function App() {
     });
   }, []);
 
+  const handleBackspace = useCallback(() => {
+    if (wheelHistory.current.length === 0) return;
+    const prevWheels = wheelHistory.current.pop()!;
+    machineRef.current.resetTo(prevWheels);
+    setWheels(JSON.parse(JSON.stringify(prevWheels)));
+    setInputTape(prev => prev.slice(0, -1));
+    setOutputTape(prev => prev.slice(0, -1));
+    setLitChar(null);
+    setLastKeystream(null);
+  }, []);
+
   // Physical keyboard handling
   useEffect(() => {
     const isInputFocused = () => {
@@ -68,6 +83,7 @@ function App() {
 
     const onKeyDown = (e: KeyboardEvent) => {
       if (isInputFocused()) return;
+      if (e.key === 'Backspace') { e.preventDefault(); handleBackspace(); return; }
       const char = e.key === ' ' ? ' ' : e.key.toUpperCase();
       if (VALID_CHARS.includes(char) && !e.repeat && !e.metaKey && !e.ctrlKey && !e.altKey) {
         if (char === ' ') e.preventDefault();
@@ -89,7 +105,7 @@ function App() {
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
     };
-  }, [handleKeyDown, handleKeyUp]);
+  }, [handleKeyDown, handleKeyUp, handleBackspace]);
 
   // Auto-scroll tape
   useEffect(() => {
@@ -106,6 +122,7 @@ function App() {
     setOutputTape('');
     setLitChar(null);
     setLastKeystream(null);
+    wheelHistory.current = [];
   };
 
   const handleReset = () => {
@@ -117,6 +134,7 @@ function App() {
     setOutputTape('');
     setLitChar(null);
     setLastKeystream(null);
+    wheelHistory.current = [];
   };
 
   const handleRandomize = () => {
@@ -132,6 +150,7 @@ function App() {
     setOutputTape('');
     setLitChar(null);
     setLastKeystream(null);
+    wheelHistory.current = [];
   };
 
   const handleWheelChange = (id: string, delta: number) => {
@@ -353,6 +372,13 @@ function App() {
                   {c === ' ' ? 'SPACE' : c}
                 </button>
               ))}
+              <button
+                onClick={handleBackspace}
+                className="h-10 px-3 rounded-lg text-sm font-bold transition-all select-none bg-slate-700 text-slate-300 hover:bg-red-900/50 hover:text-red-400 shadow-md active:translate-y-0.5"
+                title="Backspace"
+              >
+                <Delete size={18} />
+              </button>
             </div>
           </div>
         </div>
