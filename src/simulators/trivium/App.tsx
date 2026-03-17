@@ -571,32 +571,50 @@ const App: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Output */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div className="bg-slate-900/80 rounded-lg p-3">
-                    <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Output (hex)</div>
-                    <div className="font-mono text-sm text-cyan-300 break-all">{cryptResult.outputHex}</div>
-                    {mode === 'encrypt' && (
+                {/* Output — layout differs by mode */}
+                {mode === 'decrypt' ? (
+                  <>
+                    {/* Decrypt: show recovered plaintext prominently */}
+                    <div className="bg-emerald-950/20 border border-emerald-800/40 rounded-lg p-4">
+                      <div className="text-[10px] text-emerald-400 uppercase tracking-wider font-bold mb-2">Decrypted Plaintext</div>
+                      <div className="font-mono text-lg text-emerald-300 break-all">{cryptResult.outputText}</div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="bg-slate-900/80 rounded-lg p-3">
+                        <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Decrypted (hex)</div>
+                        <div className="font-mono text-xs text-slate-400 break-all">{cryptResult.outputHex}</div>
+                      </div>
+                      <div className="bg-slate-900/80 rounded-lg p-3">
+                        <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Keystream (hex)</div>
+                        <div className="font-mono text-xs text-slate-400 break-all">{cryptResult.keystreamHex}</div>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {/* Encrypt: show ciphertext hex prominently */}
+                    <div className="bg-slate-900/80 rounded-lg p-4">
+                      <div className="text-[10px] text-cyan-400 uppercase tracking-wider font-bold mb-2">Ciphertext (hex)</div>
+                      <div className="font-mono text-sm text-cyan-300 break-all">{cryptResult.outputHex}</div>
                       <button
                         onClick={() => { setCiphertextHex(cryptResult.outputHex); setMode('decrypt'); }}
-                        className="mt-2 text-[10px] text-cyan-600 hover:text-cyan-400 font-bold uppercase tracking-wider transition-colors"
+                        className="mt-3 text-[10px] text-cyan-600 hover:text-cyan-400 font-bold uppercase tracking-wider transition-colors"
                       >
-                        Copy to Decrypt
+                        Copy to Decrypt &rarr;
                       </button>
-                    )}
-                  </div>
-                  <div className="bg-slate-900/80 rounded-lg p-3">
-                    <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">
-                      {mode === 'encrypt' ? 'Output (text preview)' : 'Decrypted Text'}
                     </div>
-                    <div className={`font-mono text-sm break-all ${mode === 'decrypt' ? 'text-emerald-300' : 'text-white'}`}>{cryptResult.outputText}</div>
-                  </div>
-                </div>
-
-                <div className="bg-slate-900/80 rounded-lg p-3">
-                  <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Keystream (hex)</div>
-                  <div className="font-mono text-xs text-slate-400 break-all">{cryptResult.keystreamHex}</div>
-                </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="bg-slate-900/80 rounded-lg p-3">
+                        <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Ciphertext (text preview)</div>
+                        <div className="font-mono text-sm text-white break-all">{cryptResult.outputText}</div>
+                      </div>
+                      <div className="bg-slate-900/80 rounded-lg p-3">
+                        <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Keystream (hex)</div>
+                        <div className="font-mono text-xs text-slate-400 break-all">{cryptResult.keystreamHex}</div>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </div>
