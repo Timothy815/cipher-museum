@@ -114,6 +114,17 @@ function bitsToHex(bits: number[]): string {
   return hex;
 }
 
+function hexToBits(hex: string): number[] {
+  const bits: number[] = [];
+  const clean = hex.replace(/\s/g, '');
+  for (const ch of clean) {
+    const nib = parseInt(ch, 16);
+    if (isNaN(nib)) continue;
+    bits.push((nib >> 3) & 1, (nib >> 2) & 1, (nib >> 1) & 1, nib & 1);
+  }
+  return bits;
+}
+
 // ── SVG Constants ────────────────────────────────────────────────────
 const REG_COLORS = ['#f59e0b', '#3b82f6', '#10b981']; // amber, blue, emerald
 const REG_NAMES = ['Register A (93 bits)', 'Register B (84 bits)', 'Register C (111 bits)'];
@@ -135,6 +146,7 @@ const App: React.FC = () => {
 
   // Encrypt/decrypt state
   const [plaintext, setPlaintext] = useState('Hello, Trivium!');
+  const [ciphertextHex, setCiphertextHex] = useState('');
   const [mode, setMode] = useState<'encrypt' | 'decrypt'>('encrypt');
 
   const initState = useCallback(() => {
@@ -207,14 +219,14 @@ const App: React.FC = () => {
 
   // Encrypt/decrypt computed
   const cryptResult = useMemo(() => {
-    if (!plaintext) return null;
+    const inputBits = mode === 'encrypt' ? textToBits(plaintext) : hexToBits(ciphertextHex);
+    if (inputBits.length === 0) return null;
     const key = hexToBytes(keyHex);
     const iv = hexToBytes(ivHex);
     const s = createTriviumState(key, iv);
     // Warmup
     for (let i = 0; i < 4 * 288; i++) clockTrivium(s);
-    // Generate keystream
-    const inputBits = textToBits(plaintext);
+    // Generate keystream and XOR
     const ks: number[] = [];
     const outputBits: number[] = [];
     for (let i = 0; i < inputBits.length; i++) {
@@ -228,9 +240,18 @@ const App: React.FC = () => {
       outputBits,
       outputText: bitsToText(outputBits),
       outputHex: bitsToHex(outputBits),
+      inputHex: bitsToHex(inputBits),
       keystreamHex: bitsToHex(ks),
     };
-  }, [plaintext, keyHex, ivHex]);
+  }, [plaintext, ciphertextHex, mode, keyHex, ivHex]);
+
+  // Auto-populate ciphertext hex when encrypting
+  const lastEncryptedHex = useRef('');
+  useEffect(() => {
+    if (mode === 'encrypt' && cryptResult) {
+      lastEncryptedHex.current = cryptResult.outputHex;
+    }
+  }, [mode, cryptResult]);
 
   const inputClass = 'bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-cyan-700/50 w-full';
   const panelClass = 'bg-slate-900/60 border border-slate-800 rounded-xl p-5';
@@ -485,7 +506,7 @@ const App: React.FC = () => {
         <div className={panelClass}>
           <h2 className="text-sm font-bold text-cyan-400 uppercase tracking-wider mb-4">Encrypt / Decrypt</h2>
           <p className="text-xs text-slate-400 mb-4">
-            XOR plaintext bits with the Trivium keystream. Since XOR is its own inverse, encryption and decryption are identical operations with the same key and IV.
+            XOR input bits with the Trivium keystream. Encrypt text to get hex ciphertext, then paste the hex back in Decrypt mode (with the same key/IV) to recover the original.
           </p>
 
           <div className="flex items-center gap-3 mb-4">
@@ -493,21 +514,33 @@ const App: React.FC = () => {
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-colors ${mode === 'encrypt' ? 'bg-cyan-950/40 border border-cyan-700/50 text-cyan-400' : 'bg-slate-800 border border-slate-700 text-slate-400 hover:text-cyan-400'}`}>
               <Lock size={16} /> Encrypt
             </button>
-            <button onClick={() => setMode('decrypt')}
+            <button onClick={() => {
+              setMode('decrypt');
+              if (lastEncryptedHex.current && !ciphertextHex) {
+                setCiphertextHex(lastEncryptedHex.current);
+              }
+            }}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-colors ${mode === 'decrypt' ? 'bg-cyan-950/40 border border-cyan-700/50 text-cyan-400' : 'bg-slate-800 border border-slate-700 text-slate-400 hover:text-cyan-400'}`}>
               <Unlock size={16} /> Decrypt
             </button>
           </div>
 
           <div className="space-y-4">
-            <div>
-              <label className={`${labelClass} block mb-1`}>
-                {mode === 'encrypt' ? 'Plaintext' : 'Plaintext (paste text to encrypt/decrypt)'}
-              </label>
-              <input value={plaintext} onChange={e => setPlaintext(e.target.value)}
-                placeholder="Type a message..."
-                className={inputClass} />
-            </div>
+            {mode === 'encrypt' ? (
+              <div>
+                <label className={`${labelClass} block mb-1`}>Plaintext</label>
+                <input value={plaintext} onChange={e => setPlaintext(e.target.value)}
+                  placeholder="Type a message..."
+                  className={inputClass} />
+              </div>
+            ) : (
+              <div>
+                <label className={`${labelClass} block mb-1`}>Ciphertext (hex)</label>
+                <input value={ciphertextHex} onChange={e => setCiphertextHex(e.target.value.replace(/[^0-9a-fA-F\s]/g, ''))}
+                  placeholder="Paste hex ciphertext here..."
+                  className={inputClass} />
+              </div>
+            )}
 
             {cryptResult && (
               <div className="space-y-3">
@@ -518,7 +551,7 @@ const App: React.FC = () => {
                   </h3>
                   <div className="bg-slate-900/80 rounded-lg p-3 font-mono text-[11px] space-y-1 overflow-x-auto">
                     <div className="flex gap-0.5 flex-wrap">
-                      <span className="text-slate-500 w-20 shrink-0">Input:    </span>
+                      <span className="text-slate-500 w-20 shrink-0">{mode === 'encrypt' ? 'Plain:' : 'Cipher:'}    </span>
                       {cryptResult.inputBits.slice(0, 64).map((b, i) => (
                         <span key={i} className={`w-3 text-center ${b ? 'text-amber-400' : 'text-slate-600'}`}>{b}</span>
                       ))}
@@ -530,7 +563,7 @@ const App: React.FC = () => {
                       ))}
                     </div>
                     <div className="flex gap-0.5 flex-wrap border-t border-slate-800 pt-1">
-                      <span className="text-slate-500 w-20 shrink-0">Output:   </span>
+                      <span className="text-slate-500 w-20 shrink-0">{mode === 'encrypt' ? 'Cipher:' : 'Plain:'}   </span>
                       {cryptResult.outputBits.slice(0, 64).map((b, i) => (
                         <span key={i} className={`w-3 text-center ${b ? 'text-emerald-400' : 'text-slate-600'}`}>{b}</span>
                       ))}
@@ -543,10 +576,20 @@ const App: React.FC = () => {
                   <div className="bg-slate-900/80 rounded-lg p-3">
                     <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Output (hex)</div>
                     <div className="font-mono text-sm text-cyan-300 break-all">{cryptResult.outputHex}</div>
+                    {mode === 'encrypt' && (
+                      <button
+                        onClick={() => { setCiphertextHex(cryptResult.outputHex); setMode('decrypt'); }}
+                        className="mt-2 text-[10px] text-cyan-600 hover:text-cyan-400 font-bold uppercase tracking-wider transition-colors"
+                      >
+                        Copy to Decrypt
+                      </button>
+                    )}
                   </div>
                   <div className="bg-slate-900/80 rounded-lg p-3">
-                    <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Output (text)</div>
-                    <div className="font-mono text-sm text-white break-all">{cryptResult.outputText}</div>
+                    <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">
+                      {mode === 'encrypt' ? 'Output (text preview)' : 'Decrypted Text'}
+                    </div>
+                    <div className={`font-mono text-sm break-all ${mode === 'decrypt' ? 'text-emerald-300' : 'text-white'}`}>{cryptResult.outputText}</div>
                   </div>
                 </div>
 
