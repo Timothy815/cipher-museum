@@ -170,12 +170,12 @@ const App: React.FC = () => {
   const outputBitsEnc = inputBits.map((b, i) => b ^ keystream[i]);
 
   return (
-    <div className="flex-1 bg-[#1a1814] text-white flex flex-col items-center px-6 py-4 sm:px-10 md:px-16 md:py-8">
-      <div className="w-full max-w-5xl space-y-6">
+    <div className="flex-1 bg-[#1a1814] text-white flex flex-col items-center px-6 py-8 sm:px-10 md:px-16 md:py-8">
+      <div className="w-full max-w-5xl space-y-8">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-cyan-400">LFSR Simulator</h1>
+            <h1 className="text-3xl font-bold text-cyan-400">LFSR Simulator</h1>
             <p className="text-sm text-slate-400 mt-1">Linear Feedback Shift Register — Stream Cipher Fundamentals</p>
           </div>
           <button onClick={() => setShowInfo(!showInfo)} className="p-2 rounded-lg bg-slate-900/60 border border-slate-800 hover:border-cyan-700/50 transition-colors">
@@ -207,10 +207,10 @@ const App: React.FC = () => {
         </div>
 
         {/* Configuration */}
-        <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5 space-y-4">
+        <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 md:p-8 space-y-4">
           <div className="flex flex-wrap items-end gap-4">
             <div>
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">Register Size</label>
+              <label className="text-sm font-bold text-slate-400 uppercase tracking-wider block mb-2">Register Size</label>
               <select value={regSize} onChange={e => changeSize(Number(e.target.value))}
                 className="bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-cyan-700/50">
                 {Array.from({ length: 13 }, (_, i) => i + 4).map(n => (
@@ -219,7 +219,7 @@ const App: React.FC = () => {
               </select>
             </div>
             <div>
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">Presets</label>
+              <label className="text-sm font-bold text-slate-400 uppercase tracking-wider block mb-2">Presets</label>
               <div className="flex flex-wrap gap-2">
                 {PRESETS.map(p => (
                   <button key={p.name} onClick={() => applyPreset(p)}
@@ -233,11 +233,11 @@ const App: React.FC = () => {
 
           {/* Register Display */}
           <div>
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">Register State (click to toggle)</label>
+            <label className="text-sm font-bold text-slate-400 uppercase tracking-wider block mb-2">Register State (click to toggle)</label>
             <div className="flex gap-1 flex-wrap items-end">
               {register.map((bit, i) => (
                 <div key={i} className="flex flex-col items-center gap-1">
-                  <span className={`text-[10px] font-mono ${taps.has(i) ? 'text-cyan-400 font-bold' : 'text-slate-600'}`}>
+                  <span className={`text-xs font-mono ${taps.has(i) ? 'text-cyan-400 font-bold' : 'text-slate-600'}`}>
                     {taps.has(i) ? 'TAP' : `b${i}`}
                   </span>
                   <button onClick={() => toggleBit(i)}
@@ -251,7 +251,7 @@ const App: React.FC = () => {
                 </div>
               ))}
               <div className="flex flex-col items-center gap-1 ml-2">
-                <span className="text-[10px] font-mono text-emerald-500">OUT</span>
+                <span className="text-xs font-mono text-emerald-500">OUT</span>
                 <div className="w-10 h-10 rounded-lg font-mono text-sm font-bold border-2 bg-emerald-950/30 border-emerald-700 text-emerald-400 flex items-center justify-center">
                   {register[register.length - 1]}
                 </div>
@@ -261,7 +261,7 @@ const App: React.FC = () => {
 
           {/* Tap Selection */}
           <div>
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">Feedback Taps (click to toggle)</label>
+            <label className="text-sm font-bold text-slate-400 uppercase tracking-wider block mb-2">Feedback Taps (click to toggle)</label>
             <div className="flex gap-1 flex-wrap">
               {Array.from({ length: regSize }, (_, i) => (
                 <button key={i} onClick={() => toggleTap(i)}
@@ -292,7 +292,7 @@ const App: React.FC = () => {
               <RotateCcw size={16} /> Reset
             </button>
             <div className="flex items-center gap-2 ml-auto">
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Speed</label>
+              <label className="text-sm font-bold text-slate-400 uppercase tracking-wider">Speed</label>
               <input type="range" min={50} max={800} step={50} value={800 - speed + 50}
                 onChange={e => setSpeed(800 - Number(e.target.value) + 50)}
                 className="w-24 accent-cyan-500" />
@@ -304,8 +304,8 @@ const App: React.FC = () => {
           <>
             {/* Feedback Visualization */}
             {history.length > 0 && (
-              <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-3">Last Step Computation</label>
+              <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 md:p-8">
+                <label className="text-sm font-bold text-slate-400 uppercase tracking-wider block mb-3">Last Step Computation</label>
                 <div className="font-mono text-sm space-y-1">
                   <div className="flex flex-wrap gap-1 items-center">
                     {[...taps].sort((a, b) => a - b).map((t, idx) => (
@@ -328,9 +328,9 @@ const App: React.FC = () => {
 
             {/* Output Stream */}
             {outputBits.length > 0 && (
-              <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
+              <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 md:p-8">
                 <div className="flex items-center justify-between mb-3">
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Output Stream ({outputBits.length} bits)</label>
+                  <label className="text-sm font-bold text-slate-400 uppercase tracking-wider">Output Stream ({outputBits.length} bits)</label>
                   {period !== null && (
                     <span className="text-xs font-bold text-yellow-400 bg-yellow-500/10 border border-yellow-600/30 px-3 py-1 rounded-full">
                       Period = {period} (max {Math.pow(2, regSize) - 1})
@@ -347,8 +347,8 @@ const App: React.FC = () => {
 
             {/* State History */}
             {history.length > 0 && (
-              <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-3">State History</label>
+              <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 md:p-8">
+                <label className="text-sm font-bold text-slate-400 uppercase tracking-wider block mb-3">State History</label>
                 <div className="overflow-auto max-h-64">
                   <table className="w-full text-sm font-mono">
                     <thead>
@@ -383,7 +383,7 @@ const App: React.FC = () => {
         ) : (
           /* Encrypt / Decrypt Mode */
           <div className="space-y-4">
-            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5 space-y-4">
+            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 md:p-8 space-y-4">
               <div className="flex gap-2 mb-2">
                 <button onClick={() => setMode('encrypt')} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${mode === 'encrypt' ? 'bg-cyan-950/50 text-cyan-400 border border-cyan-900/40' : 'bg-slate-800 text-slate-400 border border-slate-700 hover:text-white'}`}>Encrypt Text</button>
                 <button onClick={() => setMode('decrypt')} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${mode === 'decrypt' ? 'bg-amber-950/50 text-amber-400 border border-amber-900/40' : 'bg-slate-800 text-slate-400 border border-slate-700 hover:text-white'}`}>Decrypt Hex</button>
@@ -393,13 +393,13 @@ const App: React.FC = () => {
                 <>
                   <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Plaintext</label>
                   <textarea value={plaintext} onChange={e => setPlaintext(e.target.value)} placeholder="Type message of any length..."
-                    className="w-full h-20 bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-cyan-700/50 resize-none" />
+                    className="w-full h-32 bg-slate-900/80 border border-slate-700 rounded-lg px-5 py-4 font-mono text-base text-white focus:outline-none focus:border-cyan-700/50 resize-y" />
                 </>
               ) : (
                 <>
                   <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Ciphertext (hex)</label>
                   <textarea value={ciphertextHex} onChange={e => setCiphertextHex(e.target.value)} placeholder="Paste hex ciphertext..."
-                    className="w-full h-20 bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-amber-700/50 resize-none" />
+                    className="w-full h-32 bg-slate-900/80 border border-slate-700 rounded-lg px-5 py-4 font-mono text-base text-white focus:outline-none focus:border-amber-700/50 resize-y" />
                 </>
               )}
 
@@ -429,7 +429,7 @@ const App: React.FC = () => {
                       <div className="bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-sm text-yellow-400 break-all select-all cursor-pointer" onClick={e => { if (mode === 'encrypt') { setCiphertextHex(bitsToHex(outputBitsEnc).replace(/ /g, '')); setMode('decrypt'); } }}>
                         {bitsToHex(outputBitsEnc)}
                       </div>
-                      {mode === 'encrypt' && <p className="text-[10px] text-slate-600 mt-1">Click to copy to decrypt tab</p>}
+                      {mode === 'encrypt' && <p className="text-xs text-slate-600 mt-1">Click to copy to decrypt tab</p>}
                     </div>
                     <div>
                       <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">{mode === 'encrypt' ? 'Ciphertext' : 'Decrypted Plaintext'} (text)</label>

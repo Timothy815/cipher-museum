@@ -300,13 +300,13 @@ const App: React.FC = () => {
 
   const activeRoundData = activeRound !== null && activeRound >= 1 && activeRound <= 16 ? result.rounds[activeRound - 1] : null;
 
-  const labelClass = 'text-xs font-bold text-slate-400 uppercase tracking-wider';
-  const panelClass = 'bg-slate-900/60 border border-slate-800 rounded-xl p-5';
-  const inputClass = 'bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-cyan-700/50 w-full';
+  const labelClass = 'text-sm font-bold text-slate-400 uppercase tracking-wider';
+  const panelClass = 'bg-slate-900/60 border border-slate-800 rounded-xl p-6 md:p-8';
+  const inputClass = 'bg-slate-900/80 border border-slate-700 rounded-lg px-5 py-4 font-mono text-base text-white focus:outline-none focus:border-cyan-700/50 w-full';
 
   return (
-    <div className="flex-1 bg-[#1a1814] text-white flex flex-col items-center px-6 py-4 sm:px-10 md:px-16 md:py-8">
-      <div className="w-full max-w-6xl space-y-6">
+    <div className="flex-1 bg-[#1a1814] text-white flex flex-col items-center px-6 py-8 sm:px-10 md:px-16 md:py-8">
+      <div className="w-full max-w-6xl space-y-8">
 
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -332,7 +332,7 @@ const App: React.FC = () => {
                 )}
               </div>
               <textarea value={plaintext} onChange={e => { setPlaintext(e.target.value); setInspectBlock(0); }}
-                className={`${inputClass} h-20 resize-none`}
+                className={`${inputClass} h-32 resize-none`}
                 placeholder={decrypt ? 'Paste hex ciphertext...' : (hexMode ? 'Hex input (any length)...' : 'Type any message...')} />
               <div className="text-xs text-slate-600 mt-1 font-mono">{allBlocks.length} block{allBlocks.length !== 1 ? 's' : ''} × 64 bits (ECB mode{!decrypt ? ', PKCS#5 padded' : ''})</div>
             </div>
@@ -355,7 +355,7 @@ const App: React.FC = () => {
               onClick={() => { if (!decrypt) { setDecrypt(true); setPlaintext(fullOutputHex); setInspectBlock(0); } }}>
               {decrypt ? fullOutputText || fullOutputHex : fullOutputHex}
             </div>
-            {!decrypt && <p className="text-[10px] text-slate-600 mt-1">Click to copy to decrypt mode</p>}
+            {!decrypt && <p className="text-xs text-slate-600 mt-1">Click to copy to decrypt mode</p>}
             {decrypt && fullOutputText && <div className="mt-1 text-xs text-slate-500 font-mono">hex: {fullOutputHex}</div>}
           </div>
           {/* Block selector for inspection */}
@@ -377,7 +377,7 @@ const App: React.FC = () => {
 
         {/* Controls */}
         <div className={panelClass}>
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-4">
             <button onClick={isRunning ? stopAnimation : runAnimation} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-cyan-950/50 border border-cyan-900/40 text-cyan-400 hover:bg-cyan-900/40 text-sm font-bold">
               {isRunning ? <Pause size={16} /> : <Play size={16} />}
               {isRunning ? 'Pause' : 'Auto Run'}
@@ -400,7 +400,7 @@ const App: React.FC = () => {
         </div>
 
         {/* Main visualization: Feistel + Detail side by side */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
           {/* Feistel Network View */}
           <div className={`${panelClass} lg:col-span-1`}>
@@ -433,13 +433,13 @@ const App: React.FC = () => {
           </div>
 
           {/* Round Detail + S-Box */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-8">
             {activeRoundData ? (
               <>
                 {/* Round Detail */}
                 <div className={panelClass}>
                   <h2 className="text-sm font-bold text-cyan-400 uppercase tracking-wider mb-3">Round {activeRoundData.round} Detail</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-mono">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm font-mono">
                     <div><span className="text-slate-500">L{activeRoundData.round - 1}:</span> <span className="text-white">{bitsToHex(activeRoundData.L)}</span></div>
                     <div><span className="text-slate-500">R{activeRoundData.round - 1}:</span> <span className="text-white">{bitsToHex(activeRoundData.R)}</span></div>
                     <div><span className="text-slate-500">E(R) 32→48:</span> <span className="text-slate-300">{bitsToHex(activeRoundData.expanded)}</span></div>
@@ -454,11 +454,11 @@ const App: React.FC = () => {
                 {/* S-Box Detail */}
                 <div className={panelClass}>
                   <h2 className="text-sm font-bold text-cyan-400 uppercase tracking-wider mb-3">S-Box Substitutions</h2>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {activeRoundData.sboxDetail.map((sb, i) => (
                       <div key={i} className="bg-slate-950/50 rounded-lg p-3 border border-slate-800">
                         <div className="text-xs text-slate-500 mb-1">S{i + 1}</div>
-                        <div className="text-xs font-mono space-y-0.5">
+                        <div className="text-sm font-mono space-y-0.5">
                           <div><span className="text-slate-500">in:</span> <span className="text-white">{sb.input6.join('')}</span></div>
                           <div><span className="text-slate-500">row:</span> <span className="text-amber-400">{sb.row}</span> <span className="text-slate-500 ml-1">col:</span> <span className="text-amber-400">{sb.col}</span></div>
                           <div><span className="text-slate-500">out:</span> <span className="text-cyan-400 font-bold">{sb.output4.join('')}</span></div>
@@ -471,7 +471,7 @@ const App: React.FC = () => {
             ) : activeRound === 0 ? (
               <div className={panelClass}>
                 <h2 className="text-sm font-bold text-cyan-400 uppercase tracking-wider mb-3">Initial Permutation (IP)</h2>
-                <div className="text-xs font-mono space-y-2">
+                <div className="text-sm font-mono space-y-2">
                   <div><span className="text-slate-500">Input bits:</span> <span className="text-white">{bitsToHex(result.inputBits)}</span></div>
                   <div><span className="text-slate-500">After IP:</span> <span className="text-cyan-300">{bitsToHex(result.afterIP)}</span></div>
                   <div><span className="text-slate-500">L₀:</span> <span className="text-white">{bitsToHex(result.afterIP.slice(0, 32))}</span></div>
@@ -482,7 +482,7 @@ const App: React.FC = () => {
             ) : activeRound === 17 ? (
               <div className={panelClass}>
                 <h2 className="text-sm font-bold text-cyan-400 uppercase tracking-wider mb-3">Final Permutation (FP)</h2>
-                <div className="text-xs font-mono space-y-2">
+                <div className="text-sm font-mono space-y-2">
                   <div><span className="text-slate-500">Before FP (R16 || L16):</span> <span className="text-white">{bitsToHex(result.beforeFP)}</span></div>
                   <div><span className="text-slate-500">After FP (output):</span> <span className="text-cyan-400 font-bold">{bitsToHex(result.outputBits)}</span></div>
                 </div>
@@ -529,7 +529,7 @@ const App: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-xs font-mono">
               <thead>
-                <tr className="text-slate-500 border-b border-slate-800">
+                <tr className="text-sm text-slate-500 border-b border-slate-800">
                   <th className="text-left py-1 pr-3">Round</th>
                   <th className="text-left py-1 pr-3">Lᵢ</th>
                   <th className="text-left py-1 pr-3">Rᵢ</th>

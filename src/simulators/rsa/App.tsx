@@ -151,9 +151,9 @@ const App: React.FC = () => {
   } | null>(null);
   const [generating, setGenerating] = useState(false);
 
-  const inputClass = 'bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-violet-700/50 w-full';
-  const labelClass = 'text-xs font-bold text-slate-400 uppercase tracking-wider';
-  const panelClass = 'bg-slate-900/60 border border-slate-800 rounded-xl p-5 overflow-hidden';
+  const inputClass = 'bg-slate-900/80 border border-slate-700 rounded-lg px-5 py-4 font-mono text-base text-white focus:outline-none focus:border-violet-700/50 w-full';
+  const labelClass = 'text-sm font-bold text-slate-400 uppercase tracking-wider';
+  const panelClass = 'bg-slate-900/60 border border-slate-800 rounded-xl p-6 md:p-8 overflow-hidden';
 
   // ── Key generation ──────────────────────────────────────────────
 
@@ -278,13 +278,13 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 bg-[#1a1814] text-white flex flex-col items-center px-6 py-4 sm:px-10 md:px-16 md:py-8">
-      <div className="w-full max-w-6xl space-y-6">
+    <div className="flex-1 bg-[#1a1814] text-white flex flex-col items-center px-6 py-8 sm:px-10 md:px-16 md:py-8">
+      <div className="w-full max-w-6xl space-y-8">
 
         {/* ── Header ─────────────────────────────────────────── */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-violet-400">RSA Cryptosystem</h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-violet-400">RSA Cryptosystem</h1>
             <p className="text-sm text-slate-400 mt-1">Public-key encryption based on the difficulty of factoring large numbers</p>
           </div>
           <button onClick={() => setShowInfo(!showInfo)} className="p-2 rounded-lg bg-slate-900/60 border border-slate-800 hover:border-violet-700/50 transition-colors">
@@ -373,7 +373,7 @@ const App: React.FC = () => {
                   className="group px-3 py-2 text-xs bg-slate-800 border border-slate-700 rounded-lg text-slate-400 hover:border-violet-700/50 hover:text-violet-400 transition-colors disabled:opacity-50 disabled:cursor-wait"
                 >
                   <div className="font-mono font-bold">{opt.label}</div>
-                  <div className="text-[10px] text-slate-600 group-hover:text-slate-500">{opt.desc}</div>
+                  <div className="text-xs text-slate-600 group-hover:text-slate-500">{opt.desc}</div>
                 </button>
               ))}
             </div>
@@ -441,7 +441,7 @@ const App: React.FC = () => {
                   <div>e = <span className="text-emerald-300">{eStr}</span></div>
                   <div>n = <span className="text-emerald-300">{n.toString()}</span></div>
                 </div>
-                <div className="text-[10px] text-slate-500 mt-2">Share this freely — anyone can encrypt with it</div>
+                <div className="text-xs text-slate-500 mt-2">Share this freely — anyone can encrypt with it</div>
               </div>
               <div className="bg-red-950/20 border border-red-800/40 rounded-xl p-4 min-w-0">
                 <div className="text-xs font-bold text-red-400 uppercase tracking-wider mb-2 flex items-center gap-1.5"><Lock size={14} /> Private Key</div>
@@ -449,7 +449,7 @@ const App: React.FC = () => {
                   <div>d = <span className="text-red-300">{d.toString()}</span></div>
                   <div>n = <span className="text-red-300">{n.toString()}</span></div>
                 </div>
-                <div className="text-[10px] text-slate-500 mt-2">Keep this secret — only you can decrypt</div>
+                <div className="text-xs text-slate-500 mt-2">Keep this secret — only you can decrypt</div>
               </div>
             </div>
           )}
@@ -482,7 +482,7 @@ const App: React.FC = () => {
               <div>
                 <label className={`${labelClass} block mb-1`}>Plaintext Message</label>
                 <textarea value={plaintext} onChange={e => setPlaintext(e.target.value)}
-                  className={inputClass + ' min-h-[60px] resize-y'} placeholder="Type your message..." />
+                  className={inputClass + ' h-32 resize-y'} placeholder="Type your message..." />
               </div>
 
               {keyValid && encrypted.length > 0 && (
@@ -543,7 +543,7 @@ const App: React.FC = () => {
               <div>
                 <label className={`${labelClass} block mb-1`}>Ciphertext (paste numbers or hex)</label>
                 <textarea value={ciphertextInput} onChange={e => setCiphertextInput(e.target.value)}
-                  className={inputClass + ' min-h-[60px] resize-y'} placeholder="e.g. 2790, 127, 3 or hex: af3 7f 03" />
+                  className={inputClass + ' h-32 resize-y'} placeholder="e.g. 2790, 127, 3 or hex: af3 7f 03" />
                 {keyValid && ciphertextNums && mode === 'decrypt' && !ciphertextInput && (
                   <button onClick={() => setCiphertextInput(ciphertextNums)}
                     className="text-xs text-violet-400 mt-1 hover:underline">
@@ -687,8 +687,8 @@ const App: React.FC = () => {
                   <div className="text-sm font-medium text-white flex items-center gap-2">
                     {s.label}
                     {s.tag === 'PUBLIC'
-                      ? <span className="text-[10px] text-violet-400 bg-violet-950/50 px-1.5 py-0.5 rounded border border-violet-800/50">PUBLIC</span>
-                      : <span className="text-[10px] text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700">SECRET</span>}
+                      ? <span className="text-xs text-violet-400 bg-violet-950/50 px-1.5 py-0.5 rounded border border-violet-800/50">PUBLIC</span>
+                      : <span className="text-xs text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700">SECRET</span>}
                   </div>
                   <div className="text-xs text-slate-400 font-mono mt-0.5 break-all">{s.detail}</div>
                 </div>

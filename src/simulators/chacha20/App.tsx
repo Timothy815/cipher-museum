@@ -255,7 +255,7 @@ const App: React.FC = () => {
               <textarea
                 value={plaintext}
                 onChange={e => setPlaintext(e.target.value)}
-                className="w-full h-20 bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-cyan-700/50 resize-none"
+                className="w-full h-32 bg-slate-900/80 border border-slate-700 rounded-lg px-5 py-4 font-mono text-base text-white focus:outline-none focus:border-cyan-700/50 resize-y"
                 spellCheck={false}
                 placeholder="Enter plaintext (any length)..."
               />
@@ -263,7 +263,7 @@ const App: React.FC = () => {
               <textarea
                 value={ciphertextHex}
                 onChange={e => setCiphertextHex(e.target.value)}
-                className="w-full h-20 bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-amber-700/50 resize-none"
+                className="w-full h-32 bg-slate-900/80 border border-slate-700 rounded-lg px-5 py-4 font-mono text-base text-white focus:outline-none focus:border-amber-700/50 resize-y"
                 spellCheck={false}
                 placeholder="Paste hex ciphertext..."
               />
@@ -349,14 +349,14 @@ const App: React.FC = () => {
                   key={idx}
                   className={`border rounded-lg px-2 py-2 text-center font-mono transition-colors ${cellColor(idx)}`}
                 >
-                  <div className="text-[10px] text-slate-500 uppercase mb-0.5">{cellLabel(idx)}[{idx}]</div>
+                  <div className="text-xs text-slate-500 uppercase mb-0.5">{cellLabel(idx)}[{idx}]</div>
                   <div className="text-xs">{toHex32(word)}</div>
                 </div>
               ))}
             </div>
 
             {/* Legend */}
-            <div className="flex flex-wrap gap-4 justify-center mt-4 text-[10px] uppercase tracking-wider">
+            <div className="flex flex-wrap gap-4 justify-center mt-4 text-xs uppercase tracking-wider">
               <span className="text-violet-400">■ Constants</span>
               <span className="text-cyan-400">■ Key</span>
               <span className="text-amber-400">■ Counter</span>
@@ -429,7 +429,7 @@ const App: React.FC = () => {
               <table className="font-mono text-xs w-full">
                 <thead>
                   <tr className="text-slate-500">
-                    <td className="pr-3 text-[10px] uppercase tracking-wider pb-1 w-24">Byte #</td>
+                    <td className="pr-3 text-xs uppercase tracking-wider pb-1 w-24">Byte #</td>
                     {encryption.plainBytes.slice(0, 16).map((_, i) => (
                       <td key={i} className="text-center px-1 pb-1 w-8">{i}</td>
                     ))}
@@ -437,19 +437,19 @@ const App: React.FC = () => {
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="pr-3 text-slate-500 text-[10px] uppercase tracking-wider">{mode === 'encrypt' ? 'Plain' : 'Cipher'}</td>
+                    <td className="pr-3 text-slate-500 text-xs uppercase tracking-wider">{mode === 'encrypt' ? 'Plain' : 'Cipher'}</td>
                     {encryption.plainBytes.slice(0, 16).map((b, i) => (
                       <td key={i} className="text-center px-1 text-stone-300">{b.toString(16).padStart(2, '0')}</td>
                     ))}
                   </tr>
                   <tr>
-                    <td className="pr-3 text-slate-500 text-[10px] uppercase tracking-wider">Keystream</td>
+                    <td className="pr-3 text-slate-500 text-xs uppercase tracking-wider">Keystream</td>
                     {encryption.ksBytes.slice(0, 16).map((b, i) => (
                       <td key={i} className="text-center px-1 text-cyan-400/70">{b.toString(16).padStart(2, '0')}</td>
                     ))}
                   </tr>
                   <tr>
-                    <td className="pr-3 text-slate-500 text-[10px] uppercase tracking-wider">⊕ {mode === 'encrypt' ? 'Cipher' : 'Plain'}</td>
+                    <td className="pr-3 text-slate-500 text-xs uppercase tracking-wider">⊕ {mode === 'encrypt' ? 'Cipher' : 'Plain'}</td>
                     {encryption.cipherBytes.slice(0, 16).map((b, i) => (
                       <td key={i} className="text-center px-1 text-cyan-300 font-bold">{b.toString(16).padStart(2, '0')}</td>
                     ))}
@@ -457,7 +457,7 @@ const App: React.FC = () => {
                 </tbody>
               </table>
               {encryption.plainBytes.length > 16 && (
-                <div className="text-[10px] text-slate-500 mt-2">Showing first 16 of {encryption.plainBytes.length} bytes</div>
+                <div className="text-xs text-slate-500 mt-2">Showing first 16 of {encryption.plainBytes.length} bytes</div>
               )}
             </div>
 
@@ -474,7 +474,7 @@ const App: React.FC = () => {
                 onClick={() => { if (mode === 'encrypt') { setCiphertextHex(bytesToHex(encryption.cipherBytes)); setMode('decrypt'); } }}>
                 {bytesToHex(encryption.cipherBytes)}
               </div>
-              {mode === 'encrypt' && <p className="text-[10px] text-slate-600 mt-1">Click to copy to decrypt mode</p>}
+              {mode === 'encrypt' && <p className="text-xs text-slate-600 mt-1">Click to copy to decrypt mode</p>}
             </div>
           </div>
         )}

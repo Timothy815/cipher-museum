@@ -139,18 +139,18 @@ const App: React.FC = () => {
     return String(Math.floor(Math.random() * max) + 2);
   };
 
-  const inputClass = 'bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-violet-700/50 w-full';
-  const labelClass = 'text-xs font-bold text-slate-400 uppercase tracking-wider';
-  const panelClass = 'bg-slate-900/60 border border-slate-800 rounded-xl p-5';
+  const inputClass = 'bg-slate-900/80 border border-slate-700 rounded-lg px-5 py-4 font-mono text-base text-white focus:outline-none focus:border-violet-700/50 w-full';
+  const labelClass = 'text-sm font-bold text-slate-400 uppercase tracking-wider';
+  const panelClass = 'bg-slate-900/60 border border-slate-800 rounded-xl p-6 md:p-8';
 
   return (
-    <div className="flex-1 bg-[#1a1814] text-white flex flex-col items-center px-6 py-4 sm:px-10 md:px-16 md:py-8">
-      <div className="w-full max-w-6xl space-y-6">
+    <div className="flex-1 bg-[#1a1814] text-white flex flex-col items-center px-6 py-8 sm:px-10 md:px-16 md:py-8">
+      <div className="w-full max-w-6xl space-y-8">
 
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-violet-400">ElGamal Encryption</h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-violet-400">ElGamal Encryption</h1>
             <p className="text-sm text-slate-400 mt-1">Probabilistic public-key encryption based on Diffie-Hellman</p>
           </div>
           <button onClick={() => setShowInfo(!showInfo)} className="p-2 rounded-lg bg-slate-900/60 border border-slate-800 hover:border-violet-700/50 transition-colors">
@@ -232,8 +232,8 @@ const App: React.FC = () => {
             <div className="space-y-4">
               <div>
                 <label className={`${labelClass} block mb-1`}>Plaintext Message</label>
-                <input value={plaintext} onChange={e => setPlaintext(e.target.value)} placeholder="Type a message..." className={inputClass} />
-                <div className="text-[10px] text-slate-600 mt-1">Each character is encrypted as a separate (c1, c2) pair with a unique random k</div>
+                <textarea value={plaintext} onChange={e => setPlaintext(e.target.value)} placeholder="Type a message..." className={`${inputClass} h-32 resize-y`} />
+                <div className="text-xs text-slate-600 mt-1">Each character is encrypted as a separate (c1, c2) pair with a unique random k</div>
               </div>
 
               {/* Encrypt Again button */}
@@ -291,8 +291,8 @@ const App: React.FC = () => {
                 <label className={`${labelClass} block mb-1`}>Ciphertext Pairs</label>
                 <textarea value={ciphertextInput} onChange={e => setCiphertextInput(e.target.value)}
                   placeholder="Paste ciphertext: (c1,c2) (c1,c2) ..."
-                  className={`${inputClass} h-24 resize-none`} />
-                <div className="text-[10px] text-slate-600 mt-1">Format: (c1,c2) pairs separated by spaces</div>
+                  className={`${inputClass} h-32 resize-y`} />
+                <div className="text-xs text-slate-600 mt-1">Format: (c1,c2) pairs separated by spaces</div>
               </div>
 
               {decrypted && decrypted.pairs.length > 0 && (
@@ -450,7 +450,7 @@ const App: React.FC = () => {
                 <div>
                   <div className="text-sm font-medium text-white flex items-center gap-2">
                     {s.label}
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded border ${
+                    <span className={`text-xs px-1.5 py-0.5 rounded border ${
                       s.tag === 'SETUP' ? 'text-slate-500 bg-slate-800 border-slate-700' :
                       s.tag === 'ENCRYPT' ? 'text-violet-400 bg-violet-950/50 border-violet-800/50' :
                       s.tag === 'DECRYPT' ? 'text-emerald-400 bg-emerald-950/50 border-emerald-800/50' :

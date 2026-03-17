@@ -197,9 +197,9 @@ const App: React.FC = () => {
   const [egEncryptCounter, setEgEncryptCounter] = useState(0);
   const [egCopied, setEgCopied] = useState(false);
 
-  const inputClass = 'bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-violet-700/50 w-full';
-  const panelClass = 'bg-slate-900/60 border border-slate-800 rounded-xl p-5';
-  const labelClass = 'text-xs font-bold text-slate-400 uppercase tracking-wider';
+  const inputClass = 'bg-slate-900/80 border border-slate-700 rounded-lg px-5 py-4 font-mono text-base text-white focus:outline-none focus:border-violet-700/50 w-full';
+  const panelClass = 'bg-slate-900/60 border border-slate-800 rounded-xl p-6 md:p-8';
+  const labelClass = 'text-sm font-bold text-slate-400 uppercase tracking-wider';
 
   // ── Real curve SVG ─────────────────────────────────────────────────
   const svgW = 500, svgH = 400;
@@ -351,8 +351,8 @@ const App: React.FC = () => {
 
   // ── Render ─────────────────────────────────────────────────────────
   return (
-    <div className="flex-1 bg-[#1a1814] text-white flex flex-col items-center px-6 py-4 sm:px-10 md:px-16 md:py-8">
-      <div className="w-full max-w-6xl space-y-6">
+    <div className="flex-1 bg-[#1a1814] text-white flex flex-col items-center px-6 py-8 sm:px-10 md:px-16 md:py-8">
+      <div className="w-full max-w-6xl space-y-8">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -692,7 +692,7 @@ const App: React.FC = () => {
                       <div className="text-white">{ecdhSecret.a} &times; G = {ecdhSecret.a} &times; {generator ? `(${generator.x}, ${generator.y})` : '?'}</div>
                       <div className="text-violet-300 font-bold">A = {fmtPt(ecdhAPublic)}</div>
                     </div>
-                    <div className="text-slate-600 text-center text-[10px]">sends A to Bob</div>
+                    <div className="text-slate-600 text-center text-xs">sends A to Bob</div>
                     <div className="bg-slate-900/80 rounded-lg p-2 border-t border-slate-800">
                       <div className="text-slate-500">Receives B = {fmtPt(ecdhBPublic)}</div>
                       <div className="text-white">a &times; B = {ecdhSecret.a} &times; {fmtPt(ecdhBPublic)}</div>
@@ -704,7 +704,7 @@ const App: React.FC = () => {
                 <div className="flex flex-col items-center justify-center space-y-3">
                   <div className="text-sm font-bold text-slate-500">Public Channel</div>
                   <div className="border border-dashed border-slate-700 rounded-xl p-4 space-y-2 text-center w-full">
-                    <div className="text-[10px] text-slate-600 uppercase tracking-wider">Eve can see:</div>
+                    <div className="text-xs text-slate-600 uppercase tracking-wider">Eve can see:</div>
                     <div className="font-mono text-xs space-y-1">
                       <div className="text-slate-400">Curve: y&sup2;=x&sup3;+{fa}x+{fb} mod {fp}</div>
                       <div className="text-slate-400">G = {generator ? `(${generator.x}, ${generator.y})` : '?'}</div>
@@ -712,8 +712,8 @@ const App: React.FC = () => {
                       <div className="text-slate-400">B = {fmtPt(ecdhBPublic)}</div>
                     </div>
                     <div className="border-t border-slate-800 pt-2 mt-2">
-                      <div className="text-[10px] text-red-400">Must solve ECDLP:</div>
-                      <div className="font-mono text-[10px] text-red-300">find a such that aG = A</div>
+                      <div className="text-xs text-red-400">Must solve ECDLP:</div>
+                      <div className="font-mono text-xs text-red-300">find a such that aG = A</div>
                     </div>
                   </div>
                 </div>
@@ -727,7 +727,7 @@ const App: React.FC = () => {
                       <div className="text-white">{ecdhSecret.b} &times; G = {ecdhSecret.b} &times; {generator ? `(${generator.x}, ${generator.y})` : '?'}</div>
                       <div className="text-violet-300 font-bold">B = {fmtPt(ecdhBPublic)}</div>
                     </div>
-                    <div className="text-slate-600 text-center text-[10px]">sends B to Alice</div>
+                    <div className="text-slate-600 text-center text-xs">sends B to Alice</div>
                     <div className="bg-slate-900/80 rounded-lg p-2 border-t border-slate-800">
                       <div className="text-slate-500">Receives A = {fmtPt(ecdhAPublic)}</div>
                       <div className="text-white">b &times; A = {ecdhSecret.b} &times; {fmtPt(ecdhAPublic)}</div>
@@ -779,7 +779,7 @@ const App: React.FC = () => {
                 ].map(row => (
                   <div key={row.ecc} className="bg-slate-900/80 rounded-lg p-3 text-center">
                     <div className="text-violet-400 font-bold text-lg font-mono">{row.ecc}-bit</div>
-                    <div className="text-[10px] text-slate-500 uppercase tracking-wider">ECC</div>
+                    <div className="text-xs text-slate-500 uppercase tracking-wider">ECC</div>
                     <div className="text-xs text-slate-400 mt-2">&asymp; RSA <span className="text-white font-bold">{row.rsa}</span>-bit</div>
                     <div className="text-xs text-slate-400">&asymp; AES <span className="text-white font-bold">{row.sym}</span>-bit</div>
                     <div className="mt-2 flex justify-center gap-1">
@@ -864,7 +864,7 @@ const App: React.FC = () => {
                       onChange={e => setEgPlaintext(e.target.value)}
                       placeholder="Type a message..."
                       className={inputClass} />
-                    <div className="text-[10px] text-slate-600 mt-1">
+                    <div className="text-xs text-slate-600 mt-1">
                       Each character is encoded as a curve point via Koblitz encoding, then encrypted with a fresh random k
                     </div>
                   </div>
@@ -935,7 +935,7 @@ const App: React.FC = () => {
                       onChange={e => setEgCiphertextInput(e.target.value)}
                       placeholder="Paste ciphertext: [x1,y1|x2,y2] [x1,y1|x2,y2] ..."
                       className={`${inputClass} h-24 resize-none`} />
-                    <div className="text-[10px] text-slate-600 mt-1">
+                    <div className="text-xs text-slate-600 mt-1">
                       Format: [C1x,C1y|C2x,C2y] pairs — paste from encrypt output
                     </div>
                   </div>
@@ -998,7 +998,7 @@ const App: React.FC = () => {
                     <div>
                       <div className="text-sm font-medium text-white flex items-center gap-2">
                         {s.label}
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded border ${
+                        <span className={`text-xs px-1.5 py-0.5 rounded border ${
                           s.tag === 'SETUP' ? 'text-slate-500 bg-slate-800 border-slate-700' :
                           s.tag === 'ENCODE' ? 'text-amber-400 bg-amber-950/50 border-amber-800/50' :
                           s.tag === 'ENCRYPT' ? 'text-violet-400 bg-violet-950/50 border-violet-800/50' :

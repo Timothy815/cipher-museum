@@ -320,12 +320,12 @@ const AESSimulator: React.FC = () => {
 
   const StateGrid: React.FC<{ state: State; prevState?: State; kind?: StepKind; label: string; compact?: boolean }> = ({ state, prevState, kind, label, compact }) => (
     <div className={compact ? '' : ''}>
-      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">{label}</p>
+      <p className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">{label}</p>
       <div className="grid grid-cols-4 gap-1">
         {[0,1,2,3].map(r => [0,1,2,3].map(c => {
           const cls = prevState && kind ? cellColor(prevState, state, c, r, kind) : 'text-slate-300';
           return (
-            <div key={`${r}-${c}`} className={`font-mono text-sm text-center py-1.5 px-1 rounded ${cls} bg-slate-800/60 border border-slate-700/50 transition-all duration-300`}>
+            <div key={`${r}-${c}`} className={`font-mono text-sm text-center py-2 px-2 rounded ${cls} bg-slate-800/60 border border-slate-700/50 transition-all duration-300`}>
               {hex(state[c][r])}
             </div>
           );
@@ -351,12 +351,12 @@ const AESSimulator: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 bg-[#1a1814] text-white flex flex-col items-center px-6 py-4 sm:px-10 md:px-16 md:py-8">
-      <div className="w-full max-w-6xl space-y-6">
+    <div className="flex-1 bg-[#1a1814] text-white flex flex-col items-center px-6 py-8 sm:px-10 md:px-16 md:py-8">
+      <div className="w-full max-w-6xl space-y-8">
         {/* Header */}
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-cyan-400">AES-128 Simulator</h1>
+            <h1 className="text-3xl font-bold text-cyan-400">AES-128 Simulator</h1>
             <p className="text-slate-400 text-sm mt-1">Advanced Encryption Standard — Rijndael Block Cipher</p>
           </div>
           <button onClick={() => setShowInfo(!showInfo)} className="p-2 rounded-lg bg-slate-800/60 border border-slate-700 hover:border-cyan-700/50 transition-colors">
@@ -388,9 +388,9 @@ const AESSimulator: React.FC = () => {
 
         {/* Input Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
+          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 md:p-8">
             <div className="flex items-center gap-3 mb-2">
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{decrypt ? 'Ciphertext (hex)' : 'Plaintext (any length)'}</label>
+              <label className="text-sm font-bold text-slate-400 uppercase tracking-wider">{decrypt ? 'Ciphertext (hex)' : 'Plaintext (any length)'}</label>
               <button onClick={() => { setDecrypt(!decrypt); setPlainInput(decrypt ? '' : fullOutputHex); setInspectBlock(0); reset(); }}
                 className={`flex items-center gap-1 px-3 py-1 rounded-lg border text-xs font-bold transition-colors ${decrypt ? 'bg-amber-950/40 border-amber-700/50 text-amber-400' : 'bg-cyan-950/40 border-cyan-700/50 text-cyan-400'}`}>
                 {decrypt ? 'Decrypt' : 'Encrypt'}
@@ -399,33 +399,33 @@ const AESSimulator: React.FC = () => {
             <textarea
               value={plainInput}
               onChange={e => { setPlainInput(e.target.value); reset(); setInspectBlock(0); }}
-              className="w-full h-20 mt-1 bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-cyan-700/50 resize-none"
+              className="w-full h-32 mt-1 bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-base text-white focus:outline-none focus:border-cyan-700/50 resize-none"
               placeholder={decrypt ? 'Paste hex ciphertext...' : 'Type any message...'}
             />
             <p className="text-xs text-slate-500 mt-1 font-mono">{allBlocks.length} block{allBlocks.length !== 1 ? 's' : ''} × 128 bits (ECB{!decrypt ? ', PKCS padded' : ''})</p>
           </div>
-          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Key (16 chars or 32 hex digits)</label>
+          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 md:p-8">
+            <label className="text-sm font-bold text-slate-400 uppercase tracking-wider">Key (16 chars or 32 hex digits)</label>
             <input
               value={keyInput}
               onChange={e => { setKeyInput(e.target.value); reset(); }}
-              className="w-full mt-2 bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-cyan-700/50"
+              className="w-full mt-2 bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-base text-white focus:outline-none focus:border-cyan-700/50"
               maxLength={32}
             />
             <p className="text-xs text-slate-500 mt-1 font-mono">{keyBytes.map(hex).join(' ')}</p>
             {/* Full output */}
             <div className="mt-3 pt-3 border-t border-slate-800">
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">{decrypt ? 'Decrypted Output' : 'Full Ciphertext'}</label>
-              <div className="bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 font-mono text-xs text-cyan-300 break-all select-all cursor-pointer max-h-20 overflow-y-auto"
+              <label className="text-sm font-bold text-slate-400 uppercase tracking-wider block mb-1">{decrypt ? 'Decrypted Output' : 'Full Ciphertext'}</label>
+              <div className="bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-sm text-cyan-300 break-all select-all cursor-pointer max-h-32 overflow-y-auto"
                 onClick={() => { if (!decrypt) { setDecrypt(true); setPlainInput(fullOutputHex); setInspectBlock(0); reset(); } }}>
                 {decrypt ? (fullOutputText || fullOutputHex) : fullOutputHex}
               </div>
-              {!decrypt && <p className="text-[10px] text-slate-600 mt-1">Click to copy to decrypt mode</p>}
+              {!decrypt && <p className="text-xs text-slate-600 mt-1">Click to copy to decrypt mode</p>}
             </div>
             {/* Block selector */}
             {allBlocks.length > 1 && (
               <div className="mt-2 flex items-center gap-2">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Block:</span>
+                <span className="text-sm font-bold text-slate-400 uppercase tracking-wider">Block:</span>
                 <div className="flex gap-1 flex-wrap">
                   {allBlocks.map((_, i) => (
                     <button key={i} onClick={() => { setInspectBlock(i); reset(); }}
@@ -440,8 +440,8 @@ const AESSimulator: React.FC = () => {
         </div>
 
         {/* Controls */}
-        <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
-          <div className="flex flex-wrap items-center gap-3">
+        <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 md:p-8">
+          <div className="flex flex-wrap items-center gap-4">
             <button onClick={() => { setStepIndex(0); setPlaying(false); }} className="p-2 rounded-lg bg-slate-800 border border-slate-700 hover:border-cyan-700/50 transition-colors" title="Reset">
               <RotateCcw size={18} className="text-slate-300" />
             </button>
@@ -456,7 +456,7 @@ const AESSimulator: React.FC = () => {
             </button>
 
             <div className="flex items-center gap-2 ml-4">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Speed</span>
+              <span className="text-sm font-bold text-slate-400 uppercase tracking-wider">Speed</span>
               <input type="range" min={100} max={2000} step={100} value={speed} onChange={e => setSpeed(Number(e.target.value))} className="w-24 accent-cyan-500" />
               <span className="text-xs text-slate-500 w-12">{speed}ms</span>
             </div>
@@ -474,7 +474,7 @@ const AESSimulator: React.FC = () => {
         </div>
 
         {/* Current Step Label & Description */}
-        <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
+        <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 md:p-8">
           <div className="flex items-center gap-3 mb-2">
             <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
               currentStep.kind === 'subBytes' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' :
@@ -490,14 +490,14 @@ const AESSimulator: React.FC = () => {
         </div>
 
         {/* State Visualization */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Before State */}
-          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
+          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 md:p-8">
             <StateGrid state={currentStep.stateBefore} label="State Before" />
           </div>
 
           {/* Operation Detail (center) */}
-          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5 flex flex-col items-center justify-center">
+          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 md:p-8 flex flex-col items-center justify-center">
             {currentStep.kind === 'subBytes' && (
               <div className="text-center space-y-3">
                 <p className="text-xs font-bold text-amber-400 uppercase tracking-wider">S-Box Substitution</p>
@@ -547,14 +547,14 @@ const AESSimulator: React.FC = () => {
           </div>
 
           {/* After State */}
-          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
+          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 md:p-8">
             <StateGrid state={currentStep.stateAfter} prevState={currentStep.stateBefore} kind={currentStep.kind} label="State After" />
           </div>
         </div>
 
         {/* Ciphertext Output */}
-        <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
-          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Ciphertext (after all 10 rounds)</label>
+        <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 md:p-8">
+          <label className="text-sm font-bold text-slate-400 uppercase tracking-wider">Ciphertext (after all 10 rounds)</label>
           <div className="mt-2 font-mono text-sm text-cyan-300 tracking-wider">
             {(() => {
               const final = steps[steps.length - 1]?.stateAfter;
@@ -567,7 +567,7 @@ const AESSimulator: React.FC = () => {
         </div>
 
         {/* Key Schedule Toggle */}
-        <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
+        <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 md:p-8">
           <button onClick={() => setShowKeySchedule(!showKeySchedule)} className="flex items-center gap-2 text-sm text-cyan-400 hover:text-cyan-300 transition-colors">
             {showKeySchedule ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
             <span className="text-xs font-bold uppercase tracking-wider">Key Expansion Schedule (11 Round Keys)</span>
@@ -576,7 +576,7 @@ const AESSimulator: React.FC = () => {
             <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {roundKeys.map((rk, i) => (
                 <div key={i} className={`rounded-lg p-3 border ${i === currentStep.round ? 'bg-cyan-950/30 border-cyan-700/50' : 'bg-slate-800/40 border-slate-700/30'}`}>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Round Key {i}</p>
+                  <p className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Round Key {i}</p>
                   <div className="grid grid-cols-4 gap-1">
                     {[0,1,2,3].map(r => [0,1,2,3].map(c => (
                       <div key={`rk-${i}-${r}-${c}`} className="font-mono text-xs text-center text-slate-300 bg-slate-900/60 rounded py-0.5">

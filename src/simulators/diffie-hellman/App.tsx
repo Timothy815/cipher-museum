@@ -91,9 +91,9 @@ const App: React.FC = () => {
   const bobMixedColor = hslToString(bobMixed, S, L);
   const sharedColor = hslToString(sharedHue, S, L);
 
-  const inputClass = 'bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-violet-700/50 w-full';
-  const labelClass = 'text-xs font-bold text-slate-400 uppercase tracking-wider';
-  const panelClass = 'bg-slate-900/60 border border-slate-800 rounded-xl p-5';
+  const inputClass = 'bg-slate-900/80 border border-slate-700 rounded-lg px-5 py-4 font-mono text-base text-white focus:outline-none focus:border-violet-700/50 w-full';
+  const labelClass = 'text-sm font-bold text-slate-400 uppercase tracking-wider';
+  const panelClass = 'bg-slate-900/60 border border-slate-800 rounded-xl p-6 md:p-8';
 
   const randomSecret = () => {
     const max = Number(p) - 2;
@@ -101,12 +101,12 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 bg-[#1a1814] text-white flex flex-col items-center px-6 py-4 sm:px-10 md:px-16 md:py-8">
-      <div className="w-full max-w-6xl space-y-6">
+    <div className="flex-1 bg-[#1a1814] text-white flex flex-col items-center px-6 py-8 sm:px-10 md:px-16 md:py-8">
+      <div className="w-full max-w-6xl space-y-8">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-violet-400">Diffie-Hellman Key Exchange</h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-violet-400">Diffie-Hellman Key Exchange</h1>
             <p className="text-sm text-slate-400 mt-1">Two parties agree on a shared secret over a public channel</p>
           </div>
           <button onClick={() => setShowInfo(!showInfo)} className="p-2 rounded-lg bg-slate-900/60 border border-slate-800 hover:border-violet-700/50 transition-colors">
@@ -138,7 +138,7 @@ const App: React.FC = () => {
               </div>
               <div className="flex gap-1 mt-1">
                 {COLOR_PRESETS.map(c => (
-                  <button key={c.label} onClick={() => setPublicHue(c.hue)} className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-500 border border-slate-700 hover:text-white">{c.label}</button>
+                  <button key={c.label} onClick={() => setPublicHue(c.hue)} className="text-xs px-1.5 py-0.5 rounded bg-slate-800 text-slate-500 border border-slate-700 hover:text-white">{c.label}</button>
                 ))}
               </div>
             </div>
@@ -171,10 +171,10 @@ const App: React.FC = () => {
                   <span className="text-slate-600 text-xs">=</span>
                   <div className="w-8 h-8 rounded border-2 border-slate-600" style={{ backgroundColor: aliceMixedColor }} />
                 </div>
-                <div className="text-[10px] text-slate-500">public + secret → sends mix →</div>
+                <div className="text-xs text-slate-500">public + secret → sends mix →</div>
               </div>
               <div className="space-y-2 pt-2 border-t border-slate-800">
-                <div className="text-[10px] text-slate-500">← receives Bob's mix</div>
+                <div className="text-xs text-slate-500">← receives Bob's mix</div>
                 <div className="flex items-center justify-center gap-2">
                   <div className="w-8 h-8 rounded border-2 border-slate-600" style={{ backgroundColor: bobMixedColor }} />
                   <span className="text-slate-600 text-xs">+</span>
@@ -190,22 +190,22 @@ const App: React.FC = () => {
             <div className="space-y-3 text-center flex flex-col items-center justify-center">
               <div className="text-sm font-bold text-slate-500">Public Channel</div>
               <div className="border border-dashed border-slate-700 rounded-xl p-4 space-y-3">
-                <div className="text-[10px] text-slate-600 uppercase tracking-wider">Eve can see:</div>
+                <div className="text-xs text-slate-600 uppercase tracking-wider">Eve can see:</div>
                 <div className="flex items-center justify-center gap-3">
                   <div>
                     <div className="w-8 h-8 rounded mx-auto" style={{ backgroundColor: publicColor }} />
-                    <div className="text-[10px] text-slate-600 mt-1">Public</div>
+                    <div className="text-xs text-slate-600 mt-1">Public</div>
                   </div>
                   <div>
                     <div className="w-8 h-8 rounded mx-auto border-2 border-slate-600" style={{ backgroundColor: aliceMixedColor }} />
-                    <div className="text-[10px] text-slate-600 mt-1">A's mix</div>
+                    <div className="text-xs text-slate-600 mt-1">A's mix</div>
                   </div>
                   <div>
                     <div className="w-8 h-8 rounded mx-auto border-2 border-slate-600" style={{ backgroundColor: bobMixedColor }} />
-                    <div className="text-[10px] text-slate-600 mt-1">B's mix</div>
+                    <div className="text-xs text-slate-600 mt-1">B's mix</div>
                   </div>
                 </div>
-                <div className="text-[10px] text-red-400">Cannot unmix to find secrets!</div>
+                <div className="text-xs text-red-400">Cannot unmix to find secrets!</div>
               </div>
             </div>
 
@@ -220,10 +220,10 @@ const App: React.FC = () => {
                   <span className="text-slate-600 text-xs">=</span>
                   <div className="w-8 h-8 rounded border-2 border-slate-600" style={{ backgroundColor: bobMixedColor }} />
                 </div>
-                <div className="text-[10px] text-slate-500">← sends mix ← public + secret</div>
+                <div className="text-xs text-slate-500">← sends mix ← public + secret</div>
               </div>
               <div className="space-y-2 pt-2 border-t border-slate-800">
-                <div className="text-[10px] text-slate-500">receives Alice's mix →</div>
+                <div className="text-xs text-slate-500">receives Alice's mix →</div>
                 <div className="flex items-center justify-center gap-2">
                   <div className="w-8 h-8 rounded border-2 border-slate-600" style={{ backgroundColor: aliceMixedColor }} />
                   <span className="text-slate-600 text-xs">+</span>
@@ -290,7 +290,7 @@ const App: React.FC = () => {
                   <div className="text-white">A = {gStr}<sup>{aStr}</sup> mod {pStr}</div>
                   <div className="text-violet-300 font-bold">A = {A.toString()}</div>
                 </div>
-                <div className="text-slate-600 text-center text-[10px]">→ sends A to Bob →</div>
+                <div className="text-slate-600 text-center text-xs">→ sends A to Bob →</div>
                 <div className="bg-slate-900/80 rounded-lg p-2 border-t border-slate-800">
                   <div className="text-slate-500">Receives B = {B.toString()}</div>
                   <div className="text-white">s = B<sup>a</sup> mod p</div>
@@ -317,15 +317,15 @@ const App: React.FC = () => {
                     <div className="text-slate-400">B = <span className="text-white">{B.toString()}</span></div>
                   </div>
                   <div className="border-t border-red-900/30 pt-2 mt-2">
-                    <div className="text-[10px] text-red-400">Must solve: find a such that</div>
+                    <div className="text-xs text-red-400">Must solve: find a such that</div>
                     <div className="font-mono text-xs text-red-300">{gStr}<sup>a</sup> ≡ {A.toString()} (mod {pStr})</div>
-                    <div className="text-[10px] text-slate-600 mt-1">Discrete Log Problem — infeasible for large p</div>
+                    <div className="text-xs text-slate-600 mt-1">Discrete Log Problem — infeasible for large p</div>
                   </div>
                   {/* Brute force for small p */}
                   {p <= 1000n && (
                     <div className="border-t border-red-900/30 pt-2 mt-2">
-                      <div className="text-[10px] text-amber-400">Small p — brute force possible!</div>
-                      <div className="font-mono text-[10px] text-slate-500">
+                      <div className="text-xs text-amber-400">Small p — brute force possible!</div>
+                      <div className="font-mono text-xs text-slate-500">
                         {(() => {
                           for (let i = 1n; i < p; i++) {
                             if (modPow(g, i, p) === A) return `a = ${i} (found by trying all values)`;
@@ -350,7 +350,7 @@ const App: React.FC = () => {
                   <div className="text-white">B = {gStr}<sup>{bStr}</sup> mod {pStr}</div>
                   <div className="text-violet-300 font-bold">B = {B.toString()}</div>
                 </div>
-                <div className="text-slate-600 text-center text-[10px]">← sends B to Alice ←</div>
+                <div className="text-slate-600 text-center text-xs">← sends B to Alice ←</div>
                 <div className="bg-slate-900/80 rounded-lg p-2 border-t border-slate-800">
                   <div className="text-slate-500">Receives A = {A.toString()}</div>
                   <div className="text-white">s = A<sup>b</sup> mod p</div>
@@ -394,8 +394,8 @@ const App: React.FC = () => {
                 <div>
                   <div className="text-sm font-medium text-white flex items-center gap-2">
                     {s.label}
-                    {s.public ? <span className="text-[10px] text-violet-400 bg-violet-950/50 px-1.5 py-0.5 rounded border border-violet-800/50">PUBLIC</span>
-                      : <span className="text-[10px] text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700">SECRET</span>}
+                    {s.public ? <span className="text-xs text-violet-400 bg-violet-950/50 px-1.5 py-0.5 rounded border border-violet-800/50">PUBLIC</span>
+                      : <span className="text-xs text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700">SECRET</span>}
                   </div>
                   <div className="text-xs text-slate-400 font-mono mt-0.5">{s.detail}</div>
                 </div>

@@ -250,7 +250,7 @@ const App: React.FC = () => {
 
   return (
     <div className="flex-1 bg-[#1a1814] flex flex-col items-center py-10 px-6 sm:px-10 md:px-16 text-stone-200 overflow-y-auto">
-      <div className="w-full max-w-6xl">
+      <div className="w-full max-w-6xl space-y-8">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
@@ -289,11 +289,11 @@ const App: React.FC = () => {
         )}
 
         {/* Inputs */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Key */}
-          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
+          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 md:p-8">
             <div className="flex justify-between items-center mb-2">
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">256-bit Key (hex)</label>
+              <label className="text-sm font-bold text-slate-400 uppercase tracking-wider">256-bit Key (hex)</label>
               <button onClick={() => setKeyHex(randomHexKey())} className="flex items-center gap-1.5 px-2 py-1 rounded text-xs font-bold text-cyan-400 hover:bg-slate-800 transition-colors">
                 <RefreshCw size={12} /> Generate
               </button>
@@ -301,17 +301,17 @@ const App: React.FC = () => {
             <input
               value={keyHex}
               onChange={e => setKeyHex(e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 64))}
-              className="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-cyan-700/50 break-all"
+              className="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-base text-white focus:outline-none focus:border-cyan-700/50 break-all"
               spellCheck={false}
               maxLength={64}
             />
-            <div className="text-[10px] text-slate-600 mt-1 font-mono">{keyHex.replace(/[^0-9a-fA-F]/g, '').length}/64 hex chars</div>
+            <div className="text-xs text-slate-600 mt-1 font-mono">{keyHex.replace(/[^0-9a-fA-F]/g, '').length}/64 hex chars</div>
           </div>
 
           {/* Nonce */}
-          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
+          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 md:p-8">
             <div className="flex justify-between items-center mb-2">
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">64-bit Nonce (hex)</label>
+              <label className="text-sm font-bold text-slate-400 uppercase tracking-wider">64-bit Nonce (hex)</label>
               <button onClick={() => setNonceHex(randomHexNonce())} className="flex items-center gap-1.5 px-2 py-1 rounded text-xs font-bold text-cyan-400 hover:bg-slate-800 transition-colors">
                 <RefreshCw size={12} /> Generate
               </button>
@@ -319,16 +319,16 @@ const App: React.FC = () => {
             <input
               value={nonceHex}
               onChange={e => setNonceHex(e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 16))}
-              className="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-cyan-700/50"
+              className="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-base text-white focus:outline-none focus:border-cyan-700/50"
               spellCheck={false}
               maxLength={16}
             />
-            <div className="text-[10px] text-slate-600 mt-1 font-mono">{nonceHex.replace(/[^0-9a-fA-F]/g, '').length}/16 hex chars</div>
+            <div className="text-xs text-slate-600 mt-1 font-mono">{nonceHex.replace(/[^0-9a-fA-F]/g, '').length}/16 hex chars</div>
           </div>
         </div>
 
         {/* Input */}
-        <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5 mb-6">
+        <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 md:p-8">
           <div className="flex items-center gap-2 mb-2">
             <button onClick={() => setMode('encrypt')} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${mode === 'encrypt' ? 'bg-cyan-950/50 text-cyan-400 border border-cyan-900/40' : 'bg-slate-800 text-slate-400 border border-slate-700 hover:text-white'}`}>Encrypt Text</button>
             <button onClick={() => setMode('decrypt')} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${mode === 'decrypt' ? 'bg-amber-950/50 text-amber-400 border border-amber-900/40' : 'bg-slate-800 text-slate-400 border border-slate-700 hover:text-white'}`}>Decrypt Hex</button>
@@ -338,7 +338,7 @@ const App: React.FC = () => {
               value={plaintext}
               onChange={e => setPlaintext(e.target.value)}
               placeholder="Type your message (any length)..."
-              className="w-full h-20 bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-cyan-700/50 resize-none"
+              className="w-full h-32 bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-base text-white focus:outline-none focus:border-cyan-700/50 resize-none"
               spellCheck={false}
             />
           ) : (
@@ -346,17 +346,17 @@ const App: React.FC = () => {
               value={ciphertextHex}
               onChange={e => setCiphertextHex(e.target.value)}
               placeholder="Paste hex ciphertext..."
-              className="w-full h-20 bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-amber-700/50 resize-none"
+              className="w-full h-32 bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-base text-white focus:outline-none focus:border-amber-700/50 resize-none"
               spellCheck={false}
             />
           )}
         </div>
 
         {/* State Matrix */}
-        <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5 mb-6">
+        <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 md:p-8">
           <div className="flex justify-between items-center mb-4">
             <div>
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">4x4 State Matrix</label>
+              <label className="text-sm font-bold text-slate-400 uppercase tracking-wider">4x4 State Matrix</label>
               {animStep >= 0 && (
                 <span className="ml-3 text-xs text-cyan-400 font-mono">
                   DR {currentDoubleRound + 1}/10 — {isColumnPhase ? 'Column' : 'Row'} QR {currentQR + 1}/4 — Step {(animStep % 4) + 1}/4
@@ -364,7 +364,7 @@ const App: React.FC = () => {
               )}
             </div>
             {animStep >= 0 && (
-              <span className="text-[10px] text-slate-500 font-mono">step {animStep + 1}/{allSteps.length}</span>
+              <span className="text-xs text-slate-500 font-mono">step {animStep + 1}/{allSteps.length}</span>
             )}
           </div>
 
@@ -438,8 +438,8 @@ const App: React.FC = () => {
         </div>
 
         {/* Quarter-Round Reference */}
-        <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5 mb-6">
-          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 block">Quarter-Round Operation (ARX)</label>
+        <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 md:p-8">
+          <label className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3 block">Quarter-Round Operation (ARX)</label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {[
               { expr: 'b ^= (a + d) <<< 7', rot: 7, color: 'text-cyan-400' },
@@ -459,14 +459,14 @@ const App: React.FC = () => {
               </div>
             ))}
           </div>
-          <div className="mt-3 text-[10px] text-slate-600">
+          <div className="mt-3 text-xs text-slate-600">
             Each double-round: 4 column quarter-rounds (cols 0,1,2,3) then 4 row quarter-rounds (rows 0,1,2,3). Total: 10 double-rounds = 20 rounds.
           </div>
         </div>
 
         {/* Round structure overview */}
-        <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5 mb-6">
-          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 block">Round Structure — 10 Double-Rounds</label>
+        <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 md:p-8">
+          <label className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3 block">Round Structure — 10 Double-Rounds</label>
           <div className="flex flex-wrap gap-1">
             {Array.from({ length: 10 }, (_, dr) => {
               const isActive = currentDoubleRound === dr;
@@ -503,7 +503,7 @@ const App: React.FC = () => {
               );
             })}
           </div>
-          <div className="flex gap-4 mt-2 text-[10px] text-slate-600">
+          <div className="flex gap-4 mt-2 text-xs text-slate-600">
             <span><span className="inline-block w-2 h-2 rounded-sm bg-cyan-600/40 border border-cyan-500 mr-1" />Active</span>
             <span><span className="inline-block w-2 h-2 rounded-sm bg-slate-700/50 border border-slate-600 mr-1" />Complete</span>
             <span><span className="inline-block w-2 h-2 rounded-sm bg-slate-800/30 border border-slate-700/30 mr-1" />Pending</span>
@@ -512,15 +512,15 @@ const App: React.FC = () => {
 
         {/* Encryption XOR Visualization */}
         {encResult && (
-          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5 mb-6">
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 block">
+          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 md:p-8">
+            <label className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3 block">
               Encrypt / Decrypt — XOR with Keystream
             </label>
             <div className="overflow-x-auto">
               <table className="font-mono text-xs w-full">
                 <thead>
                   <tr className="text-slate-600">
-                    <td className="pr-3 text-[10px] uppercase tracking-wider font-bold py-1 w-24">{mode === 'encrypt' ? 'Plaintext' : 'Ciphertext'}</td>
+                    <td className="pr-3 text-xs uppercase tracking-wider font-bold py-1 w-24">{mode === 'encrypt' ? 'Plaintext' : 'Ciphertext'}</td>
                     {(mode === 'encrypt' ? Array.from(textToBytes(plaintext)) : (() => { const clean = ciphertextHex.replace(/[^0-9a-fA-F]/g, ''); const b: number[] = []; for (let i = 0; i + 1 < clean.length; i += 2) b.push(parseInt(clean.slice(i, i + 2), 16)); return b; })()).slice(0, 32).map((b, i) => (
                       <td key={i} className="px-0.5 text-center w-7">{mode === 'encrypt' ? String.fromCharCode(b) : b.toString(16).padStart(2, '0')}</td>
                     ))}
@@ -528,19 +528,19 @@ const App: React.FC = () => {
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="pr-3 text-[10px] text-slate-600 uppercase tracking-wider font-bold py-1">{mode === 'encrypt' ? 'Plain' : 'Cipher'} hex</td>
+                    <td className="pr-3 text-xs text-slate-600 uppercase tracking-wider font-bold py-1">{mode === 'encrypt' ? 'Plain' : 'Cipher'} hex</td>
                     {(mode === 'encrypt' ? Array.from(textToBytes(plaintext)) : (() => { const clean = ciphertextHex.replace(/[^0-9a-fA-F]/g, ''); const b: number[] = []; for (let i = 0; i + 1 < clean.length; i += 2) b.push(parseInt(clean.slice(i, i + 2), 16)); return b; })()).slice(0, 32).map((b, i) => (
                       <td key={i} className="px-0.5 text-center text-slate-400">{b.toString(16).padStart(2, '0')}</td>
                     ))}
                   </tr>
                   <tr>
-                    <td className="pr-3 text-[10px] text-cyan-600 uppercase tracking-wider font-bold py-1">Keystream</td>
+                    <td className="pr-3 text-xs text-cyan-600 uppercase tracking-wider font-bold py-1">Keystream</td>
                     {Array.from(encResult.keystream).slice(0, 32).map((b, i) => (
                       <td key={i} className="px-0.5 text-center text-cyan-500/70">{b.toString(16).padStart(2, '0')}</td>
                     ))}
                   </tr>
                   <tr className="border-t border-slate-700/50">
-                    <td className="pr-3 text-[10px] text-cyan-400 uppercase tracking-wider font-bold py-1">{mode === 'encrypt' ? 'Cipher' : 'Plain'} =</td>
+                    <td className="pr-3 text-xs text-cyan-400 uppercase tracking-wider font-bold py-1">{mode === 'encrypt' ? 'Cipher' : 'Plain'} =</td>
                     {Array.from(encResult.cipher).slice(0, 32).map((b, i) => (
                       <td key={i} className="px-0.5 text-center text-cyan-300 font-bold">{b.toString(16).padStart(2, '0')}</td>
                     ))}
@@ -548,14 +548,14 @@ const App: React.FC = () => {
                 </tbody>
               </table>
               {(mode === 'encrypt' ? textToBytes(plaintext).length : ciphertextHex.replace(/[^0-9a-fA-F]/g, '').length / 2) > 32 && (
-                <div className="text-[10px] text-slate-600 mt-1">Showing first 32 of {mode === 'encrypt' ? textToBytes(plaintext).length : Math.floor(ciphertextHex.replace(/[^0-9a-fA-F]/g, '').length / 2)} bytes</div>
+                <div className="text-xs text-slate-600 mt-1">Showing first 32 of {mode === 'encrypt' ? textToBytes(plaintext).length : Math.floor(ciphertextHex.replace(/[^0-9a-fA-F]/g, '').length / 2)} bytes</div>
               )}
             </div>
 
             <div className="mt-4">
-              <label className="text-[10px] text-slate-600 uppercase tracking-wider font-bold">{mode === 'encrypt' ? 'Full Ciphertext (hex)' : 'Decrypted Output'}</label>
+              <label className="text-xs text-slate-600 uppercase tracking-wider font-bold">{mode === 'encrypt' ? 'Full Ciphertext (hex)' : 'Decrypted Output'}</label>
               {mode === 'decrypt' && (
-                <div className="bg-slate-800/50 border border-slate-700/40 rounded-lg px-3 py-2 mt-1 font-mono text-sm text-emerald-300 break-all">
+                <div className="bg-slate-800/50 border border-slate-700/40 rounded-lg px-3 py-2 mt-1 font-mono text-base text-emerald-300 break-all">
                   {Array.from(encResult.cipher).map(b => b >= 32 && b < 127 ? String.fromCharCode(b) : '·').join('')}
                 </div>
               )}
@@ -563,14 +563,14 @@ const App: React.FC = () => {
                 onClick={() => { if (mode === 'encrypt') { setCiphertextHex(bytesToHex(encResult.cipher)); setMode('decrypt'); } }}>
                 {bytesToHex(encResult.cipher)}
               </div>
-              {mode === 'encrypt' && <p className="text-[10px] text-slate-600 mt-1">Click to copy to decrypt mode</p>}
+              {mode === 'encrypt' && <p className="text-xs text-slate-600 mt-1">Click to copy to decrypt mode</p>}
             </div>
           </div>
         )}
 
         {/* Keystream Addition Note */}
-        <div className="bg-cyan-950/20 border border-cyan-900/40 rounded-xl p-5 mb-6">
-          <label className="text-xs font-bold text-cyan-400 uppercase tracking-wider mb-2 block">Keystream Generation</label>
+        <div className="bg-cyan-950/20 border border-cyan-900/40 rounded-xl p-6 md:p-8">
+          <label className="text-sm font-bold text-cyan-400 uppercase tracking-wider mb-2 block">Keystream Generation</label>
           <p className="text-xs text-slate-400 leading-relaxed">
             After all 20 rounds, the final state is <strong className="text-slate-300">added word-by-word</strong> to
             the original input state (before the rounds). This feedforward addition prevents an attacker from inverting
@@ -581,8 +581,8 @@ const App: React.FC = () => {
         </div>
 
         {/* Constants legend */}
-        <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
-          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 block">Matrix Layout (Salsa20 Spec)</label>
+        <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 md:p-8">
+          <label className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3 block">Matrix Layout (Salsa20 Spec)</label>
           <div className="grid grid-cols-4 gap-2 max-w-lg mx-auto font-mono text-xs">
             {[
               { label: '"expa"', cls: 'text-amber-400/80 bg-amber-950/30 border-amber-900/40' },
@@ -605,7 +605,7 @@ const App: React.FC = () => {
               <div key={i} className={`rounded-lg px-2 py-1.5 text-center border ${cell.cls}`}>{cell.label}</div>
             ))}
           </div>
-          <div className="flex flex-wrap gap-4 mt-3 text-[10px] text-slate-600 justify-center">
+          <div className="flex flex-wrap gap-4 mt-3 text-xs text-slate-600 justify-center">
             <span><span className="inline-block w-2 h-2 rounded-sm bg-amber-950/30 border border-amber-900/40 mr-1" />Constants</span>
             <span><span className="inline-block w-2 h-2 rounded-sm bg-slate-800/60 border border-slate-700/50 mr-1" />Key</span>
             <span><span className="inline-block w-2 h-2 rounded-sm bg-emerald-950/30 border border-emerald-900/40 mr-1" />Nonce</span>

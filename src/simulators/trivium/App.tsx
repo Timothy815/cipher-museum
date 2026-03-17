@@ -253,9 +253,9 @@ const App: React.FC = () => {
     }
   }, [mode, cryptResult]);
 
-  const inputClass = 'bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-cyan-700/50 w-full';
-  const panelClass = 'bg-slate-900/60 border border-slate-800 rounded-xl p-5';
-  const labelClass = 'text-xs font-bold text-slate-400 uppercase tracking-wider';
+  const inputClass = 'bg-slate-900/80 border border-slate-700 rounded-lg px-5 py-4 font-mono text-base text-white focus:outline-none focus:border-cyan-700/50 w-full';
+  const panelClass = 'bg-slate-900/60 border border-slate-800 rounded-xl p-6 md:p-8';
+  const labelClass = 'text-sm font-bold text-slate-400 uppercase tracking-wider';
 
   // Register visualization data
   const regBitCounts = [93, 84, 111];
@@ -265,13 +265,13 @@ const App: React.FC = () => {
   const svgH = 3 * regH + 2 * regGap + 100;
 
   return (
-    <div className="flex-1 bg-slate-950 text-white flex flex-col items-center px-6 py-4 sm:px-10 md:px-16 md:py-8">
-      <div className="w-full max-w-6xl space-y-6">
+    <div className="flex-1 bg-slate-950 text-white flex flex-col items-center px-6 py-8 sm:px-10 md:px-16 md:py-8">
+      <div className="w-full max-w-6xl space-y-8">
 
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-cyan-400">Trivium</h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-cyan-400">Trivium</h1>
             <p className="text-sm text-slate-400 mt-1">Lightweight stream cipher — three coupled shift registers</p>
           </div>
           <button onClick={() => setShowInfo(!showInfo)} className="p-2 rounded-lg bg-slate-900/60 border border-slate-800 hover:border-cyan-700/50 transition-colors">
@@ -307,7 +307,7 @@ const App: React.FC = () => {
         {/* Key / IV Setup */}
         <div className={panelClass}>
           <h2 className="text-sm font-bold text-cyan-400 uppercase tracking-wider mb-4">Key &amp; IV Setup</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
               <label className={`${labelClass} block mb-1`}>80-bit Key (hex)</label>
               <input value={keyHex} onChange={e => setKeyHex(e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 20))} className={inputClass} placeholder="0123456789abcdef0123" />
@@ -460,7 +460,7 @@ const App: React.FC = () => {
         {keystream.length > 0 && (
           <div className={panelClass}>
             <h2 className="text-sm font-bold text-cyan-400 uppercase tracking-wider mb-3">Keystream ({keystream.length} bits)</h2>
-            <div className="bg-slate-950/60 rounded-lg p-3 font-mono text-xs max-h-40 overflow-y-auto">
+            <div className="bg-slate-950/60 rounded-lg p-3 font-mono text-sm max-h-40 overflow-y-auto">
               {/* Binary */}
               <div className="text-cyan-300 break-all leading-relaxed">
                 {keystream.map((b, i) => (
@@ -486,7 +486,7 @@ const App: React.FC = () => {
             {(() => {
               const last = history[history.length - 1];
               return (
-                <div className="bg-slate-900/80 rounded-lg p-3 font-mono text-xs space-y-1">
+                <div className="bg-slate-900/80 rounded-lg p-3 font-mono text-sm space-y-1">
                   <div><span className="text-amber-400">Register A:</span> t1 = s[65] ⊕ s[92] = <span className="text-white">{last.t1}</span>, AND = s[90] &amp; s[91] = <span className="text-white">{last.and1}</span></div>
                   <div><span className="text-blue-400">Register B:</span> t2 = s[161] ⊕ s[176] = <span className="text-white">{last.t2}</span>, AND = s[174] &amp; s[175] = <span className="text-white">{last.and2}</span></div>
                   <div><span className="text-emerald-400">Register C:</span> t3 = s[242] ⊕ s[287] = <span className="text-white">{last.t3}</span>, AND = s[285] &amp; s[286] = <span className="text-white">{last.and3}</span></div>
@@ -529,16 +529,16 @@ const App: React.FC = () => {
             {mode === 'encrypt' ? (
               <div>
                 <label className={`${labelClass} block mb-1`}>Plaintext</label>
-                <input value={plaintext} onChange={e => setPlaintext(e.target.value)}
+                <textarea value={plaintext} onChange={e => setPlaintext(e.target.value)}
                   placeholder="Type a message..."
-                  className={inputClass} />
+                  className={`${inputClass} h-32 resize-y`} />
               </div>
             ) : (
               <div>
                 <label className={`${labelClass} block mb-1`}>Ciphertext (hex)</label>
-                <input value={ciphertextHex} onChange={e => setCiphertextHex(e.target.value.replace(/[^0-9a-fA-F\s]/g, ''))}
+                <textarea value={ciphertextHex} onChange={e => setCiphertextHex(e.target.value.replace(/[^0-9a-fA-F\s]/g, ''))}
                   placeholder="Paste hex ciphertext here..."
-                  className={inputClass} />
+                  className={`${inputClass} h-32 resize-y`} />
               </div>
             )}
 
@@ -549,7 +549,7 @@ const App: React.FC = () => {
                   <h3 className="text-xs font-bold text-cyan-400 uppercase tracking-wider mb-2">
                     Bit-level XOR (first {Math.min(64, cryptResult.inputBits.length)} of {cryptResult.inputBits.length} bits)
                   </h3>
-                  <div className="bg-slate-900/80 rounded-lg p-3 font-mono text-[11px] space-y-1 overflow-x-auto">
+                  <div className="bg-slate-900/80 rounded-lg p-3 font-mono text-sm space-y-1 overflow-x-auto">
                     <div className="flex gap-0.5 flex-wrap">
                       <span className="text-slate-500 w-20 shrink-0">{mode === 'encrypt' ? 'Plain:' : 'Cipher:'}    </span>
                       {cryptResult.inputBits.slice(0, 64).map((b, i) => (
@@ -576,17 +576,17 @@ const App: React.FC = () => {
                   <>
                     {/* Decrypt: show recovered plaintext prominently */}
                     <div className="bg-emerald-950/20 border border-emerald-800/40 rounded-lg p-4">
-                      <div className="text-[10px] text-emerald-400 uppercase tracking-wider font-bold mb-2">Decrypted Plaintext</div>
+                      <div className="text-xs text-emerald-400 uppercase tracking-wider font-bold mb-2">Decrypted Plaintext</div>
                       <div className="font-mono text-lg text-emerald-300 break-all">{cryptResult.outputText}</div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="bg-slate-900/80 rounded-lg p-3">
-                        <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Decrypted (hex)</div>
-                        <div className="font-mono text-xs text-slate-400 break-all">{cryptResult.outputHex}</div>
+                        <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">Decrypted (hex)</div>
+                        <div className="font-mono text-sm text-slate-400 break-all">{cryptResult.outputHex}</div>
                       </div>
                       <div className="bg-slate-900/80 rounded-lg p-3">
-                        <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Keystream (hex)</div>
-                        <div className="font-mono text-xs text-slate-400 break-all">{cryptResult.keystreamHex}</div>
+                        <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">Keystream (hex)</div>
+                        <div className="font-mono text-sm text-slate-400 break-all">{cryptResult.keystreamHex}</div>
                       </div>
                     </div>
                   </>
@@ -594,23 +594,23 @@ const App: React.FC = () => {
                   <>
                     {/* Encrypt: show ciphertext hex prominently */}
                     <div className="bg-slate-900/80 rounded-lg p-4">
-                      <div className="text-[10px] text-cyan-400 uppercase tracking-wider font-bold mb-2">Ciphertext (hex)</div>
-                      <div className="font-mono text-sm text-cyan-300 break-all">{cryptResult.outputHex}</div>
+                      <div className="text-xs text-cyan-400 uppercase tracking-wider font-bold mb-2">Ciphertext (hex)</div>
+                      <div className="font-mono text-base text-cyan-300 break-all">{cryptResult.outputHex}</div>
                       <button
                         onClick={() => { setCiphertextHex(cryptResult.outputHex); setMode('decrypt'); }}
-                        className="mt-3 text-[10px] text-cyan-600 hover:text-cyan-400 font-bold uppercase tracking-wider transition-colors"
+                        className="mt-3 text-xs text-cyan-600 hover:text-cyan-400 font-bold uppercase tracking-wider transition-colors"
                       >
                         Copy to Decrypt &rarr;
                       </button>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="bg-slate-900/80 rounded-lg p-3">
-                        <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Ciphertext (text preview)</div>
-                        <div className="font-mono text-sm text-white break-all">{cryptResult.outputText}</div>
+                        <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">Ciphertext (text preview)</div>
+                        <div className="font-mono text-base text-white break-all">{cryptResult.outputText}</div>
                       </div>
                       <div className="bg-slate-900/80 rounded-lg p-3">
-                        <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Keystream (hex)</div>
-                        <div className="font-mono text-xs text-slate-400 break-all">{cryptResult.keystreamHex}</div>
+                        <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">Keystream (hex)</div>
+                        <div className="font-mono text-sm text-slate-400 break-all">{cryptResult.keystreamHex}</div>
                       </div>
                     </div>
                   </>
@@ -638,7 +638,7 @@ const App: React.FC = () => {
             ))}
           </div>
 
-          <div className="bg-slate-900/80 rounded-lg p-3 font-mono text-xs text-slate-400 space-y-1">
+          <div className="bg-slate-900/80 rounded-lg p-3 font-mono text-sm text-slate-400 space-y-1">
             <div className="text-cyan-400 font-bold mb-1">Each clock cycle:</div>
             <div>1. t1 = s[65] ⊕ s[92]</div>
             <div>2. t2 = s[161] ⊕ s[176]</div>
