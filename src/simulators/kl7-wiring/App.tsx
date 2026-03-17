@@ -314,6 +314,7 @@ const App: React.FC = () => {
             wirings={effectiveWirings}
             trace={trace}
             accentColor="#3b82f6"
+            columnOffsets={[...displayPositions, 0]}
           />
         </div>
 

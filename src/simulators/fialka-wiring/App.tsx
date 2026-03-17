@@ -156,6 +156,14 @@ const App: React.FC = () => {
 
   const reflMap = useMemo(() => reflectorMapping(), []);
 
+  // ── Column rotation offsets ───────────────────────────────────
+  // Col 0-9 = rotors (leftmost to rightmost), col 10 = entry (fixed)
+  const colOffsets = useMemo(() => [
+    ...rotors.map(r => mod(r.position - r.ringSetting)),
+    0, // entry stator
+  ], [rotors]);
+  const toVisual = (contactIdx: number, col: number) => mod(contactIdx - colOffsets[col]);
+
   // ── Active wire indices for each gap ──────────────────────────
   // Display gap g corresponds to rotor index g (0=rotor1, 9=rotor10)
   // forward trace goes right-to-left: forward[0]=entry at col 10, forward[10]=reflector side at col 0
@@ -432,11 +440,13 @@ const App: React.FC = () => {
               );
             })}
 
-            {/* Column letters */}
+            {/* Column letters (rotated by rotor position) */}
             {COL_X.map((cx, c) => (
               <g key={`col-${c}`}>
-                {ALPHABET.split('').map((letter, i) => {
-                  const hl = highlights.get(`${c}-${i}`);
+                {ALPHABET.split('').map((_, i) => {
+                  const contactIdx = mod(i + colOffsets[c]);
+                  const letter = toChar(contactIdx);
+                  const hl = highlights.get(`${c}-${contactIdx}`);
                   const y = letterY(i);
                   return (
                     <g key={i}>
@@ -459,24 +469,25 @@ const App: React.FC = () => {
             {/* Gap wires */}
             {wirings.map((wiring, g) => {
               // Invert the wiring for display: signal enters from right col, exits at left col
-              // wiring[inIdx] = outIdx (forward), so inverse: for each outIdx, find inIdx
               const invWiring = new Array(26);
               for (let i = 0; i < 26; i++) invWiring[wiring[i]] = i;
 
               const x1 = COL_X[g] + WIRE_PAD;
               const x2 = COL_X[g + 1] - WIRE_PAD;
               const cp = (x2 - x1) * 0.15;
-              const fwIdx = activeForward ? activeForward[g][0] : -1;
-              const rtIdx = activeReturn ? activeReturn[g][0] : -1;
+              const fwContact = activeForward ? activeForward[g][0] : -1;
+              const rtContact = activeReturn ? activeReturn[g][0] : -1;
 
               return (
                 <g key={`gap-${g}`}>
                   {/* Background wires */}
                   {invWiring.map((rightIdx: number, leftIdx: number) => {
-                    if (leftIdx === fwIdx || leftIdx === rtIdx) return null;
+                    if (leftIdx === fwContact || leftIdx === rtContact) return null;
+                    const vL = toVisual(leftIdx, g);
+                    const vR = toVisual(rightIdx, g + 1);
                     return (
                       <path key={leftIdx}
-                        d={`M ${x1} ${letterY(leftIdx)} C ${x1 + cp} ${letterY(leftIdx)}, ${x2 - cp} ${letterY(rightIdx)}, ${x2} ${letterY(rightIdx)}`}
+                        d={`M ${x1} ${letterY(vL)} C ${x1 + cp} ${letterY(vL)}, ${x2 - cp} ${letterY(vR)}, ${x2} ${letterY(vR)}`}
                         stroke={`hsla(${wireHue(rightIdx)}, 40%, 45%, ${trace ? 0.12 : 0.22})`}
                         strokeWidth={1} fill="none" />
                     );
@@ -485,9 +496,11 @@ const App: React.FC = () => {
                   {/* Active forward wire */}
                   {activeForward && (() => {
                     const [inI, outI] = activeForward[g];
+                    const vIn = toVisual(inI, g);
+                    const vOut = toVisual(outI, g + 1);
                     return (
                       <path
-                        d={`M ${x1} ${letterY(inI)} C ${x1 + cp} ${letterY(inI)}, ${x2 - cp} ${letterY(outI)}, ${x2} ${letterY(outI)}`}
+                        d={`M ${x1} ${letterY(vIn)} C ${x1 + cp} ${letterY(vIn)}, ${x2 - cp} ${letterY(vOut)}, ${x2} ${letterY(vOut)}`}
                         stroke="#f59e0b" strokeWidth={2.5} fill="none" filter="url(#glow-fwd)" />
                     );
                   })()}
@@ -495,9 +508,11 @@ const App: React.FC = () => {
                   {/* Active return wire */}
                   {activeReturn && (() => {
                     const [inI, outI] = activeReturn[g];
+                    const vIn = toVisual(inI, g);
+                    const vOut = toVisual(outI, g + 1);
                     return (
                       <path
-                        d={`M ${x1} ${letterY(inI)} C ${x1 + cp} ${letterY(inI)}, ${x2 - cp} ${letterY(outI)}, ${x2} ${letterY(outI)}`}
+                        d={`M ${x1} ${letterY(vIn)} C ${x1 + cp} ${letterY(vIn)}, ${x2 - cp} ${letterY(vOut)}, ${x2} ${letterY(vOut)}`}
                         stroke="#06b6d4" strokeWidth={2.5} fill="none" filter="url(#glow-ret)" />
                     );
                   })()}
@@ -521,9 +536,11 @@ const App: React.FC = () => {
                 if (drawn.has(inIdx)) return null;
                 drawn.add(inIdx);
                 drawn.add(outIdx);
-                const y1 = letterY(inIdx);
-                const y2 = letterY(outIdx);
-                const dist = Math.abs(outIdx - inIdx);
+                const vIn = toVisual(inIdx, 0);
+                const vOut = toVisual(outIdx, 0);
+                const y1 = letterY(vIn);
+                const y2 = letterY(vOut);
+                const dist = Math.abs(vOut - vIn);
                 const bulge = 12 + dist * 2.8;
                 const isActive = trace && (
                   (trace.reflIn === inIdx && trace.reflOut === outIdx) ||
@@ -540,29 +557,34 @@ const App: React.FC = () => {
             })()}
 
             {/* Input / Output indicators */}
-            {trace && (
-              <g>
-                {/* Input arrow & label (entry is at col NUM_COLS-1, rightmost) */}
-                <polygon
-                  points={`${COL_X[NUM_COLS - 1] + WIRE_PAD + 6},${letterY(trace.forward[0]) - 4} ${COL_X[NUM_COLS - 1] + WIRE_PAD + 6},${letterY(trace.forward[0]) + 4} ${COL_X[NUM_COLS - 1] + WIRE_PAD},${letterY(trace.forward[0])}`}
-                  fill="#f59e0b" />
-                <text x={COL_X[NUM_COLS - 1] + WIRE_PAD + 10} y={letterY(trace.forward[0]) + 1}
-                  textAnchor="start" dominantBaseline="central"
-                  fontSize={13} fontWeight="bold" fontFamily="monospace" fill="#f59e0b">
-                  {trace.inputChar}
-                </text>
+            {trace && (() => {
+              const entryCol = NUM_COLS - 1;
+              const inputVis = toVisual(trace.forward[0], entryCol);
+              const outputVis = toVisual(trace.backward[NUM_GAPS], entryCol);
+              return (
+                <g>
+                  {/* Input arrow & label (entry is at col NUM_COLS-1, rightmost) */}
+                  <polygon
+                    points={`${COL_X[entryCol] + WIRE_PAD + 6},${letterY(inputVis) - 4} ${COL_X[entryCol] + WIRE_PAD + 6},${letterY(inputVis) + 4} ${COL_X[entryCol] + WIRE_PAD},${letterY(inputVis)}`}
+                    fill="#f59e0b" />
+                  <text x={COL_X[entryCol] + WIRE_PAD + 10} y={letterY(inputVis) + 1}
+                    textAnchor="start" dominantBaseline="central"
+                    fontSize={13} fontWeight="bold" fontFamily="monospace" fill="#f59e0b">
+                    {trace.inputChar}
+                  </text>
 
-                {/* Output arrow & label (returns to rightmost column) */}
-                <polygon
-                  points={`${COL_X[NUM_COLS - 1] + WIRE_PAD},${letterY(trace.backward[NUM_GAPS]) - 4} ${COL_X[NUM_COLS - 1] + WIRE_PAD},${letterY(trace.backward[NUM_GAPS]) + 4} ${COL_X[NUM_COLS - 1] + WIRE_PAD + 6},${letterY(trace.backward[NUM_GAPS])}`}
-                  fill="#10b981" />
-                <text x={COL_X[NUM_COLS - 1] + WIRE_PAD + 10} y={letterY(trace.backward[NUM_GAPS]) + 1}
-                  textAnchor="start" dominantBaseline="central"
-                  fontSize={13} fontWeight="bold" fontFamily="monospace" fill="#10b981">
-                  {trace.outputChar}
-                </text>
-              </g>
-            )}
+                  {/* Output arrow & label (returns to rightmost column) */}
+                  <polygon
+                    points={`${COL_X[entryCol] + WIRE_PAD},${letterY(outputVis) - 4} ${COL_X[entryCol] + WIRE_PAD},${letterY(outputVis) + 4} ${COL_X[entryCol] + WIRE_PAD + 6},${letterY(outputVis)}`}
+                    fill="#10b981" />
+                  <text x={COL_X[entryCol] + WIRE_PAD + 10} y={letterY(outputVis) + 1}
+                    textAnchor="start" dominantBaseline="central"
+                    fontSize={13} fontWeight="bold" fontFamily="monospace" fill="#10b981">
+                    {trace.outputChar}
+                  </text>
+                </g>
+              );
+            })()}
 
             {/* Legend */}
             <g transform={`translate(12, ${SVG_H - 18})`}>

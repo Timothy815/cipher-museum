@@ -405,6 +405,13 @@ const App: React.FC = () => {
             reflectorSide="left"
             trace={trace}
             accentColor="#0284c7"
+            columnOffsets={[
+              mod(state.rotors[0].position - state.rotors[0].ringSetting),
+              mod(state.rotors[1].position - state.rotors[1].ringSetting),
+              mod(state.rotors[2].position - state.rotors[2].ringSetting),
+              mod(state.rotors[3].position - state.rotors[3].ringSetting),
+              0,
+            ]}
           />
         </div>
 

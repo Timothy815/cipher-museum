@@ -144,7 +144,8 @@ const WiringPanel: React.FC<{
   forwardColor: string;
   title: string;
   titleColor: string;
-}> = ({ letters, wirings, gapLabels, activeIndices, forwardColor, title, titleColor }) => {
+  columnOffsets?: number[];
+}> = ({ letters, wirings, gapLabels, activeIndices, forwardColor, title, titleColor, columnOffsets }) => {
   const numCols = wirings.length + 1;
   const n = letters.length;
   const colSpacing = Math.max(100, Math.min(160, 600 / Math.max(wirings.length, 1)));
@@ -182,54 +183,65 @@ const WiringPanel: React.FC<{
             </text>
           ))}
 
-          {/* Column letters */}
-          {colX.map((cx, c) => (
-            <g key={`col-${c}`}>
-              {letters.map((letter, i) => {
-                const isActive = activeIndices && activeIndices[c] === i;
-                const y = letterY(i);
-                return (
-                  <g key={i}>
-                    {isActive && (
-                      <circle cx={cx} cy={y} r={9} fill={forwardColor} fillOpacity={0.2}
-                        stroke={forwardColor} strokeWidth={1.5} strokeOpacity={0.6} />
-                    )}
-                    <text x={cx} y={y + 1} textAnchor="middle" dominantBaseline="central"
-                      fontSize={11} fontWeight="bold" fontFamily="monospace"
-                      fill={isActive ? forwardColor : '#475569'}>
-                      {letter}
-                    </text>
-                  </g>
-                );
-              })}
-            </g>
-          ))}
+          {/* Column letters (rotated by column offset) */}
+          {colX.map((cx, c) => {
+            const off = columnOffsets ? (columnOffsets[c] ?? 0) : 0;
+            return (
+              <g key={`col-${c}`}>
+                {letters.map((_, i) => {
+                  const contactIdx = (i + off) % n;
+                  const letter = letters[contactIdx];
+                  const isActive = activeIndices && activeIndices[c] === contactIdx;
+                  const y = letterY(i);
+                  return (
+                    <g key={i}>
+                      {isActive && (
+                        <circle cx={cx} cy={y} r={9} fill={forwardColor} fillOpacity={0.2}
+                          stroke={forwardColor} strokeWidth={1.5} strokeOpacity={0.6} />
+                      )}
+                      <text x={cx} y={y + 1} textAnchor="middle" dominantBaseline="central"
+                        fontSize={11} fontWeight="bold" fontFamily="monospace"
+                        fill={isActive ? forwardColor : '#475569'}>
+                        {letter}
+                      </text>
+                    </g>
+                  );
+                })}
+              </g>
+            );
+          })}
 
-          {/* Wires */}
+          {/* Wires (adjusted for column rotation) */}
           {wirings.map((wiring, g) => {
             const x1 = colX[g] + WIRE_PAD;
             const x2 = colX[g + 1] - WIRE_PAD;
             const cp = (x2 - x1) * 0.15;
             const activeIn = activeIndices ? activeIndices[g] : -1;
+            const leftOff = columnOffsets ? (columnOffsets[g] ?? 0) : 0;
+            const rightOff = columnOffsets ? (columnOffsets[g + 1] ?? 0) : 0;
 
             return (
               <g key={`gap-${g}`}>
                 {/* Background */}
                 {wiring.map((outIdx, inIdx) => {
                   if (inIdx === activeIn) return null;
+                  const vIn = ((inIdx - leftOff) % n + n) % n;
+                  const vOut = ((outIdx - rightOff) % n + n) % n;
                   return (
                     <path key={inIdx}
-                      d={`M ${x1} ${letterY(inIdx)} C ${x1 + cp} ${letterY(inIdx)}, ${x2 - cp} ${letterY(outIdx)}, ${x2} ${letterY(outIdx)}`}
-                      stroke={`hsla(${wireHue(inIdx)}, 40%, 45%, ${activeIndices ? 0.05 : 0.15})`}
+                      d={`M ${x1} ${letterY(vIn)} C ${x1 + cp} ${letterY(vIn)}, ${x2 - cp} ${letterY(vOut)}, ${x2} ${letterY(vOut)}`}
+                      stroke={`hsla(${wireHue(inIdx)}, 40%, 45%, ${activeIndices ? 0.12 : 0.22})`}
                       strokeWidth={1} fill="none" />
                   );
                 })}
                 {/* Active */}
                 {activeIndices && activeIn >= 0 && (() => {
                   const outIdx = wiring[activeIn];
+                  const vIn = ((activeIn - leftOff) % n + n) % n;
+                  const vOut = ((outIdx - rightOff) % n + n) % n;
                   return (
                     <path
-                      d={`M ${x1} ${letterY(activeIn)} C ${x1 + cp} ${letterY(activeIn)}, ${x2 - cp} ${letterY(outIdx)}, ${x2} ${letterY(outIdx)}`}
+                      d={`M ${x1} ${letterY(vIn)} C ${x1 + cp} ${letterY(vIn)}, ${x2 - cp} ${letterY(vOut)}, ${x2} ${letterY(vOut)}`}
                       stroke={forwardColor} strokeWidth={2.5} fill="none"
                       filter={`url(#glow-${title.replace(/\s/g, '')})`} />
                   );
@@ -240,15 +252,19 @@ const WiringPanel: React.FC<{
 
           {/* Input/Output arrows */}
           {activeIndices && (() => {
-            const inIdx = activeIndices[0];
-            const outIdx = activeIndices[numCols - 1];
+            const inContact = activeIndices[0];
+            const outContact = activeIndices[numCols - 1];
+            const leftOff = columnOffsets ? (columnOffsets[0] ?? 0) : 0;
+            const rightOff = columnOffsets ? (columnOffsets[numCols - 1] ?? 0) : 0;
+            const vIn = ((inContact - leftOff) % n + n) % n;
+            const vOut = ((outContact - rightOff) % n + n) % n;
             const eX = colX[0];
             const oX = colX[numCols - 1];
             return (
               <g>
-                <polygon points={`${eX - WIRE_PAD - 6},${letterY(inIdx) - 4} ${eX - WIRE_PAD - 6},${letterY(inIdx) + 4} ${eX - WIRE_PAD},${letterY(inIdx)}`}
+                <polygon points={`${eX - WIRE_PAD - 6},${letterY(vIn) - 4} ${eX - WIRE_PAD - 6},${letterY(vIn) + 4} ${eX - WIRE_PAD},${letterY(vIn)}`}
                   fill={forwardColor} />
-                <polygon points={`${oX + WIRE_PAD},${letterY(outIdx) - 4} ${oX + WIRE_PAD},${letterY(outIdx) + 4} ${oX + WIRE_PAD + 6},${letterY(outIdx)}`}
+                <polygon points={`${oX + WIRE_PAD},${letterY(vOut) - 4} ${oX + WIRE_PAD},${letterY(vOut) + 4} ${oX + WIRE_PAD + 6},${letterY(vOut)}`}
                   fill="#10b981" />
               </g>
             );
@@ -456,6 +472,7 @@ const App: React.FC = () => {
               forwardColor="#a855f7"
               title="Sixes Path"
               titleColor="text-purple-400"
+              columnOffsets={[state.sixesPos, 0]}
             />
           </div>
 
@@ -469,6 +486,7 @@ const App: React.FC = () => {
               forwardColor="#10b981"
               title="Twenties Path"
               titleColor="text-emerald-400"
+              columnOffsets={[state.twentiesSlow, state.twentiesMedium, state.twentiesFast, 0]}
             />
           </div>
         </div>

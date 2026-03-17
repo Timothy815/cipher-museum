@@ -160,6 +160,7 @@ const App: React.FC = () => {
             wirings={[effectiveWiring]}
             trace={trace}
             accentColor="#0d9488"
+            columnOffsets={[position, 0]}
           />
         </div>
 

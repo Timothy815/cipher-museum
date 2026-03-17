@@ -140,58 +140,71 @@ const WiringPanel: React.FC<{
             SWITCH
           </text>
 
-          {/* Letters */}
-          {[0, 1].map(c => (
-            <g key={`col-${c}`}>
-              {letters.map((letter, i) => {
-                const isActive = (c === 0 && i === activeIn) || (c === 1 && i === activeOut);
-                const y = letterY(i);
-                return (
-                  <g key={i}>
-                    {isActive && (
-                      <circle cx={colX[c]} cy={y} r={9} fill={c === 1 ? '#10b981' : forwardColor} fillOpacity={0.2}
-                        stroke={c === 1 ? '#10b981' : forwardColor} strokeWidth={1.5} strokeOpacity={0.6} />
-                    )}
-                    <text x={colX[c]} y={y + 1} textAnchor="middle" dominantBaseline="central"
-                      fontSize={11} fontWeight="bold" fontFamily="monospace"
-                      fill={isActive ? (c === 1 ? '#10b981' : forwardColor) : '#475569'}>
-                      {letter}
-                    </text>
-                  </g>
-                );
-              })}
-            </g>
-          ))}
+          {/* Letters (rotated by switch position) */}
+          {[0, 1].map(c => {
+            const off = c === 0 ? position : 0;
+            return (
+              <g key={`col-${c}`}>
+                {letters.map((_, i) => {
+                  const contactIdx = (i + off) % n;
+                  const letter = letters[contactIdx];
+                  const isActive = (c === 0 && contactIdx === activeIn) || (c === 1 && contactIdx === activeOut);
+                  const y = letterY(i);
+                  return (
+                    <g key={i}>
+                      {isActive && (
+                        <circle cx={colX[c]} cy={y} r={9} fill={c === 1 ? '#10b981' : forwardColor} fillOpacity={0.2}
+                          stroke={c === 1 ? '#10b981' : forwardColor} strokeWidth={1.5} strokeOpacity={0.6} />
+                      )}
+                      <text x={colX[c]} y={y + 1} textAnchor="middle" dominantBaseline="central"
+                        fontSize={11} fontWeight="bold" fontFamily="monospace"
+                        fill={isActive ? (c === 1 ? '#10b981' : forwardColor) : '#475569'}>
+                        {letter}
+                      </text>
+                    </g>
+                  );
+                })}
+              </g>
+            );
+          })}
 
-          {/* Wires */}
+          {/* Wires (adjusted for column rotation) */}
           {wiring.map((outIdx, inIdx) => {
             if (inIdx === activeIn && activeIn >= 0) return null;
+            const vIn = ((inIdx - position) % n + n) % n;
+            const vOut = outIdx;
             return (
               <path key={inIdx}
-                d={`M ${x1} ${letterY(inIdx)} C ${x1 + cp} ${letterY(inIdx)}, ${x2 - cp} ${letterY(outIdx)}, ${x2} ${letterY(outIdx)}`}
-                stroke={`hsla(${wireHue(inIdx)}, 40%, 45%, ${activeIn >= 0 ? 0.05 : 0.15})`}
+                d={`M ${x1} ${letterY(vIn)} C ${x1 + cp} ${letterY(vIn)}, ${x2 - cp} ${letterY(vOut)}, ${x2} ${letterY(vOut)}`}
+                stroke={`hsla(${wireHue(inIdx)}, 40%, 45%, ${activeIn >= 0 ? 0.12 : 0.22})`}
                 strokeWidth={1} fill="none" />
             );
           })}
           {activeIn >= 0 && (() => {
             const outIdx = wiring[activeIn];
+            const vIn = ((activeIn - position) % n + n) % n;
+            const vOut = outIdx;
             return (
               <path
-                d={`M ${x1} ${letterY(activeIn)} C ${x1 + cp} ${letterY(activeIn)}, ${x2 - cp} ${letterY(outIdx)}, ${x2} ${letterY(outIdx)}`}
+                d={`M ${x1} ${letterY(vIn)} C ${x1 + cp} ${letterY(vIn)}, ${x2 - cp} ${letterY(vOut)}, ${x2} ${letterY(vOut)}`}
                 stroke={forwardColor} strokeWidth={2.5} fill="none"
                 filter={`url(#glow-${title.replace(/\s/g, '')})`} />
             );
           })()}
 
           {/* Arrows */}
-          {activeIn >= 0 && (
-            <g>
-              <polygon points={`${colX[0] - WIRE_PAD - 6},${letterY(activeIn) - 4} ${colX[0] - WIRE_PAD - 6},${letterY(activeIn) + 4} ${colX[0] - WIRE_PAD},${letterY(activeIn)}`}
-                fill={forwardColor} />
-              <polygon points={`${colX[1] + WIRE_PAD},${letterY(activeOut) - 4} ${colX[1] + WIRE_PAD},${letterY(activeOut) + 4} ${colX[1] + WIRE_PAD + 6},${letterY(activeOut)}`}
-                fill="#10b981" />
-            </g>
-          )}
+          {activeIn >= 0 && (() => {
+            const vIn = ((activeIn - position) % n + n) % n;
+            const vOut = activeOut;
+            return (
+              <g>
+                <polygon points={`${colX[0] - WIRE_PAD - 6},${letterY(vIn) - 4} ${colX[0] - WIRE_PAD - 6},${letterY(vIn) + 4} ${colX[0] - WIRE_PAD},${letterY(vIn)}`}
+                  fill={forwardColor} />
+                <polygon points={`${colX[1] + WIRE_PAD},${letterY(vOut) - 4} ${colX[1] + WIRE_PAD},${letterY(vOut) + 4} ${colX[1] + WIRE_PAD + 6},${letterY(vOut)}`}
+                  fill="#10b981" />
+              </g>
+            );
+          })()}
         </svg>
       </div>
     </div>

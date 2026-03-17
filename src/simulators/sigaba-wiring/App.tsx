@@ -622,6 +622,11 @@ const App: React.FC = () => {
             wirings={effectiveWirings}
             trace={diagramTrace}
             accentColor="#dc2626"
+            columnOffsets={
+              mode === 'ENCIPHER'
+                ? [0, ...cipherPositions]
+                : [0, ...[...cipherPositions].reverse()]
+            }
           />
         </div>
 
