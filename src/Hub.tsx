@@ -35,7 +35,7 @@ const machines = [
   },
   {
     path: '/enigma-wiring',
-    name: 'Enigma Wiring Explorer',
+    name: 'Enigma M4 Wiring Explorer',
     subtitle: 'Interactive Signal Tracer',
     country: 'Educational',
     era: 'M4',

@@ -5,7 +5,7 @@ import { Home, ChevronRight, ChevronDown, Cog, Cpu, KeyRound, Lock, Shield, Crow
 const SIMULATORS = [
   { path: '/enigma-i', label: 'Enigma I', country: 'Germany', icon: <Cog size={14} /> },
   { path: '/enigma-m4', label: 'Enigma M4', country: 'Germany', icon: <Cog size={14} /> },
-  { path: '/enigma-wiring', label: 'Enigma Wiring Explorer', country: 'Educational', icon: <Route size={14} /> },
+  { path: '/enigma-wiring', label: 'Enigma M4 Wiring Explorer', country: 'Educational', icon: <Route size={14} /> },
   { path: '/enigma-i-wiring', label: 'Enigma I Wiring Explorer', country: 'Educational', icon: <Route size={14} /> },
   { path: '/lorenz-sz42', label: 'Lorenz SZ42', country: 'Germany', icon: <Cpu size={14} /> },
   { path: '/lorenz-wiring', label: 'Lorenz Visualizer', country: 'Educational', icon: <Route size={14} /> },
