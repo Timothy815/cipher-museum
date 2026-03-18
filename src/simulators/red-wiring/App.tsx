@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { RotateCcw, ChevronUp, ChevronDown, Lock, Unlock } from 'lucide-react';
+import ConfigSlots from '../shared/ConfigSlots';
+import TapeActions from '../shared/TapeActions';
 
 // ── RED Constants (matches red/constants.ts) ─────────────────────────
 const SIXES_CHARS = 'AEIOUY';
@@ -260,6 +262,37 @@ const App: React.FC = () => {
     return () => { window.removeEventListener('keydown', down); window.removeEventListener('keyup', up); };
   }, [handleKeyDown, handleKeyUp, handleBackspace]);
 
+  const handlePasteInput = useCallback((chars: string[]) => {
+    let currentState = state;
+    let currentTape = tape;
+    const newHistory = [...history];
+    for (const ch of chars) {
+      const upper = ch.toUpperCase();
+      if (!/^[A-Z]$/.test(upper)) continue;
+      if (!SIXES.includes(upper) && !TWENTIES.includes(upper)) continue;
+      newHistory.push(currentState);
+      const stepped = stepMachine(currentState);
+      const sig = traceSignal(upper, stepped, decrypt);
+      currentTape += sig.outputChar;
+      currentState = stepped;
+    }
+    setState(currentState);
+    setTape(currentTape);
+    setHistory(newHistory);
+    setTrace(null);
+    setPressedKey(null);
+  }, [state, tape, history, decrypt]);
+
+  const handleLoadConfig = useCallback((saved: any) => {
+    const { decrypt: savedDecrypt, ...machineState } = saved;
+    setState(machineState as MachineState);
+    if (typeof savedDecrypt === 'boolean') setDecrypt(savedDecrypt);
+    setTape('');
+    setHistory([]);
+    setTrace(null);
+    setPressedKey(null);
+  }, []);
+
   const handleReset = () => {
     setState({ sixesPos: 0, twentiesPos: 0 });
     setTrace(null);
@@ -284,6 +317,16 @@ const App: React.FC = () => {
             className="p-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 hover:text-white transition-colors">
             <RotateCcw size={18} />
           </button>
+        </div>
+
+        {/* Config Slots */}
+        <div className="mb-4">
+          <ConfigSlots
+            machineId="red-wiring"
+            currentState={{ ...state, decrypt }}
+            onLoadState={handleLoadConfig}
+            accentColor="rose"
+          />
         </div>
 
         {/* Mode Toggle */}
@@ -419,8 +462,15 @@ const App: React.FC = () => {
           <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-4 mb-6">
             <div className="flex justify-between items-center mb-2">
               <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Output Tape</div>
-              <button onClick={() => { setTape(''); setHistory([]); }}
-                className="text-xs text-slate-500 hover:text-red-400 transition-colors">Clear</button>
+              <div className="flex items-center gap-2">
+                <TapeActions
+                  outputText={tape}
+                  onProcessInput={handlePasteInput}
+                  accentColor="rose"
+                />
+                <button onClick={() => { setTape(''); setHistory([]); }}
+                  className="text-xs text-slate-500 hover:text-red-400 transition-colors">Clear</button>
+              </div>
             </div>
             <div className="font-mono text-lg tracking-widest text-rose-400 break-all">
               {tape.match(/.{1,5}/g)?.join(' ')}

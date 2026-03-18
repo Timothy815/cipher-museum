@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { RotateCcw, ChevronUp, ChevronDown, Info } from 'lucide-react';
 import { DualColumnWiring, DualColumnTrace } from '../shared/DualColumnWiring';
+import ConfigSlots from '../shared/ConfigSlots';
+import TapeActions from '../shared/TapeActions';
 
 // ── Constants ─────────────────────────────────────────────────────
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -263,6 +265,71 @@ const App: React.FC = () => {
     setTape(prev => prev + sig.outputChar);
   }, [cipherPositions, controlPositions, cipherRotors, controlRotors, indexRotors, indexPositions, pressedKey, mode]);
 
+  const handlePasteInput = useCallback((chars: string[]) => {
+    let curCipherPos = [...cipherPositions];
+    let curControlPos = [...controlPositions];
+    const results: string[] = [];
+    const historyBatch: { cipherPositions: number[]; controlPositions: number[] }[] = [];
+
+    for (const char of chars) {
+      historyBatch.push({
+        cipherPositions: [...curCipherPos],
+        controlPositions: [...curControlPos],
+      });
+
+      // 1. Compute stepping
+      const stepping = computeStepping(controlRotors, curControlPos, indexRotors, indexPositions);
+
+      // 2. Apply stepping
+      const newCipherPos = curCipherPos.map((p, i) =>
+        stepping.cipherStepMask[i] ? mod(p + 1) : p
+      );
+      const newControlPos = stepping.newControlPositions;
+
+      // 3. Trace signal
+      let sig: DualColumnTrace;
+      if (mode === 'ENCIPHER') {
+        sig = traceCipherBank(char, cipherRotors, newCipherPos, mode);
+      } else {
+        const inIdx = char.charCodeAt(0) - 65;
+        const fwd: number[] = [inIdx];
+        let signal = inIdx;
+        for (let i = 4; i >= 0; i--) {
+          signal = mapBackward(signal, ROTOR_WIRINGS[cipherRotors[i]], newCipherPos[i]);
+          fwd.push(signal);
+        }
+        sig = { forward: fwd, inputChar: char, outputChar: ALPHABET[fwd[fwd.length - 1]] };
+      }
+
+      results.push(sig.outputChar);
+      curCipherPos = newCipherPos;
+      curControlPos = newControlPos;
+    }
+
+    setHistory(prev => [...prev, ...historyBatch]);
+    setCipherPositions(curCipherPos);
+    setControlPositions(curControlPos);
+    setTape(prev => prev + results.join(''));
+    setTrace(null);
+    setSteppingInfo(null);
+    setPressedKey(null);
+  }, [cipherPositions, controlPositions, cipherRotors, controlRotors, indexRotors, indexPositions, mode]);
+
+  const handleLoadConfig = useCallback((loadedState: any) => {
+    setCipherRotors(loadedState.cipherRotors);
+    setCipherPositions(loadedState.cipherPositions);
+    setControlRotors(loadedState.controlRotors);
+    setControlPositions(loadedState.controlPositions);
+    setIndexRotors(loadedState.indexRotors);
+    setIndexPositions(loadedState.indexPositions);
+    if (loadedState.mode) setMode(loadedState.mode);
+    setHistory([]);
+    setTape('');
+    setTrace(null);
+    setSteppingInfo(null);
+    setPressedKey(null);
+  }, []);
+
   const handleKeyUp = useCallback(() => {
     setPressedKey(null);
   }, []);
@@ -469,6 +536,16 @@ const App: React.FC = () => {
           </div>
         </div>
 
+        {/* Config Slots */}
+        <div className="mb-4">
+          <ConfigSlots
+            machineId="sigaba-wiring"
+            currentState={{ cipherRotors, cipherPositions, controlRotors, controlPositions, indexRotors, indexPositions, mode }}
+            onLoadState={handleLoadConfig}
+            accentColor="amber"
+          />
+        </div>
+
         {/* Info Panel */}
         {showInfo && (
           <div className="bg-slate-900/30 border border-slate-800 rounded-xl p-5 text-xs text-slate-500 space-y-2 mb-6">
@@ -669,8 +746,11 @@ const App: React.FC = () => {
           <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-4 mb-6">
             <div className="flex justify-between items-center mb-2">
               <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Output Tape</div>
-              <button onClick={() => { setTape(''); setHistory([]); }}
-                className="text-xs text-slate-500 hover:text-red-400 transition-colors">Clear</button>
+              <div className="flex items-center gap-2">
+                <TapeActions outputText={tape} onProcessInput={handlePasteInput} accentColor="amber" />
+                <button onClick={() => { setTape(''); setHistory([]); }}
+                  className="text-xs text-slate-500 hover:text-red-400 transition-colors">Clear</button>
+              </div>
             </div>
             <div className="font-mono text-lg tracking-widest text-red-400 break-all">
               {tape.match(/.{1,5}/g)?.join(' ')}

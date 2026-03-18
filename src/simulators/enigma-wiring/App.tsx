@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Settings, RotateCcw, ChevronUp, ChevronDown } from 'lucide-react';
+import ConfigSlots from '../shared/ConfigSlots';
+import TapeActions from '../shared/TapeActions';
 import { RotorType, ReflectorType, RotorConfig, MachineState } from '../enigma-m4/types';
 import { ROTOR_DATA, REFLECTOR_DATA, ALPHABET } from '../enigma-m4/constants';
 
@@ -221,6 +223,33 @@ const App: React.FC = () => {
     setPressedKey(null);
   }, []);
 
+  const handlePasteInput = useCallback((chars: string[]) => {
+    let currentState = state;
+    const results: string[] = [];
+    const historyBatch: MachineState[] = [];
+    for (const char of chars) {
+      historyBatch.push(currentState);
+      const ns = cloneState(currentState);
+      stepRotors(ns.rotors);
+      const sig = traceSignal(char, ns);
+      results.push(sig.outputChar);
+      currentState = ns;
+    }
+    setHistory(prev => [...prev, ...historyBatch]);
+    setState(currentState);
+    setTape(prev => prev + results.join(''));
+    setTrace(null);
+    setPressedKey(null);
+  }, [state]);
+
+  const handleLoadConfig = useCallback((loadedState: any) => {
+    setState(loadedState);
+    setHistory([]);
+    setTape('');
+    setTrace(null);
+    setPressedKey(null);
+  }, []);
+
   const handleBackspace = useCallback(() => {
     if (history.length === 0) return;
     setState(history[history.length - 1]);
@@ -298,7 +327,7 @@ const App: React.FC = () => {
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-              ENIGMA <span className="text-amber-500">WIRING EXPLORER</span>
+              ENIGMA M4 <span className="text-amber-500">WIRING EXPLORER</span>
             </h1>
             <p className="text-xs text-slate-500 font-mono tracking-widest">M4 KRIEGSMARINE — MECHANICALLY ACCURATE SIGNAL TRACER</p>
           </div>
@@ -315,6 +344,11 @@ const App: React.FC = () => {
               <Settings size={16} /> CONFIG
             </button>
           </div>
+        </div>
+
+        {/* ── Config Slots ────────────────────────────────────── */}
+        <div className="mb-4">
+          <ConfigSlots machineId="enigma-m4-wiring" currentState={state} onLoadState={handleLoadConfig} accentColor="amber" />
         </div>
 
         {/* ── Settings Panel ──────────────────────────────────── */}
@@ -768,8 +802,11 @@ const App: React.FC = () => {
           <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-4 mb-6">
             <div className="flex justify-between items-center mb-2">
               <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Output Tape</div>
-              <button onClick={() => { setTape(''); setHistory([]); }}
-                className="text-xs text-slate-500 hover:text-red-400 transition-colors">Clear</button>
+              <div className="flex items-center gap-2">
+                <TapeActions outputText={tape} onProcessInput={handlePasteInput} accentColor="amber" />
+                <button onClick={() => { setTape(''); setHistory([]); }}
+                  className="text-xs text-slate-500 hover:text-red-400 transition-colors">Clear</button>
+              </div>
             </div>
             <div className="font-mono text-lg tracking-widest text-amber-400 break-all">
               {tape.match(/.{1,5}/g)?.join(' ')}

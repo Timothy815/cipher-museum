@@ -1,5 +1,7 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { RefreshCw, Info, Cpu, Play, ChevronUp, ChevronDown, Delete } from 'lucide-react';
+import ConfigSlots from '../shared/ConfigSlots';
+import TapeActions from '../shared/TapeActions';
 
 // ─── Baudot / ITA2 ───────────────────────────────────────────────
 const BAUDOT_MAP: Record<string, number[]> = {
@@ -321,6 +323,33 @@ function App() {
     setTrace(null);
   }, [positionHistory]);
 
+  const handlePasteInput = useCallback((chars: string[]) => {
+    let currentPositions = positions;
+    const newHistoryEntries: { char: string; out: string }[] = [];
+    const posHistoryBatch: number[][] = [];
+    for (const char of chars) {
+      const upper = char.toUpperCase();
+      if (!BAUDOT_MAP[upper]) continue;
+      posHistoryBatch.push(currentPositions);
+      const { trace: t, newPositions } = traceSignal(upper, currentPositions);
+      newHistoryEntries.push({ char: upper, out: t.outputChar });
+      currentPositions = newPositions;
+    }
+    setPositionHistory(prev => [...prev, ...posHistoryBatch]);
+    setPositions(currentPositions);
+    setHistory(prev => [...prev, ...newHistoryEntries]);
+    setTrace(null);
+  }, [positions]);
+
+  const handleLoadConfig = useCallback((loadedState: any) => {
+    setPositions(loadedState);
+    setHistory([]);
+    setPositionHistory([]);
+    setTrace(null);
+  }, []);
+
+  const outputText = useMemo(() => history.map(h => h.out).join(''), [history]);
+
   useEffect(() => {
     const isInputFocused = () => {
       const tag = document.activeElement?.tagName;
@@ -389,6 +418,11 @@ function App() {
             Reset
           </button>
         </div>
+      </div>
+
+      {/* Config Slots */}
+      <div className="w-full max-w-5xl mb-4">
+        <ConfigSlots machineId="lorenz-wiring" currentState={positions} onLoadState={handleLoadConfig} accentColor="blue" />
       </div>
 
       <div className="w-full max-w-5xl flex flex-col gap-6">
@@ -464,9 +498,12 @@ function App() {
         {/* Tape */}
         {history.length > 0 && (
           <div className="bg-[#fdf6e3] rounded-xl p-3 shadow-inner border border-amber-200/30">
-            <div className="flex items-center gap-3 mb-2">
-              <span className="text-[10px] font-bold text-amber-800/50 uppercase tracking-wider">History</span>
-              <span className="text-[10px] font-mono text-amber-800/30">{history.length} chars</span>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] font-bold text-amber-800/50 uppercase tracking-wider">History</span>
+                <span className="text-[10px] font-mono text-amber-800/30">{history.length} chars</span>
+              </div>
+              <TapeActions outputText={outputText} onProcessInput={handlePasteInput} accentColor="blue" validPattern={/[A-Z .,!\-\/]/} />
             </div>
             <div ref={tapeRef} className="overflow-x-auto whitespace-nowrap pb-1">
               <div className="flex gap-0.5">

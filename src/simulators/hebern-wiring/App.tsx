@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Settings, RotateCcw, ChevronUp, ChevronDown } from 'lucide-react';
 import { DualColumnWiring, DualColumnTrace } from '../shared/DualColumnWiring';
+import ConfigSlots from '../shared/ConfigSlots';
+import TapeActions from '../shared/TapeActions';
 
 // ── Hebern Constants ───────────────────────────────────────────────
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -77,6 +79,33 @@ const App: React.FC = () => {
     setPressedKey(null);
   }, []);
 
+  const handlePasteInput = useCallback((chars: string[]) => {
+    let currentPos = position;
+    const results: string[] = [];
+    const historyBatch: { position: number }[] = [];
+    for (const char of chars) {
+      historyBatch.push({ position: currentPos });
+      const newPos = (currentPos + 1) % 26;
+      const sig = traceSignal(char, wiring, newPos);
+      results.push(sig.outputChar!);
+      currentPos = newPos;
+    }
+    setHistory(prev => [...prev, ...historyBatch]);
+    setPosition(currentPos);
+    setTape(prev => prev + results.join(''));
+    setTrace(null);
+    setPressedKey(null);
+  }, [position, wiring]);
+
+  const handleLoadConfig = useCallback((loadedState: any) => {
+    setRotorId(loadedState.rotorId);
+    setPosition(loadedState.position);
+    setHistory([]);
+    setTape('');
+    setTrace(null);
+    setPressedKey(null);
+  }, []);
+
   const handleBackspace = useCallback(() => {
     if (history.length === 0) return;
     setPosition(history[history.length - 1].position);
@@ -131,6 +160,11 @@ const App: React.FC = () => {
             title="Reset">
             <RotateCcw size={18} />
           </button>
+        </div>
+
+        {/* Config Slots */}
+        <div className="mb-4">
+          <ConfigSlots machineId="hebern-wiring" currentState={{ rotorId, position }} onLoadState={handleLoadConfig} accentColor="teal" />
         </div>
 
         {/* Controls */}
@@ -210,8 +244,11 @@ const App: React.FC = () => {
           <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-4 mb-6">
             <div className="flex justify-between items-center mb-2">
               <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Output Tape</div>
-              <button onClick={() => { setTape(''); setHistory([]); }}
-                className="text-xs text-slate-500 hover:text-red-400 transition-colors">Clear</button>
+              <div className="flex items-center gap-2">
+                <TapeActions outputText={tape} onProcessInput={handlePasteInput} accentColor="teal" />
+                <button onClick={() => { setTape(''); setHistory([]); }}
+                  className="text-xs text-slate-500 hover:text-red-400 transition-colors">Clear</button>
+              </div>
             </div>
             <div className="font-mono text-lg tracking-widest text-teal-400 break-all">
               {tape.match(/.{1,5}/g)?.join(' ')}

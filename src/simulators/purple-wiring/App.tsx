@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { RotateCcw, ChevronUp, ChevronDown, Lock, Unlock } from 'lucide-react';
+import ConfigSlots from '../shared/ConfigSlots';
+import TapeActions from '../shared/TapeActions';
 
 // ── Purple Constants ─────────────────────────────────────────────────
 const SIXES = ['A', 'E', 'I', 'O', 'U', 'Y'];
@@ -356,6 +358,37 @@ const App: React.FC = () => {
     return () => { window.removeEventListener('keydown', down); window.removeEventListener('keyup', up); };
   }, [handleKeyDown, handleKeyUp, handleBackspace]);
 
+  const handlePasteInput = useCallback((chars: string[]) => {
+    let currentState = state;
+    let currentTape = tape;
+    const newHistory = [...history];
+    for (const ch of chars) {
+      const upper = ch.toUpperCase();
+      if (!/^[A-Z]$/.test(upper)) continue;
+      if (!SIXES.includes(upper) && !TWENTIES.includes(upper)) continue;
+      newHistory.push(currentState);
+      const stepped = stepMachine(currentState);
+      const sig = traceSignal(upper, stepped, mode);
+      currentTape += sig.outputChar;
+      currentState = stepped;
+    }
+    setState(currentState);
+    setTape(currentTape);
+    setHistory(newHistory);
+    setTrace(null);
+    setPressedKey(null);
+  }, [state, tape, history, mode]);
+
+  const handleLoadConfig = useCallback((saved: any) => {
+    const { mode: savedMode, ...machineState } = saved;
+    setState(machineState as MachineState);
+    if (savedMode === 'encrypt' || savedMode === 'decrypt') setMode(savedMode);
+    setTape('');
+    setHistory([]);
+    setTrace(null);
+    setPressedKey(null);
+  }, []);
+
   const handleReset = () => {
     setState({ sixesPos: 0, twentiesSlow: 0, twentiesMedium: 0, twentiesFast: 0 });
     setTrace(null);
@@ -386,6 +419,16 @@ const App: React.FC = () => {
             className="p-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 hover:text-white transition-colors">
             <RotateCcw size={18} />
           </button>
+        </div>
+
+        {/* Config Slots */}
+        <div className="mb-4">
+          <ConfigSlots
+            machineId="purple-wiring"
+            currentState={{ ...state, mode }}
+            onLoadState={handleLoadConfig}
+            accentColor="purple"
+          />
         </div>
 
         {/* Mode Toggle */}
@@ -536,8 +579,15 @@ const App: React.FC = () => {
           <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-4 mb-6">
             <div className="flex justify-between items-center mb-2">
               <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Output Tape</div>
-              <button onClick={() => { setTape(''); setHistory([]); }}
-                className="text-xs text-slate-500 hover:text-red-400 transition-colors">Clear</button>
+              <div className="flex items-center gap-2">
+                <TapeActions
+                  outputText={tape}
+                  onProcessInput={handlePasteInput}
+                  accentColor="purple"
+                />
+                <button onClick={() => { setTape(''); setHistory([]); }}
+                  className="text-xs text-slate-500 hover:text-red-400 transition-colors">Clear</button>
+              </div>
             </div>
             <div className="font-mono text-lg tracking-widest text-purple-400 break-all">
               {tape.match(/.{1,5}/g)?.join(' ')}

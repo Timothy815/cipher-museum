@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { RotateCcw, ChevronUp, ChevronDown, Lock, Unlock } from 'lucide-react';
+import ConfigSlots from '../shared/ConfigSlots';
+import TapeActions from '../shared/TapeActions';
 import { DualColumnWiring, DualColumnTrace } from '../shared/DualColumnWiring';
 
 // ── KL-7 Constants ────────────────────────────────────────────────
@@ -169,6 +171,35 @@ const App: React.FC = () => {
     setPressedKey(null);
   }, []);
 
+  const handlePasteInput = useCallback((chars: string[]) => {
+    let currentPositions = positions;
+    const results: string[] = [];
+    const historyBatch: { positions: number[] }[] = [];
+    for (const char of chars) {
+      historyBatch.push({ positions: currentPositions });
+      const newPos = stepPositions(currentPositions, rotorIds);
+      const sig = traceFullSignal(char, rotorIds, newPos, mode);
+      results.push(sig.outputChar);
+      currentPositions = newPos;
+    }
+    setHistory(prev => [...prev, ...historyBatch]);
+    setPositions(currentPositions);
+    setTape(prev => prev + results.join(''));
+    setTrace(null);
+    setPressedKey(null);
+  }, [positions, rotorIds, mode]);
+
+  const handleLoadConfig = useCallback((saved: any) => {
+    const { mode: savedMode, ...rest } = saved;
+    if (rest.rotorIds) setRotorIds(rest.rotorIds);
+    if (rest.positions) setPositions(rest.positions);
+    if (savedMode === 'ENCIPHER' || savedMode === 'DECIPHER') setMode(savedMode);
+    setHistory([]);
+    setTape('');
+    setTrace(null);
+    setPressedKey(null);
+  }, []);
+
   const handleBackspace = useCallback(() => {
     if (history.length === 0) return;
     setPositions(history[history.length - 1].positions);
@@ -235,6 +266,11 @@ const App: React.FC = () => {
               <RotateCcw size={18} />
             </button>
           </div>
+        </div>
+
+        {/* ── Config Slots ────────────────────────────────────── */}
+        <div className="mb-4">
+          <ConfigSlots machineId="kl7-wiring" currentState={{ rotorIds, positions, mode }} onLoadState={handleLoadConfig} accentColor="blue" />
         </div>
 
         {/* Mode Toggle */}
@@ -362,8 +398,11 @@ const App: React.FC = () => {
           <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-4 mb-6">
             <div className="flex justify-between items-center mb-2">
               <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Output Tape</div>
-              <button onClick={() => { setTape(''); setHistory([]); }}
-                className="text-xs text-slate-500 hover:text-red-400 transition-colors">Clear</button>
+              <div className="flex items-center gap-2">
+                <TapeActions outputText={tape} onProcessInput={handlePasteInput} accentColor="blue" />
+                <button onClick={() => { setTape(''); setHistory([]); }}
+                  className="text-xs text-slate-500 hover:text-red-400 transition-colors">Clear</button>
+              </div>
             </div>
             <div className="font-mono text-lg tracking-widest text-blue-400 break-all">
               {tape.match(/.{1,5}/g)?.join(' ')}
