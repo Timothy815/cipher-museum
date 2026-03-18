@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { RotateCcw, ChevronUp, ChevronDown, Lock, Unlock } from 'lucide-react';
-import { WiringDiagram, WiringTrace } from '../shared/WiringDiagram';
+import { DualColumnWiring, DualColumnTrace } from '../shared/DualColumnWiring';
 
 // ── KL-7 Constants ────────────────────────────────────────────────
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -67,7 +67,7 @@ function traceFullSignal(
   rotorIds: number[],
   positions: number[],
   mode: 'ENCIPHER' | 'DECIPHER',
-): WiringTrace {
+): DualColumnTrace {
   const inIdx = inputChar.charCodeAt(0) - 65;
   const forward: number[] = [inIdx];
 
@@ -118,41 +118,37 @@ function stepPositions(positions: number[], rotorIds: number[]): number[] {
 const App: React.FC = () => {
   const [rotorIds, setRotorIds] = useState([0, 1, 2, 3, 4, 5, 6, 7]);
   const [positions, setPositions] = useState([0, 0, 0, 0, 0, 0, 0, 0]);
-  const [trace, setTrace] = useState<WiringTrace | null>(null);
+  const [trace, setTrace] = useState<DualColumnTrace | null>(null);
   const [pressedKey, setPressedKey] = useState<string | null>(null);
   const [tape, setTape] = useState('');
   const [history, setHistory] = useState<{ positions: number[] }[]>([]);
   const [mode, setMode] = useState<'ENCIPHER' | 'DECIPHER'>('ENCIPHER');
 
-  // Compute effective wirings for diagram (8 gaps)
-  const effectiveWirings = useMemo(() => {
-    if (mode === 'ENCIPHER') {
-      return rotorIds.map((rid, i) => computeEffectiveWiring(ROTOR_BANK[rid].wiring, positions[i]));
-    } else {
-      // Decipher: reverse rotor order, use inverse wirings
-      const reversed = [...rotorIds].reverse();
-      const reversedPos = [...positions].reverse();
-      return reversed.map((rid, i) => computeEffectiveWiring(ROTOR_BANK[rid].inverseWiring, reversedPos[i]));
-    }
+  // Compute effective wirings for diagram (8 pairs, inverted to rightVis→leftVis format)
+  const dualWirings = useMemo(() => {
+    const fwWirings = mode === 'ENCIPHER'
+      ? rotorIds.map((rid, i) => computeEffectiveWiring(ROTOR_BANK[rid].wiring, positions[i]))
+      : (() => {
+          const reversed = [...rotorIds].reverse();
+          const reversedPos = [...positions].reverse();
+          return reversed.map((rid, i) => computeEffectiveWiring(ROTOR_BANK[rid].inverseWiring, reversedPos[i]));
+        })();
+    // Invert: forward-only machines compute leftVis→rightVis, we need rightVis→leftVis
+    return fwWirings.map(w => {
+      const inv = new Array(26);
+      for (let i = 0; i < 26; i++) inv[w[i]] = i;
+      return inv;
+    });
   }, [rotorIds, positions, mode]);
 
-  // 9 columns (INPUT + 8 rotors), 8 gaps
   const displayOrder = mode === 'ENCIPHER' ? rotorIds : [...rotorIds].reverse();
   const displayPositions = mode === 'ENCIPHER' ? positions : [...positions].reverse();
 
-  const columns = useMemo(() => [
-    { label: 'INPUT' },
-    ...displayOrder.map((rid, i) => ({
-      label: `R${mode === 'ENCIPHER' ? i + 1 : 8 - i}`,
-      sublabel: `#${rid + 1}`,
-    })),
-    { label: 'OUTPUT' },
-  ], [displayOrder, mode]);
-
-  const gapLabels = useMemo(
+  const rotorPairs = useMemo(
     () => displayOrder.map((rid, i) => ({
-      name: `ROTOR ${mode === 'ENCIPHER' ? i + 1 : 8 - i}`,
-      detail: `#${rid + 1} (${toChar(displayPositions[i])})`,
+      label: `ROTOR ${mode === 'ENCIPHER' ? i + 1 : 8 - i}`,
+      sublabel: `#${rid + 1}`,
+      offset: displayPositions[i],
     })),
     [displayOrder, displayPositions, mode],
   );
@@ -230,7 +226,7 @@ const App: React.FC = () => {
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
               KL-7 <span className="text-blue-400">WIRING EXPLORER</span>
             </h1>
-            <p className="text-xs text-slate-500 font-mono tracking-widest">ADONIS — 8 ROTORS, NO REFLECTOR</p>
+            <p className="text-xs text-slate-500 font-mono tracking-widest">ADONIS — MECHANICALLY ACCURATE SIGNAL TRACER</p>
           </div>
           <div className="flex gap-2">
             <button onClick={handleReset}
@@ -308,13 +304,11 @@ const App: React.FC = () => {
 
         {/* SVG Wiring Diagram */}
         <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-2 sm:p-3 mb-6 overflow-x-auto">
-          <WiringDiagram
-            columns={columns}
-            gapLabels={gapLabels}
-            wirings={effectiveWirings}
+          <DualColumnWiring
+            rotorPairs={rotorPairs}
+            wirings={dualWirings}
             trace={trace}
             accentColor="#3b82f6"
-            columnOffsets={[...displayPositions, 0]}
           />
         </div>
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Settings, RotateCcw, ChevronUp, ChevronDown } from 'lucide-react';
-import { WiringDiagram, WiringTrace } from '../shared/WiringDiagram';
+import { DualColumnWiring, DualColumnTrace } from '../shared/DualColumnWiring';
 
 // ── Hebern Constants ───────────────────────────────────────────────
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -26,7 +26,7 @@ function computeWiring(wiring: string, position: number): number[] {
   });
 }
 
-function traceSignal(inputChar: string, wiring: string, position: number): WiringTrace {
+function traceSignal(inputChar: string, wiring: string, position: number): DualColumnTrace {
   const inIdx = inputChar.charCodeAt(0) - 65;
   const pin = mod(inIdx + position);
   const contact = wiring.charCodeAt(pin) - 65;
@@ -42,22 +42,24 @@ function traceSignal(inputChar: string, wiring: string, position: number): Wirin
 const App: React.FC = () => {
   const [rotorId, setRotorId] = useState('R1');
   const [position, setPosition] = useState(0);
-  const [trace, setTrace] = useState<WiringTrace | null>(null);
+  const [trace, setTrace] = useState<DualColumnTrace | null>(null);
   const [pressedKey, setPressedKey] = useState<string | null>(null);
   const [tape, setTape] = useState('');
   const [history, setHistory] = useState<{ position: number }[]>([]);
 
   const wiring = ROTORS[rotorId];
 
-  // Compute effective wiring for SVG
-  const effectiveWiring = useMemo(() => computeWiring(wiring, position), [wiring, position]);
+  // Compute effective wiring for SVG (invert to rightVis→leftVis format)
+  const dualWiring = useMemo(() => {
+    const fw = computeWiring(wiring, position);
+    const inv = new Array(26);
+    for (let i = 0; i < 26; i++) inv[fw[i]] = i;
+    return inv;
+  }, [wiring, position]);
 
-  // Columns and gap labels
-  const columns = [
-    { label: 'INPUT' },
-    { label: 'OUTPUT' },
-  ];
-  const gapLabels = [{ name: 'ROTOR', detail: rotorId }];
+  const rotorPairs = useMemo(() => [
+    { label: 'ROTOR', sublabel: rotorId, offset: position },
+  ], [rotorId, position]);
 
   // ── Key handling ────────────────────────────────────────────────
   const handleKeyDown = useCallback((char: string) => {
@@ -122,7 +124,7 @@ const App: React.FC = () => {
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
               HEBERN <span className="text-teal-400">WIRING EXPLORER</span>
             </h1>
-            <p className="text-xs text-slate-500 font-mono tracking-widest">SINGLE ROTOR — THE FIRST ROTOR CIPHER MACHINE</p>
+            <p className="text-xs text-slate-500 font-mono tracking-widest">SINGLE ROTOR — MECHANICALLY ACCURATE SIGNAL TRACER</p>
           </div>
           <button onClick={handleReset}
             className="p-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 hover:text-white transition-colors"
@@ -154,13 +156,11 @@ const App: React.FC = () => {
 
         {/* SVG Wiring Diagram */}
         <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-2 sm:p-3 mb-6 overflow-x-auto">
-          <WiringDiagram
-            columns={columns}
-            gapLabels={gapLabels}
-            wirings={[effectiveWiring]}
+          <DualColumnWiring
+            rotorPairs={rotorPairs}
+            wirings={[dualWiring]}
             trace={trace}
             accentColor="#0d9488"
-            columnOffsets={[position, 0]}
           />
         </div>
 

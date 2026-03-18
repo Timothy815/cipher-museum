@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Settings, RotateCcw, ChevronUp, ChevronDown } from 'lucide-react';
-import { WiringDiagram, WiringTrace } from '../shared/WiringDiagram';
+import { DualColumnWiring, DualColumnTrace } from '../shared/DualColumnWiring';
 
 // ── Typex Constants ─────────────────────────────────────────────────
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -97,7 +97,7 @@ function stepRotors(state: TypexState): void {
 //   Entry -> Stator A (gap 0) -> Stator B (gap 1) -> Fast (gap 2) -> Medium (gap 3) -> Slow (gap 4) -> Reflector
 //   Reflector -> Slow^-1 (gap 4) -> Medium^-1 (gap 3) -> Fast^-1 (gap 2) -> Stator B^-1 (gap 1) -> Stator A^-1 (gap 0) -> Output
 
-interface TypexTrace extends WiringTrace {
+interface TypexTrace extends DualColumnTrace {
   pathLabels: string[];
 }
 
@@ -200,23 +200,14 @@ const App: React.FC = () => {
 
   const reflMap = useMemo(() => reflectorMapping(), []);
 
-  // ── Column and gap definitions for WiringDiagram ───────────────
-  const columns = [
-    { label: '\u2022' },
-    { label: '\u2022' },
-    { label: '\u2022' },
-    { label: '\u2022' },
-    { label: '\u2022' },
-    { label: 'ENTRY' },
-  ];
-
-  const gapLabels = [
-    { name: 'SLOW', detail: state.slow.id },
-    { name: 'MEDIUM', detail: state.medium.id },
-    { name: 'FAST', detail: state.fast.id },
-    { name: 'STATOR B', detail: state.stator1, isStator: true },
-    { name: 'STATOR A', detail: state.stator0, isStator: true },
-  ];
+  // ── DualColumnWiring props ───────────────────────────────────
+  const rotorPairs = useMemo(() => [
+    { label: 'SLOW', sublabel: state.slow.id, offset: mod(state.slow.position - state.slow.ringSetting) },
+    { label: 'MEDIUM', sublabel: state.medium.id, offset: mod(state.medium.position - state.medium.ringSetting) },
+    { label: 'FAST', sublabel: state.fast.id, offset: mod(state.fast.position - state.fast.ringSetting) },
+    { label: 'STATOR B', sublabel: state.stator1, offset: 0, isStator: true },
+    { label: 'STATOR A', sublabel: state.stator0, offset: 0, isStator: true },
+  ], [state]);
 
   // ── Key handling ──────────────────────────────────────────────
   const handleKeyDown = useCallback((char: string) => {
@@ -305,7 +296,7 @@ const App: React.FC = () => {
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
               TYPEX <span className="text-emerald-400">WIRING EXPLORER</span>
             </h1>
-            <p className="text-xs text-slate-500 font-mono tracking-widest">BRITISH 5-ROTOR — STATORS + STEPPING ROTORS</p>
+            <p className="text-xs text-slate-500 font-mono tracking-widest">BRITISH 5-ROTOR — MECHANICALLY ACCURATE SIGNAL TRACER</p>
           </div>
           <div className="flex gap-2">
             <button onClick={handleReset}
@@ -421,23 +412,13 @@ const App: React.FC = () => {
 
         {/* ── SVG Wiring Diagram ──────────────────────────────── */}
         <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-2 sm:p-3 mb-6 overflow-x-auto">
-          <WiringDiagram
-            columns={columns}
-            gapLabels={gapLabels}
+          <DualColumnWiring
+            rotorPairs={rotorPairs}
             wirings={wirings}
             reflector={reflMap}
             reflectorLabel="UKW"
-            reflectorSide="left"
             trace={trace}
             accentColor="#059669"
-            columnOffsets={[
-              mod(state.slow.position - state.slow.ringSetting),
-              mod(state.medium.position - state.medium.ringSetting),
-              mod(state.fast.position - state.fast.ringSetting),
-              0, // stator B (fixed)
-              0, // stator A (fixed)
-              0, // entry
-            ]}
           />
         </div>
 

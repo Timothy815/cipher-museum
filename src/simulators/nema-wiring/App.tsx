@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Settings, RotateCcw, ChevronUp, ChevronDown } from 'lucide-react';
-import { WiringDiagram, WiringTrace } from '../shared/WiringDiagram';
+import { DualColumnWiring, DualColumnTrace } from '../shared/DualColumnWiring';
 
 // ── NEMA Constants ──────────────────────────────────────────────────
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -98,7 +98,7 @@ function stepMachine(state: MachineState): void {
 }
 
 // ── Signal trace ────────────────────────────────────────────────────
-interface NemaTrace extends WiringTrace {
+interface NemaTrace extends DualColumnTrace {
   forwardLabels: string[];
   backwardLabels: string[];
 }
@@ -175,21 +175,12 @@ const App: React.FC = () => {
 
   const reflMap = useMemo(() => reflectorMapping(), []);
 
-  // ── Columns and gap labels for WiringDiagram ──────────────────────
-  const columns = [
-    { label: '\u2022' },
-    { label: '\u2022' },
-    { label: '\u2022' },
-    { label: '\u2022' },
-    { label: 'ENTRY' },
-  ];
-
-  const gapLabels = [
-    { name: 'LEFTMOST', detail: `R${state.rotors[0].rotorIdx + 1}` },
-    { name: 'LEFT', detail: `R${state.rotors[1].rotorIdx + 1}` },
-    { name: 'MIDDLE', detail: `R${state.rotors[2].rotorIdx + 1}` },
-    { name: 'RIGHT', detail: `R${state.rotors[3].rotorIdx + 1}` },
-  ];
+  // ── DualColumnWiring props ──────────────────────────────────────
+  const rotorPairs = useMemo(() => state.rotors.map((r, i) => ({
+    label: ['LEFTMOST', 'LEFT', 'MIDDLE', 'RIGHT'][i],
+    sublabel: `R${r.rotorIdx + 1}`,
+    offset: mod(r.position - r.ringSetting),
+  })), [state.rotors]);
 
   // ── Key handling ──────────────────────────────────────────────────
   const handleKeyDown = useCallback((char: string) => {
@@ -287,7 +278,7 @@ const App: React.FC = () => {
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
               NEMA <span className="text-sky-400">WIRING EXPLORER</span>
             </h1>
-            <p className="text-xs text-slate-500 font-mono tracking-widest">SWISS 4-ROTOR — DRIVE WHEEL STEPPING</p>
+            <p className="text-xs text-slate-500 font-mono tracking-widest">SWISS 4-ROTOR — MECHANICALLY ACCURATE SIGNAL TRACER</p>
           </div>
           <div className="flex gap-2">
             <button onClick={handleReset}
@@ -396,22 +387,13 @@ const App: React.FC = () => {
 
         {/* ── SVG Wiring Diagram ──────────────────────────────── */}
         <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-2 sm:p-3 mb-6 overflow-x-auto">
-          <WiringDiagram
-            columns={columns}
-            gapLabels={gapLabels}
+          <DualColumnWiring
+            rotorPairs={rotorPairs}
             wirings={wirings}
             reflector={reflMap}
             reflectorLabel="UKW"
-            reflectorSide="left"
             trace={trace}
             accentColor="#0284c7"
-            columnOffsets={[
-              mod(state.rotors[0].position - state.rotors[0].ringSetting),
-              mod(state.rotors[1].position - state.rotors[1].ringSetting),
-              mod(state.rotors[2].position - state.rotors[2].ringSetting),
-              mod(state.rotors[3].position - state.rotors[3].ringSetting),
-              0,
-            ]}
           />
         </div>
 

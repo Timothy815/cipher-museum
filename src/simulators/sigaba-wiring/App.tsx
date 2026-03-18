@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { RotateCcw, ChevronUp, ChevronDown, Info } from 'lucide-react';
-import { WiringDiagram, WiringTrace } from '../shared/WiringDiagram';
+import { DualColumnWiring, DualColumnTrace } from '../shared/DualColumnWiring';
 
 // ── Constants ─────────────────────────────────────────────────────
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -124,7 +124,7 @@ function traceCipherBank(
   cipherWirings: number[],
   cipherPositions: number[],
   mode: 'ENCIPHER' | 'DECIPHER',
-): WiringTrace {
+): DualColumnTrace {
   const inIdx = inputChar.charCodeAt(0) - 65;
   const forward: number[] = [inIdx];
 
@@ -165,7 +165,7 @@ const App: React.FC = () => {
   const [indexPositions, setIndexPositions] = useState([0, 0, 0, 0, 0]);
 
   const [mode, setMode] = useState<'ENCIPHER' | 'DECIPHER'>('ENCIPHER');
-  const [trace, setTrace] = useState<WiringTrace | null>(null);
+  const [trace, setTrace] = useState<DualColumnTrace | null>(null);
   const [steppingInfo, setSteppingInfo] = useState<SteppingResult | null>(null);
   const [pressedKey, setPressedKey] = useState<string | null>(null);
   const [tape, setTape] = useState('');
@@ -175,60 +175,41 @@ const App: React.FC = () => {
     controlPositions: number[];
   }[]>([]);
 
-  // Compute effective wirings for the diagram
-  const effectiveWirings = useMemo(() => {
-    if (mode === 'ENCIPHER') {
-      return cipherRotors.map((r, i) => computeWiring(ROTOR_WIRINGS[r], cipherPositions[i]));
-    } else {
-      // Decipher: signal goes backward through rotors 4..0
-      // For the diagram we show the inverse wirings in reverse order
-      return [...cipherRotors].reverse().map((r, i) => {
-        const origIdx = 4 - i;
-        return computeInverseWiring(ROTOR_WIRINGS[r], cipherPositions[origIdx]);
-      });
-    }
+  // Compute effective wirings (inverted to rightVis→leftVis for dual-column)
+  const dualWirings = useMemo(() => {
+    const fwWirings = mode === 'ENCIPHER'
+      ? cipherRotors.map((r, i) => computeWiring(ROTOR_WIRINGS[r], cipherPositions[i]))
+      : [...cipherRotors].reverse().map((r, i) => {
+          const origIdx = 4 - i;
+          return computeInverseWiring(ROTOR_WIRINGS[r], cipherPositions[origIdx]);
+        });
+    return fwWirings.map(w => {
+      const inv = new Array(26);
+      for (let i = 0; i < 26; i++) inv[w[i]] = i;
+      return inv;
+    });
   }, [cipherRotors, cipherPositions, mode]);
 
-  // Columns and gap labels for the cipher bank diagram
-  const cipherColumns = useMemo(() => {
-    if (mode === 'ENCIPHER') {
-      return [
-        { label: 'INPUT' },
-        ...cipherRotors.slice(0, 4).map((_, i) => ({ label: `C${i + 1}→C${i + 2}` })),
-        { label: 'OUTPUT' },
-      ];
-    } else {
-      const rev = [...cipherRotors].reverse();
-      return [
-        { label: 'INPUT' },
-        ...rev.slice(0, 4).map((_, i) => ({ label: `C${5 - i}→C${4 - i}` })),
-        { label: 'OUTPUT' },
-      ];
-    }
-  }, [cipherRotors, mode]);
-
-  const cipherGapLabels = useMemo(() => {
+  const cipherRotorPairs = useMemo(() => {
     if (mode === 'ENCIPHER') {
       return cipherRotors.map((r, i) => ({
-        name: `CIPHER ${i + 1}`,
-        detail: ROTOR_NAMES[r],
+        label: `CIPHER ${i + 1}`,
+        sublabel: ROTOR_NAMES[r],
+        offset: cipherPositions[i],
       }));
     } else {
       return [...cipherRotors].reverse().map((r, i) => ({
-        name: `CIPHER ${5 - i}`,
-        detail: `${ROTOR_NAMES[r]} (inv)`,
+        label: `CIPHER ${5 - i}`,
+        sublabel: `${ROTOR_NAMES[r]} inv`,
+        offset: cipherPositions[4 - i],
       }));
     }
-  }, [cipherRotors, mode]);
+  }, [cipherRotors, cipherPositions, mode]);
 
-  // Compute the trace for the diagram (accounting for decipher reorder)
-  const diagramTrace = useMemo(() => {
+  const diagramTrace: DualColumnTrace | null = useMemo(() => {
     if (!trace) return null;
-    if (mode === 'ENCIPHER') return trace;
-    // For decipher, the trace.forward goes [input, after R4 inv, after R3 inv, ...]
-    // which is already what we want since we reversed the wirings
     return trace;
-  }, [trace, mode]);
+  }, [trace]);
 
   // ── Key handling ────────────────────────────────────────────────
   const handleKeyDown = useCallback((char: string) => {
@@ -257,7 +238,7 @@ const App: React.FC = () => {
     setControlPositions(newControlPos);
 
     // 3. Trace signal through cipher bank
-    let sig: WiringTrace;
+    let sig: DualColumnTrace;
     if (mode === 'ENCIPHER') {
       sig = traceCipherBank(char, cipherRotors, newCipherPos, mode);
     } else {
@@ -468,7 +449,7 @@ const App: React.FC = () => {
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
               SIGABA <span className="text-red-400">WIRING EXPLORER</span>
             </h1>
-            <p className="text-xs text-slate-500 font-mono tracking-widest">ECM MARK II — 15-ROTOR CIPHER MACHINE, NEVER BROKEN</p>
+            <p className="text-xs text-slate-500 font-mono tracking-widest">ECM MARK II — MECHANICALLY ACCURATE SIGNAL TRACER</p>
           </div>
           <div className="flex gap-2">
             <button onClick={() => setShowInfo(!showInfo)}
@@ -616,17 +597,11 @@ const App: React.FC = () => {
           <div className="text-[9px] text-red-400/60 font-bold uppercase tracking-wider mb-1 ml-2">
             Cipher Bank — {mode === 'ENCIPHER' ? 'Forward' : 'Inverse (Backward)'} Signal Path
           </div>
-          <WiringDiagram
-            columns={cipherColumns}
-            gapLabels={cipherGapLabels}
-            wirings={effectiveWirings}
+          <DualColumnWiring
+            rotorPairs={cipherRotorPairs}
+            wirings={dualWirings}
             trace={diagramTrace}
             accentColor="#dc2626"
-            columnOffsets={
-              mode === 'ENCIPHER'
-                ? [0, ...cipherPositions]
-                : [0, ...[...cipherPositions].reverse()]
-            }
           />
         </div>
 

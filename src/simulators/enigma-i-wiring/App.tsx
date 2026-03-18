@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Settings, RotateCcw, ChevronUp, ChevronDown } from 'lucide-react';
-import { WiringDiagram, WiringTrace } from '../shared/WiringDiagram';
+import { DualColumnWiring, DualColumnTrace } from '../shared/DualColumnWiring';
 
 // ── Constants ─────────────────────────────────────────────────────
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -182,22 +182,14 @@ const App: React.FC = () => {
 
   const reflMap = useMemo(() => reflectorMapping(state.reflector), [state.reflector]);
 
-  // ── WiringDiagram props ───────────────────────────────────────
-  const columns = [
-    { label: '\u2022' },
-    { label: '\u2022' },
-    { label: '\u2022' },
-    { label: 'ENTRY' },
-  ];
+  // ── DualColumnWiring props ───────────────────────────────────
+  const rotorPairs = useMemo(() => [
+    { label: 'LEFT', sublabel: state.rotors[0].type, offset: mod(state.rotors[0].position - state.rotors[0].ringSetting) },
+    { label: 'MIDDLE', sublabel: state.rotors[1].type, offset: mod(state.rotors[1].position - state.rotors[1].ringSetting) },
+    { label: 'RIGHT', sublabel: state.rotors[2].type, offset: mod(state.rotors[2].position - state.rotors[2].ringSetting) },
+  ], [state.rotors]);
 
-  const gapLabels = [
-    { name: 'LEFT', detail: state.rotors[0].type },
-    { name: 'MIDDLE', detail: state.rotors[1].type },
-    { name: 'RIGHT', detail: state.rotors[2].type },
-  ];
-
-  // ── Convert trace to WiringTrace for the shared component ─────
-  const wiringTrace: WiringTrace | null = useMemo(() => {
+  const dualTrace: DualColumnTrace | null = useMemo(() => {
     if (!trace) return null;
     return {
       forward: trace.forward,
@@ -206,8 +198,8 @@ const App: React.FC = () => {
       reflOut: trace.reflOut,
       inputChar: trace.inputChar,
       outputChar: trace.outputChar,
-      pbSwapIn: trace.pbIn || undefined,
-      pbSwapOut: trace.pbOut || undefined,
+      pbIn: trace.pbIn || undefined,
+      pbOut: trace.pbOut || undefined,
     };
   }, [trace]);
 
@@ -307,7 +299,7 @@ const App: React.FC = () => {
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
               ENIGMA I <span className="text-amber-500">WIRING EXPLORER</span>
             </h1>
-            <p className="text-xs text-slate-500 font-mono tracking-widest">WEHRMACHT — 3-ROTOR SIGNAL TRACER</p>
+            <p className="text-xs text-slate-500 font-mono tracking-widest">WEHRMACHT — MECHANICALLY ACCURATE SIGNAL TRACER</p>
           </div>
           <div className="flex gap-2">
             <button onClick={handleReset}
@@ -406,21 +398,13 @@ const App: React.FC = () => {
 
         {/* ── SVG Wiring Diagram ──────────────────────────────── */}
         <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-2 sm:p-3 mb-6 overflow-x-auto">
-          <WiringDiagram
-            columns={columns}
-            gapLabels={gapLabels}
+          <DualColumnWiring
+            rotorPairs={rotorPairs}
             wirings={wirings}
             reflector={reflMap}
             reflectorLabel={state.reflector}
-            reflectorSide="left"
-            trace={wiringTrace}
+            trace={dualTrace}
             accentColor="#92400e"
-            columnOffsets={[
-              mod(state.rotors[0].position - state.rotors[0].ringSetting),
-              mod(state.rotors[1].position - state.rotors[1].ringSetting),
-              mod(state.rotors[2].position - state.rotors[2].ringSetting),
-              0,
-            ]}
           />
         </div>
 
