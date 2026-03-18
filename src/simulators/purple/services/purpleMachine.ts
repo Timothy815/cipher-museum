@@ -79,6 +79,9 @@ export class PurpleMachine {
       };
     }
 
+    // Step the machine before processing (real Purple stepped before encryption)
+    this.step();
+
     let outputChar = '';
 
     if (isSixes) {
@@ -141,9 +144,6 @@ export class PurpleMachine {
         outputChar = TWENTIES_ALPHABET[val];
       }
     }
-
-    // Step the machine *after* processing (or before, depending on specific model version, we'll do post-step for demo logic)
-    this.step();
 
     return {
       inputChar: upper,

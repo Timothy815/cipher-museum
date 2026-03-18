@@ -19,25 +19,25 @@ function stepRotors(state: MachineState): MachineState {
   const newRotors = state.rotors.map(r => ({ ...r })) as MachineState['rotors'];
   const newDrive = { ...state.driveWheel };
 
-  // Drive wheel always steps
+  // Save pre-step positions for notch engagement checks
+  // (notch engagement is sensed mechanically before any rotor moves)
   const driveEngaged = newDrive.notches.includes(newDrive.position);
+  const r3Engaged = newRotors[3].notchRing.includes(newRotors[3].position);
+  const r2Engaged = newRotors[2].notchRing.includes(newRotors[2].position);
+
+  // Drive wheel always steps
   newDrive.position = (newDrive.position + 1) % 26;
 
   // Rightmost rotor (index 3) always steps
   newRotors[3].position = (newRotors[3].position + 1) % 26;
 
-  // Other rotors step based on irregular notch engagement
-  // Rotor 2 steps if rotor 3's notch ring is engaged
-  if (newRotors[3].notchRing.includes(newRotors[3].position)) {
+  // Other rotors step based on pre-step notch engagement
+  if (r3Engaged) {
     newRotors[2].position = (newRotors[2].position + 1) % 26;
   }
-
-  // Rotor 1 steps if rotor 2's notch ring is engaged
-  if (newRotors[2].notchRing.includes(newRotors[2].position)) {
+  if (r2Engaged) {
     newRotors[1].position = (newRotors[1].position + 1) % 26;
   }
-
-  // Rotor 0 steps if drive wheel notch is engaged
   if (driveEngaged) {
     newRotors[0].position = (newRotors[0].position + 1) % 26;
   }
