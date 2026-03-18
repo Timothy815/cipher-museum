@@ -315,11 +315,12 @@ const App: React.FC = () => {
     if (!SIXES.includes(upper) && !TWENTIES.includes(upper)) return;
 
     setHistory(prev => [...prev, state]);
-    const sig = traceSignal(upper, state, mode);
+    const stepped = stepMachine(state);
+    const sig = traceSignal(upper, stepped, mode);
     setTrace(sig);
     setPressedKey(upper);
     setTape(prev => prev + sig.outputChar);
-    setState(stepMachine(state));
+    setState(stepped);
   }, [state, pressedKey, mode]);
 
   const handleKeyUp = useCallback(() => {
