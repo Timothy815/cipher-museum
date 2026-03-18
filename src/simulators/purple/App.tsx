@@ -88,16 +88,22 @@ const App: React.FC = () => {
   }, []);
 
   const handlePasteInput = useCallback((chars: string[]) => {
-    let i = 0;
-    const typeNext = () => {
-      if (i < chars.length) {
-        processInput(chars[i]);
-        i++;
-        setTimeout(typeNext, 30);
-      }
-    };
-    typeNext();
-  }, [processInput]);
+    const newLogs: LogEntry[] = [];
+    let newInput = '';
+    for (const char of chars) {
+      if (!/^[a-zA-Z]$/.test(char)) continue;
+      historyRef.current = [...historyRef.current, purpleMachine.getState()];
+      const result = purpleMachine.processChar(char, mode);
+      newLogs.push({ input: result.inputChar, output: result.outputChar, index: 0 });
+      newInput += result.inputChar;
+    }
+    setMachineState(purpleMachine.getState());
+    setLogs(prev => {
+      const offset = prev.length;
+      return [...prev, ...newLogs.map((l, i) => ({ ...l, index: offset + i }))];
+    });
+    setInputText(prev => prev + newInput);
+  }, [mode]);
 
   const handleLoadConfig = useCallback((state: any) => {
     const ms = state.machineState || state;

@@ -77,16 +77,22 @@ function App() {
   }, []);
 
   const handlePasteInput = useCallback((chars: string[]) => {
-    let i = 0;
-    const typeNext = () => {
-      if (i < chars.length) {
-        processChar(chars[i]);
-        i++;
-        setTimeout(typeNext, 30);
+    let newInput = '';
+    let newOutput = '';
+    for (const char of chars) {
+      const upper = char.toUpperCase();
+      if (!VALID_CHARS.includes(upper)) continue;
+      wheelHistory.current.push(JSON.parse(JSON.stringify(machineRef.current.getCurrentState())));
+      const result = machineRef.current.processCharacter(upper);
+      if (result.outputChar) {
+        newInput += upper;
+        newOutput += result.outputChar;
       }
-    };
-    typeNext();
-  }, [processChar]);
+    }
+    setInputTape(prev => prev + newInput);
+    setOutputTape(prev => prev + newOutput);
+    setWheels([...machineRef.current.getCurrentState()]);
+  }, []);
 
   const handleLoadConfig = useCallback((state: any) => {
     const loadedWheels = state as WheelConfig[];

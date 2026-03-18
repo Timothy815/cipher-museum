@@ -92,17 +92,19 @@ const App: React.FC = () => {
   };
 
   const handlePasteInput = useCallback((chars: string[]) => {
-    let i = 0;
-    const typeNext = () => {
-      if (i < chars.length) {
-        handleKeyPress(chars[i]);
-        handleKeyRelease();
-        i++;
-        setTimeout(typeNext, 30);
-      }
-    };
-    typeNext();
-  }, [handleKeyPress, handleKeyRelease]);
+    let currentState = machineState;
+    const results: string[] = [];
+    const history: MachineState[] = [];
+    for (const char of chars) {
+      history.push(JSON.parse(JSON.stringify(currentState)));
+      const { result, newState } = processCharacter(char, currentState);
+      results.push(result);
+      currentState = newState;
+    }
+    setHistory(prev => [...prev, ...history]);
+    setMachineState(currentState);
+    setTapeText(prev => (prev + results.join('')).slice(-40));
+  }, [machineState]);
 
   const handleLoadConfig = useCallback((state: any) => {
     setMachineState(state);

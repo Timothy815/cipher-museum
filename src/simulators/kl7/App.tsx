@@ -166,17 +166,19 @@ function App() {
   }, [handleKeyDown, handleKeyUp, handleBackspace]);
 
   const handlePasteInput = useCallback((chars: string[]) => {
-    let i = 0;
-    const typeNext = () => {
-      if (i < chars.length) {
-        handleKeyDown(chars[i]);
-        handleKeyUp(chars[i]);
-        i++;
-        setTimeout(typeNext, 30);
-      }
-    };
-    typeNext();
-  }, [handleKeyDown, handleKeyUp]);
+    let currentState = machineState;
+    const results: string[] = [];
+    const history: MachineState[] = [];
+    for (const char of chars) {
+      history.push(currentState);
+      const { result, newState } = processCharacter(char, currentState, decrypt);
+      results.push(result);
+      currentState = newState;
+    }
+    setStateHistory(prev => [...prev, ...history]);
+    setMachineState(currentState);
+    setTapeText(prev => prev + results.join(''));
+  }, [machineState, decrypt]);
 
   const handleLoadConfig = useCallback((state: any) => {
     setMachineState(state);
