@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Settings, RefreshCw, Eraser, Info, Play, RotateCcw, Delete } from 'lucide-react';
+import ConfigSlots from '../shared/ConfigSlots';
+import TapeActions from '../shared/TapeActions';
 import { PurpleMachine } from './services/purpleMachine';
 import { CipherMode, LogEntry, MachineState } from './types';
 import RotorDisplay from './components/RotorDisplay';
@@ -85,6 +87,28 @@ const App: React.FC = () => {
     setLastKeyPressed(null);
   }, []);
 
+  const handlePasteInput = useCallback((chars: string[]) => {
+    let i = 0;
+    const typeNext = () => {
+      if (i < chars.length) {
+        processInput(chars[i]);
+        i++;
+        setTimeout(typeNext, 30);
+      }
+    };
+    typeNext();
+  }, [processInput]);
+
+  const handleLoadConfig = useCallback((state: any) => {
+    const ms = state.machineState || state;
+    purpleMachine.setState(ms);
+    setMachineState(ms);
+    if (state.mode !== undefined) setMode(state.mode);
+    setLogs([]);
+    setInputText('');
+    historyRef.current = [];
+  }, []);
+
   // Physical Keyboard Listener
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -159,6 +183,11 @@ const App: React.FC = () => {
         </div>
       </header>
 
+      {/* Config Slots */}
+      <div className="w-full max-w-4xl mb-4">
+        <ConfigSlots machineId="purple" currentState={{ machineState, mode }} onLoadState={handleLoadConfig} accentColor="purple" />
+      </div>
+
       {/* Main Machine Interface */}
       <main className="w-full max-w-4xl space-y-8">
         
@@ -227,7 +256,12 @@ const App: React.FC = () => {
         <RotorDisplay state={machineState} activePath={activePath} />
 
         {/* Output Area */}
-        <TapeDisplay logs={logs} title={mode === CipherMode.ENCRYPT ? 'Ciphertext' : 'Plaintext'} />
+        <div className="relative group">
+          <TapeDisplay logs={logs} title={mode === CipherMode.ENCRYPT ? 'Ciphertext' : 'Plaintext'} />
+          <div className="absolute top-1/2 -translate-y-1/2 -right-12 sm:-right-20 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <TapeActions outputText={logs.map(l => l.output).join('')} onProcessInput={handlePasteInput} accentColor="purple" />
+          </div>
+        </div>
 
         {/* Input Area */}
         <div className="mt-8">

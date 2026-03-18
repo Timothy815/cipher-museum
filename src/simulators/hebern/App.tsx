@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Eraser, Info } from 'lucide-react';
+import ConfigSlots from '../shared/ConfigSlots';
+import TapeActions from '../shared/TapeActions';
 import { MachineState } from './types';
 import { ROTOR_WIRINGS } from './constants';
 import { encryptCharacter } from './services/hebernService';
@@ -71,6 +73,29 @@ function App() {
     setMachineState({ rotor: { wiring: ROTOR_WIRINGS[id], position: machineState.rotor.position } });
   };
 
+  const handlePasteInput = useCallback((chars: string[]) => {
+    let i = 0;
+    const typeNext = () => {
+      if (i < chars.length) {
+        handleKeyDown(chars[i]);
+        handleKeyUp(chars[i]);
+        i++;
+        setTimeout(typeNext, 30);
+      }
+    };
+    typeNext();
+  }, [handleKeyDown, handleKeyUp]);
+
+  const handleLoadConfig = useCallback((state: any) => {
+    const { machineState: ms, decrypt: d, selectedRotor: sr } = state;
+    setMachineState(ms);
+    setDecrypt(d);
+    setSelectedRotor(sr);
+    setTapeText('');
+    setStateHistory([]);
+    setLitChar(null);
+  }, []);
+
   const handleClearTape = () => {
     if (stateHistory.length > 0) setMachineState(stateHistory[0]);
     setStateHistory([]);
@@ -91,6 +116,11 @@ function App() {
         <button onClick={() => setShowInfo(!showInfo)} className="p-2 rounded-lg hover:bg-neutral-800 text-neutral-400 transition-colors border border-neutral-700">
           <Info size={20} />
         </button>
+      </div>
+
+      {/* Config Slots */}
+      <div className="w-full max-w-4xl mb-4">
+        <ConfigSlots machineId="hebern" currentState={{ machineState, decrypt, selectedRotor }} onLoadState={handleLoadConfig} accentColor="teal" />
       </div>
 
       {/* Machine */}
@@ -157,9 +187,16 @@ function App() {
         {/* Tape */}
         <div className="relative group">
           <Tape text={tapeText} />
-          <button onClick={handleClearTape} className="absolute top-1/2 -translate-y-1/2 -right-12 sm:-right-16 text-neutral-600 hover:text-red-400 p-2 transition-colors opacity-0 group-hover:opacity-100">
-            <Eraser size={24} />
-          </button>
+          <div className="absolute top-1/2 -translate-y-1/2 -right-12 sm:-right-20 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button
+              onClick={handleClearTape}
+              className="text-neutral-600 hover:text-red-400 p-1.5 transition-colors"
+              title="Clear Tape"
+            >
+              <Eraser size={20} />
+            </button>
+            <TapeActions outputText={tapeText} onProcessInput={handlePasteInput} accentColor="teal" />
+          </div>
         </div>
       </div>
 

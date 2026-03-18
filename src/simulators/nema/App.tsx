@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Settings, Eraser, Info, Eye, EyeOff } from 'lucide-react';
+import ConfigSlots from '../shared/ConfigSlots';
+import TapeActions from '../shared/TapeActions';
 import { MachineState, RotorConfig } from './types';
 import { ROTOR_WIRINGS, DRIVE_WHEEL_NOTCHES } from './constants';
 import { encryptCharacter } from './services/nemaService';
@@ -87,6 +89,26 @@ function App() {
     setMachineState({ ...machineState, driveWheel: { ...machineState.driveWheel, position } });
   };
 
+  const handlePasteInput = useCallback((chars: string[]) => {
+    let i = 0;
+    const typeNext = () => {
+      if (i < chars.length) {
+        handleKeyDown(chars[i]);
+        handleKeyUp(chars[i]);
+        i++;
+        setTimeout(typeNext, 30);
+      }
+    };
+    typeNext();
+  }, [handleKeyDown, handleKeyUp]);
+
+  const handleLoadConfig = useCallback((state: any) => {
+    setMachineState(state);
+    setTapeText('');
+    setStateHistory([]);
+    setLitChar(null);
+  }, []);
+
   const handleClearTape = () => {
     if (stateHistory.length > 0) setMachineState(stateHistory[0]);
     setStateHistory([]);
@@ -124,6 +146,11 @@ function App() {
         </div>
       </div>
 
+      {/* Config Slots */}
+      <div className="w-full max-w-4xl mb-4">
+        <ConfigSlots machineId="nema" currentState={machineState} onLoadState={handleLoadConfig} accentColor="sky" />
+      </div>
+
       {/* Machine */}
       <div className="w-full max-w-3xl flex flex-col gap-10 relative z-0">
         <RotorAssembly rotors={machineState.rotors} driveWheel={machineState.driveWheel} onChange={handleRotorChange} onDriveChange={handleDriveChange} />
@@ -139,9 +166,16 @@ function App() {
 
         <div className="relative group">
           <Tape text={tapeText} />
-          <button onClick={handleClearTape} className="absolute top-1/2 -translate-y-1/2 -right-12 sm:-right-16 text-neutral-600 hover:text-red-400 p-2 transition-colors opacity-0 group-hover:opacity-100" title="Clear Tape">
-            <Eraser size={24} />
-          </button>
+          <div className="absolute top-1/2 -translate-y-1/2 -right-12 sm:-right-20 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button
+              onClick={handleClearTape}
+              className="text-neutral-600 hover:text-red-400 p-1.5 transition-colors"
+              title="Clear Tape"
+            >
+              <Eraser size={20} />
+            </button>
+            <TapeActions outputText={tapeText} onProcessInput={handlePasteInput} accentColor="sky" />
+          </div>
         </div>
 
         {showSignalPath && <SignalPath state={machineState} lastInput={lastInputChar} />}

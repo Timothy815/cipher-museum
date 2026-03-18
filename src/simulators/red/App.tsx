@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Eraser, Info, Eye, EyeOff } from 'lucide-react';
+import ConfigSlots from '../shared/ConfigSlots';
+import TapeActions from '../shared/TapeActions';
 import { MachineState } from './types';
 import { SIXES_CHARS, TWENTIES_CHARS, SIXES_WIRINGS, TWENTIES_WIRINGS } from './constants';
 import { encryptCharacter, decryptCharacter } from './services/redService';
@@ -79,6 +81,28 @@ function App() {
     setMachineState({ ...machineState, twenties: { ...machineState.twenties, position: newPos } });
   };
 
+  const handlePasteInput = useCallback((chars: string[]) => {
+    let i = 0;
+    const typeNext = () => {
+      if (i < chars.length) {
+        handleKeyDown(chars[i]);
+        handleKeyUp(chars[i]);
+        i++;
+        setTimeout(typeNext, 30);
+      }
+    };
+    typeNext();
+  }, [handleKeyDown, handleKeyUp]);
+
+  const handleLoadConfig = useCallback((saved: any) => {
+    const { machineState: savedMachineState, decrypt: savedDecrypt } = saved;
+    setMachineState(savedMachineState);
+    setDecrypt(savedDecrypt ?? false);
+    setTapeText('');
+    setStateHistory([]);
+    setLitChar(null);
+  }, []);
+
   const handleClearTape = () => {
     if (stateHistory.length > 0) setMachineState(stateHistory[0]);
     setStateHistory([]);
@@ -120,6 +144,11 @@ function App() {
         </div>
       </div>
 
+      {/* Config Slots */}
+      <div className="w-full max-w-4xl mb-4">
+        <ConfigSlots machineId="red" currentState={{ machineState, decrypt }} onLoadState={handleLoadConfig} accentColor="rose" />
+      </div>
+
       {/* Machine */}
       <div className="w-full max-w-3xl flex flex-col gap-10 relative z-0">
         {/* Switch displays */}
@@ -144,9 +173,16 @@ function App() {
         {/* Tape */}
         <div className="relative group">
           <Tape text={tapeText} />
-          <button onClick={handleClearTape} className="absolute top-1/2 -translate-y-1/2 -right-12 sm:-right-16 text-neutral-600 hover:text-red-400 p-2 transition-colors opacity-0 group-hover:opacity-100">
-            <Eraser size={24} />
-          </button>
+          <div className="absolute top-1/2 -translate-y-1/2 -right-12 sm:-right-20 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button
+              onClick={handleClearTape}
+              className="text-neutral-600 hover:text-red-400 p-1.5 transition-colors"
+              title="Clear Tape"
+            >
+              <Eraser size={20} />
+            </button>
+            <TapeActions outputText={tapeText} onProcessInput={handlePasteInput} accentColor="rose" />
+          </div>
         </div>
       </div>
 

@@ -1,5 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Eraser, Settings, Info, Eye, EyeOff } from 'lucide-react';
+import ConfigSlots from '../shared/ConfigSlots';
+import TapeActions from '../shared/TapeActions';
 import { MachineState } from './types';
 import { getInitialState, processCharacter } from './services/sigabaLogic';
 import Rotor from './components/Rotor';
@@ -89,6 +91,26 @@ const App: React.FC = () => {
     setLitChar(null);
   };
 
+  const handlePasteInput = useCallback((chars: string[]) => {
+    let i = 0;
+    const typeNext = () => {
+      if (i < chars.length) {
+        handleKeyPress(chars[i]);
+        handleKeyRelease();
+        i++;
+        setTimeout(typeNext, 30);
+      }
+    };
+    typeNext();
+  }, [handleKeyPress, handleKeyRelease]);
+
+  const handleLoadConfig = useCallback((state: any) => {
+    setMachineState(state);
+    setTapeText('');
+    setHistory([]);
+    setLitChar(null);
+  }, []);
+
   const toggleMode = () => {
     setMachineState(prev => ({
       ...prev,
@@ -148,6 +170,11 @@ const App: React.FC = () => {
             </button>
         </div>
       </header>
+
+      {/* Config Slots */}
+      <div className="w-full max-w-5xl px-6 md:px-10 pt-6">
+        <ConfigSlots machineId="sigaba" currentState={machineState} onLoadState={handleLoadConfig} accentColor="amber" />
+      </div>
 
       {/* Main Machine UI */}
       <main className="flex-1 flex flex-col items-center justify-center w-full max-w-5xl px-6 md:px-10 py-8 gap-8">
@@ -245,6 +272,7 @@ const App: React.FC = () => {
               <button onClick={() => { setTapeText(''); setHistory([]); }} className="p-2 hover:bg-gray-700 rounded text-gray-400" title="Clear Tape">
                  <Eraser size={20} />
               </button>
+              <TapeActions outputText={tapeText} onProcessInput={handlePasteInput} accentColor="amber" />
            </div>
         </div>
 

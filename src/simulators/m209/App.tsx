@@ -5,6 +5,8 @@ import { M209Service } from './services/m209Service';
 import { Wheel } from './components/Wheel';
 import { Tape } from './components/Tape';
 import InternalView from './components/InternalView';
+import ConfigSlots from '../shared/ConfigSlots';
+import TapeActions from '../shared/TapeActions';
 import { RefreshCw, RotateCcw, Trash2, Info, X, CheckCircle, Undo2, Wrench } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -93,6 +95,32 @@ const App: React.FC = () => {
     setStartPositions(state.wheels.map(w => w.position));
   };
 
+  const handlePasteInput = useCallback((chars: string[]) => {
+    let currentState = state;
+    const newEntries: TapeEntry[] = [];
+    let currentTapeIndex = tape.length;
+
+    chars.forEach(char => {
+      if (!/^[A-Z]$/.test(char)) return;
+      const { result, newState } = M209Service.processCharacter(char, currentState);
+      currentState = newState;
+      newEntries.push({ input: char, output: result, index: currentTapeIndex++ });
+    });
+
+    if (newEntries.length > 0) {
+      setState(currentState);
+      setTape(prev => [...prev, ...newEntries]);
+      setInputText(prev => prev + chars.filter(c => /^[A-Z]$/.test(c)).join(''));
+    }
+  }, [state, tape.length]);
+
+  const handleLoadConfig = useCallback((saved: any) => {
+    setState(saved);
+    setStartPositions(saved.wheels.map((w: any) => w.position));
+    setTape([]);
+    setInputText('');
+  }, []);
+
   // Processing input
   const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const rawVal = e.target.value;
@@ -172,6 +200,11 @@ const App: React.FC = () => {
           </div>
         </div>
         
+        {/* Config Slots */}
+        <div className="w-full max-w-5xl">
+          <ConfigSlots machineId="m209" currentState={state} onLoadState={handleLoadConfig} accentColor="amber" />
+        </div>
+
         {/* Info Modal/Panel */}
         {showInfo && (
           <div className="max-w-5xl w-full bg-stone-800/90 border border-amber-700/30 p-6 rounded-lg shadow-2xl animate-fadeIn relative overflow-hidden">
@@ -256,8 +289,11 @@ const App: React.FC = () => {
              </div>
 
              {/* Output Tape */}
-             <div className="w-full">
+             <div className="w-full relative group">
                <Tape entries={tape} />
+               <div className="absolute top-1/2 -translate-y-1/2 -right-10 sm:-right-16 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                 <TapeActions outputText={tape.map(e => e.output).join('')} onProcessInput={handlePasteInput} accentColor="amber" />
+               </div>
              </div>
 
           </div>
