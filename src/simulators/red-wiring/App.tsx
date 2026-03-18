@@ -104,8 +104,7 @@ const WiringPanel: React.FC<{
   forwardColor: string;
   title: string;
   titleColor: string;
-  position: number;
-}> = ({ letters, wiring, activeIn, activeOut, forwardColor, title, titleColor, position }) => {
+}> = ({ letters, wiring, activeIn, activeOut, forwardColor, title, titleColor }) => {
   const n = letters.length;
   const colSpacing = 160;
   const marginX = 50;
@@ -122,7 +121,7 @@ const WiringPanel: React.FC<{
   return (
     <div>
       <div className={`text-xs font-bold uppercase tracking-wider mb-2 ${titleColor}`}>
-        {title} <span className="text-slate-600 font-normal">— position {position}</span>
+        {title}
       </div>
       <div className="bg-slate-950/60 rounded-xl p-2 border border-slate-800 overflow-x-auto">
         <svg viewBox={`0 0 ${svgW} ${svgH}`} className="w-full" style={{ minWidth: 280 }}>
@@ -140,15 +139,11 @@ const WiringPanel: React.FC<{
             SWITCH
           </text>
 
-          {/* Letters (rotated by switch position) */}
-          {[0, 1].map(c => {
-            const off = c === 0 ? position : 0;
-            return (
+          {/* Letters */}
+          {[0, 1].map(c => (
               <g key={`col-${c}`}>
-                {letters.map((_, i) => {
-                  const contactIdx = (i + off) % n;
-                  const letter = letters[contactIdx];
-                  const isActive = (c === 0 && contactIdx === activeIn) || (c === 1 && contactIdx === activeOut);
+                {letters.map((letter, i) => {
+                  const isActive = (c === 0 && i === activeIn) || (c === 1 && i === activeOut);
                   const y = letterY(i);
                   return (
                     <g key={i}>
@@ -165,28 +160,23 @@ const WiringPanel: React.FC<{
                   );
                 })}
               </g>
-            );
-          })}
+            ))}
 
-          {/* Wires (adjusted for column rotation) */}
+          {/* Wires */}
           {wiring.map((outIdx, inIdx) => {
             if (inIdx === activeIn && activeIn >= 0) return null;
-            const vIn = ((inIdx - position) % n + n) % n;
-            const vOut = outIdx;
             return (
               <path key={inIdx}
-                d={`M ${x1} ${letterY(vIn)} C ${x1 + cp} ${letterY(vIn)}, ${x2 - cp} ${letterY(vOut)}, ${x2} ${letterY(vOut)}`}
+                d={`M ${x1} ${letterY(inIdx)} C ${x1 + cp} ${letterY(inIdx)}, ${x2 - cp} ${letterY(outIdx)}, ${x2} ${letterY(outIdx)}`}
                 stroke={`hsla(${wireHue(inIdx)}, 40%, 45%, ${activeIn >= 0 ? 0.12 : 0.22})`}
                 strokeWidth={1} fill="none" />
             );
           })}
           {activeIn >= 0 && (() => {
             const outIdx = wiring[activeIn];
-            const vIn = ((activeIn - position) % n + n) % n;
-            const vOut = outIdx;
             return (
               <path
-                d={`M ${x1} ${letterY(vIn)} C ${x1 + cp} ${letterY(vIn)}, ${x2 - cp} ${letterY(vOut)}, ${x2} ${letterY(vOut)}`}
+                d={`M ${x1} ${letterY(activeIn)} C ${x1 + cp} ${letterY(activeIn)}, ${x2 - cp} ${letterY(outIdx)}, ${x2} ${letterY(outIdx)}`}
                 stroke={forwardColor} strokeWidth={2.5} fill="none"
                 filter={`url(#glow-${title.replace(/\s/g, '')})`} />
             );
@@ -194,13 +184,11 @@ const WiringPanel: React.FC<{
 
           {/* Arrows */}
           {activeIn >= 0 && (() => {
-            const vIn = ((activeIn - position) % n + n) % n;
-            const vOut = activeOut;
             return (
               <g>
-                <polygon points={`${colX[0] - WIRE_PAD - 6},${letterY(vIn) - 4} ${colX[0] - WIRE_PAD - 6},${letterY(vIn) + 4} ${colX[0] - WIRE_PAD},${letterY(vIn)}`}
+                <polygon points={`${colX[0] - WIRE_PAD - 6},${letterY(activeIn) - 4} ${colX[0] - WIRE_PAD - 6},${letterY(activeIn) + 4} ${colX[0] - WIRE_PAD},${letterY(activeIn)}`}
                   fill={forwardColor} />
-                <polygon points={`${colX[1] + WIRE_PAD},${letterY(vOut) - 4} ${colX[1] + WIRE_PAD},${letterY(vOut) + 4} ${colX[1] + WIRE_PAD + 6},${letterY(vOut)}`}
+                <polygon points={`${colX[1] + WIRE_PAD},${letterY(activeOut) - 4} ${colX[1] + WIRE_PAD},${letterY(activeOut) + 4} ${colX[1] + WIRE_PAD + 6},${letterY(activeOut)}`}
                   fill="#10b981" />
               </g>
             );
@@ -366,7 +354,6 @@ const App: React.FC = () => {
               forwardColor="#f43f5e"
               title="Sixes Switch"
               titleColor="text-rose-400"
-              position={state.sixesPos}
             />
           </div>
           <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-3">
@@ -378,7 +365,6 @@ const App: React.FC = () => {
               forwardColor="#818cf8"
               title="Twenties Switch"
               titleColor="text-indigo-400"
-              position={state.twentiesPos}
             />
           </div>
         </div>

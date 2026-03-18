@@ -10,14 +10,34 @@ const mod = (n: number) => ((n % 26) + 26) % 26;
 
 const KEYBOARD_LAYOUT = ['QWERTZUIO', 'ASDFGHJK', 'PYXCVBNML'];
 
-// ── SVG Layout ─────────────────────────────────────────────────────
-const SVG_W = 920;
+// ── SVG Layout (dual-column per rotor) ────────────────────────────
+// 9 columns: Greek-L(0), Greek-R(1), Left-L(2), Left-R(3),
+//            Mid-L(4), Mid-R(5), Right-L(6), Right-R(7), Entry(8)
+const SVG_W = 880;
 const SVG_H = 640;
-const COL_X = [140, 300, 460, 620, 780];
+const COL_X = [100, 158, 255, 313, 410, 468, 565, 623, 755];
 const LETTER_Y0 = 55;
 const LETTER_DY = 21;
-const WIRE_PAD = 16;
+const WIRE_PAD = 12;
 const letterY = (i: number) => LETTER_Y0 + i * LETTER_DY;
+
+// Rotor pair definitions: [leftCol, rightCol, rotorIndex]
+const ROTOR_PAIRS = [
+  { lc: 0, rc: 1, ri: 0 }, // Greek
+  { lc: 2, rc: 3, ri: 1 }, // Left
+  { lc: 4, rc: 5, ri: 2 }, // Middle
+  { lc: 6, rc: 7, ri: 3 }, // Right
+];
+
+// Stator gaps: [leftCol, rightCol] — connections between adjacent rotor faces
+const STATOR_GAPS = [
+  { lc: 1, rc: 2 }, // Greek-R ↔ Left-L
+  { lc: 3, rc: 4 }, // Left-R ↔ Mid-L
+  { lc: 5, rc: 6 }, // Mid-R ↔ Right-L
+  { lc: 7, rc: 8 }, // Right-R ↔ Entry
+];
+
+const SLOT_NAMES = ['GREEK', 'LEFT', 'MIDDLE', 'RIGHT'];
 
 // ── Rotor math ─────────────────────────────────────────────────────
 function passForward(idx: number, rotor: RotorConfig): number {
@@ -59,8 +79,8 @@ function cloneState(s: MachineState): MachineState {
 
 // ── Signal trace ───────────────────────────────────────────────────
 interface SignalTrace {
-  forward: number[];   // length 5: col 0→4
-  backward: number[];  // length 5: col 4→0
+  forward: number[];   // length 5: entry → after each rotor
+  backward: number[];  // length 5: after reflector → after each inverse
   reflIn: number;
   reflOut: number;
   inputChar: string;
@@ -123,8 +143,7 @@ const App: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [plugboardText, setPlugboardText] = useState('');
 
-  // ── Computed wirings ────────────────────────────────────────────
-  // Physical layout: GREEK(0) on left, RIGHT(3) on right
+  // ── Computed wirings (effective = visual for dual-column pairs) ──
   const wirings = useMemo(() => [
     effectiveWiring(state.rotors[0]),
     effectiveWiring(state.rotors[1]),
@@ -134,59 +153,47 @@ const App: React.FC = () => {
 
   const reflMap = useMemo(() => reflectorMapping(state.reflector), [state.reflector]);
 
-  // ── Column rotation offsets for visual display ────────────────
-  // Each column rotates by the position of the rotor it represents
-  const colOffsets = useMemo(() => [
-    mod(state.rotors[0].position - state.rotors[0].ringSetting),  // col 0: Greek
-    mod(state.rotors[1].position - state.rotors[1].ringSetting),  // col 1: Left
-    mod(state.rotors[2].position - state.rotors[2].ringSetting),  // col 2: Middle
-    mod(state.rotors[3].position - state.rotors[3].ringSetting),  // col 3: Right
-    0,  // col 4: entry stator (fixed)
-  ], [state.rotors]);
+  // ── Column rotation offsets (9 columns) ────────────────────────
+  // Both faces of each rotor pair share the same offset; Entry is fixed
+  const colOffsets = useMemo(() => {
+    const o = (ri: number) => mod(state.rotors[ri].position - state.rotors[ri].ringSetting);
+    return [o(0), o(0), o(1), o(1), o(2), o(2), o(3), o(3), 0];
+  }, [state.rotors]);
+
   const toVisual = (contactIdx: number, col: number) => mod(contactIdx - colOffsets[col]);
 
-  // ── Active wire indices ─────────────────────────────────────────
-  // Physical layout (L→R): GREEK(gap0), LEFT(gap1), MIDDLE(gap2), RIGHT(gap3)
-  // Columns (L→R): col0(refl side), col1, col2, col3, col4(entry)
-  // Forward signal: entry(col4) → RIGHT(gap3) → MID(gap2) → LEFT(gap1) → GREEK(gap0) → reflector
-  // forward[0]=entry(col4), forward[1]=afterRIGHT(col3), forward[2]=afterMID(col2), forward[3]=afterLEFT(col1), forward[4]=afterGREEK(col0)
-  // Active wire = [leftColIdx, rightColIdx] for each gap
-  const activeForward: [number, number][] | null = trace ? [
-    [trace.forward[4], trace.forward[3]],  // gap0(GREEK): col0=forward[4], col1=forward[3]
-    [trace.forward[3], trace.forward[2]],  // gap1(LEFT):  col1=forward[3], col2=forward[2]
-    [trace.forward[2], trace.forward[1]],  // gap2(MID):   col2=forward[2], col3=forward[1]
-    [trace.forward[1], trace.forward[0]],  // gap3(RIGHT): col3=forward[1], col4=forward[0]
+  // ── Signal contact at each column (forward & return) ──────────
+  // forward[0]=entry, forward[1]=afterRight, forward[2]=afterMid, forward[3]=afterLeft, forward[4]=afterGreek
+  // Columns: 0=Greek-L, 1=Greek-R, 2=Left-L, 3=Left-R, 4=Mid-L, 5=Mid-R, 6=Right-L, 7=Right-R, 8=Entry
+  const fwdContacts: number[] | null = trace ? [
+    trace.forward[4], trace.forward[3],  // Greek: left=after-greek, right=after-left
+    trace.forward[3], trace.forward[2],  // Left: left=after-left, right=after-mid
+    trace.forward[2], trace.forward[1],  // Mid: left=after-mid, right=after-right
+    trace.forward[1], trace.forward[0],  // Right: left=after-right, right=entry
+    trace.forward[0],                     // Entry
   ] : null;
 
-  // Return signal: reflector → GREEK(gap0) → LEFT(gap1) → MID(gap2) → RIGHT(gap3) → entry
-  // backward[0]=afterRefl(col0), backward[1]=afterGREEKinv(col1), backward[2]=afterLEFTinv(col2), backward[3]=afterMIDinv(col3), backward[4]=afterRIGHTinv(col4)
-  const activeReturn: [number, number][] | null = trace ? [
-    [trace.backward[0], trace.backward[1]],  // gap0: col0→col1
-    [trace.backward[1], trace.backward[2]],  // gap1: col1→col2
-    [trace.backward[2], trace.backward[3]],  // gap2: col2→col3
-    [trace.backward[3], trace.backward[4]],  // gap3: col3→col4
+  const retContacts: number[] | null = trace ? [
+    trace.backward[0], trace.backward[1],  // Greek
+    trace.backward[1], trace.backward[2],  // Left
+    trace.backward[2], trace.backward[3],  // Mid
+    trace.backward[3], trace.backward[4],  // Right
+    trace.backward[4],                      // Entry
   ] : null;
 
   // ── Highlighted letters at each column ──────────────────────────
-  // Physical layout: col 0=reflector side (GREEK), col 4=entry side (RIGHT)
-  // forward[0]=entry(col4), forward[1]=afterRIGHT(col3), forward[2]=afterMID(col2), forward[3]=afterLEFT(col1), forward[4]=afterGREEK(col0)
-  // backward[0]=afterRefl(col0), backward[1]=afterGREEKinv(col1), backward[2]=afterLEFTinv(col2), backward[3]=afterMIDinv(col3), backward[4]=afterRIGHTinv(col4)
   const highlights = useMemo(() => {
-    if (!trace) return new Map<string, string>();
+    if (!fwdContacts || !retContacts) return new Map<string, string>();
     const m = new Map<string, string>();
-    // Forward: signal goes right→left (col4→col0)
-    for (let i = 0; i < 5; i++) {
-      const col = 4 - i; // forward[0]→col4(entry), forward[4]→col0(greek out)
-      m.set(`${col}-${trace.forward[i]}`, col === 4 ? 'input' : 'forward');
+    for (let c = 0; c < 9; c++) {
+      m.set(`${c}-${fwdContacts[c]}`, c === 8 ? 'input' : 'forward');
     }
-    // Return: signal goes left→right (col0→col4)
-    for (let i = 0; i < 5; i++) {
-      const col = i; // backward[0]→col0, backward[4]→col4(output)
-      const key = `${col}-${trace.backward[i]}`;
-      if (!m.has(key)) m.set(key, col === 4 ? 'output' : 'return');
+    for (let c = 0; c < 9; c++) {
+      const key = `${c}-${retContacts[c]}`;
+      if (!m.has(key)) m.set(key, c === 8 ? 'output' : 'return');
     }
     return m;
-  }, [trace]);
+  }, [fwdContacts, retContacts]);
 
   const hlColor = (type: string) => {
     switch (type) {
@@ -198,7 +205,6 @@ const App: React.FC = () => {
   };
 
   // ── Key handling ────────────────────────────────────────────────
-  // Trace persists until the NEXT key is pressed (not cleared on key up)
   const handleKeyDown = useCallback((char: string) => {
     if (pressedKey) return;
     setHistory(prev => [...prev, state]);
@@ -212,7 +218,6 @@ const App: React.FC = () => {
   }, [state, pressedKey]);
 
   const handleKeyUp = useCallback(() => {
-    // Keep trace visible — only clear pressedKey so next key can fire
     setPressedKey(null);
   }, []);
 
@@ -285,18 +290,9 @@ const App: React.FC = () => {
     setPlugboardText('');
   };
 
-  // Gap labels — physical order: GREEK, LEFT, MIDDLE, RIGHT
-  const gapRotorNames = [
-    state.rotors[0].type,
-    state.rotors[1].type,
-    state.rotors[2].type,
-    state.rotors[3].type,
-  ];
-  const gapSlotNames = ['GREEK', 'LEFT', 'MIDDLE', 'RIGHT'];
-
   return (
     <div className="flex-1 bg-slate-950 flex flex-col items-center px-4 py-8 text-slate-200">
-      <div className="w-full max-w-5xl">
+      <div className="w-full max-w-6xl">
 
         {/* ── Header ──────────────────────────────────────────── */}
         <div className="flex justify-between items-center mb-6">
@@ -304,7 +300,7 @@ const App: React.FC = () => {
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
               ENIGMA <span className="text-amber-500">WIRING EXPLORER</span>
             </h1>
-            <p className="text-xs text-slate-500 font-mono tracking-widest">M4 KRIEGSMARINE — INTERACTIVE SIGNAL TRACER</p>
+            <p className="text-xs text-slate-500 font-mono tracking-widest">M4 KRIEGSMARINE — MECHANICALLY ACCURATE SIGNAL TRACER</p>
           </div>
           <div className="flex gap-2">
             <button onClick={handleReset}
@@ -404,9 +400,9 @@ const App: React.FC = () => {
           ))}
         </div>
 
-        {/* ── SVG Wiring Diagram ──────────────────────────────── */}
+        {/* ── SVG Wiring Diagram (Dual-Column per Rotor) ───────── */}
         <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-2 sm:p-3 mb-6 overflow-x-auto">
-          <svg viewBox={`0 0 ${SVG_W} ${SVG_H}`} className="w-full h-auto" style={{ minWidth: 600 }}>
+          <svg viewBox={`0 0 ${SVG_W} ${SVG_H}`} className="w-full h-auto" style={{ minWidth: 700 }}>
             <defs>
               <filter id="glow-fwd" filterUnits="userSpaceOnUse">
                 <feGaussianBlur stdDeviation="2.5" result="b" />
@@ -422,35 +418,50 @@ const App: React.FC = () => {
               </filter>
             </defs>
 
-            {/* Column headers — physical layout: reflector on left, entry on right */}
-            {[0, 1, 2, 3].map(c => (
-              <text key={c} x={COL_X[c]} y={20} textAnchor="middle" fill="#64748b" fontSize={9} fontWeight="bold" fontFamily="monospace" opacity={0.5}>
-                {'•'}
-              </text>
+            {/* ── Rotor pair background rectangles ──────────────── */}
+            {ROTOR_PAIRS.map(({ lc, rc, ri }) => (
+              <rect key={`bg-${ri}`}
+                x={COL_X[lc] - 18} y={LETTER_Y0 - 14}
+                width={COL_X[rc] - COL_X[lc] + 36} height={26 * LETTER_DY + 6}
+                rx={8} ry={8}
+                fill="rgba(245, 158, 11, 0.02)" stroke="rgba(245, 158, 11, 0.06)" strokeWidth={1} />
             ))}
-            <text x={COL_X[4]} y={20} textAnchor="middle" fill="#64748b" fontSize={10} fontWeight="bold" fontFamily="monospace">ENTRY</text>
 
-            {/* Reflector label — on the left */}
-            <text x={COL_X[0] - 40} y={20} textAnchor="end" fill="#7c3aed" fontSize={10} fontWeight="bold" fontFamily="monospace">
-              UKW-{state.reflector === ReflectorType.B_Thin ? 'B' : 'C'}
-            </text>
-
-            {/* Gap slot labels */}
-            {gapSlotNames.map((name, g) => {
-              const cx = (COL_X[g] + COL_X[g + 1]) / 2;
+            {/* ── Rotor pair labels ─────────────────────────────── */}
+            {ROTOR_PAIRS.map(({ lc, rc, ri }) => {
+              const cx = (COL_X[lc] + COL_X[rc]) / 2;
               return (
-                <g key={`gap-label-${g}`}>
-                  <text x={cx} y={32} textAnchor="middle" fill="#92400e" fontSize={8} fontWeight="bold" fontFamily="monospace" opacity={0.7}>
-                    {name}
+                <g key={`label-${ri}`}>
+                  <text x={cx} y={20} textAnchor="middle" fill="#92400e" fontSize={8} fontWeight="bold" fontFamily="monospace" opacity={0.7}>
+                    {SLOT_NAMES[ri]}
                   </text>
-                  <text x={cx} y={42} textAnchor="middle" fill="#b45309" fontSize={9} fontWeight="bold" fontFamily="monospace" opacity={0.5}>
-                    {gapRotorNames[g]}
+                  <text x={cx} y={32} textAnchor="middle" fill="#b45309" fontSize={9} fontWeight="bold" fontFamily="monospace" opacity={0.5}>
+                    {state.rotors[ri].type}
                   </text>
                 </g>
               );
             })}
 
-            {/* Column letters (rotated by rotor position) */}
+            {/* Entry label */}
+            <text x={COL_X[8]} y={20} textAnchor="middle" fill="#64748b" fontSize={10} fontWeight="bold" fontFamily="monospace">ENTRY</text>
+
+            {/* Reflector label */}
+            <text x={COL_X[0] - 40} y={20} textAnchor="end" fill="#7c3aed" fontSize={10} fontWeight="bold" fontFamily="monospace">
+              UKW-{state.reflector === ReflectorType.B_Thin ? 'B' : 'C'}
+            </text>
+
+            {/* Stator gap labels */}
+            {STATOR_GAPS.map(({ lc, rc }, i) => {
+              const cx = (COL_X[lc] + COL_X[rc]) / 2;
+              return (
+                <text key={`stator-label-${i}`} x={cx} y={42} textAnchor="middle"
+                  fill="#334155" fontSize={7} fontFamily="monospace" opacity={0.6}>
+                  STATOR
+                </text>
+              );
+            })}
+
+            {/* ── Column letters (all 9 columns) ───────────────── */}
             {COL_X.map((cx, c) => (
               <g key={`col-${c}`}>
                 {ALPHABET.split('').map((_, i) => {
@@ -476,71 +487,105 @@ const App: React.FC = () => {
               </g>
             ))}
 
-            {/* Gap wires — invert wirings for display since signal flows R→L but beziers draw L→R */}
-            {wirings.map(w => {
-              const inv = new Array(26);
-              for (let i = 0; i < 26; i++) inv[w[i]] = i;
-              return inv;
-            }).map((wiring, g) => {
-              const x1 = COL_X[g] + WIRE_PAD;
-              const x2 = COL_X[g + 1] - WIRE_PAD;
-              const cp = (x2 - x1) * 0.15;
-              const leftOff = colOffsets[g];
-              const rightOff = colOffsets[g + 1];
-              const fwContact = activeForward ? activeForward[g][0] : -1;
-              const rtContact = activeReturn ? activeReturn[g][0] : -1;
+            {/* ── Internal rotor wiring (colored beziers) ──────── */}
+            {ROTOR_PAIRS.map(({ lc, rc, ri }) => {
+              const x1 = COL_X[lc] + WIRE_PAD;
+              const x2 = COL_X[rc] - WIRE_PAD;
+              const cp = (x2 - x1) * 0.35;
+              const wiring = wirings[ri];
+              // Active contacts for this rotor pair
+              const activeFwdRV = fwdContacts ? toVisual(fwdContacts[rc], rc) : -1;
+              const activeRetRV = retContacts ? toVisual(retContacts[rc], rc) : -1;
 
               return (
-                <g key={`gap-${g}`}>
-                  {/* Background wires */}
-                  {wiring.map((outIdx, inIdx) => {
-                    if (inIdx === fwContact || inIdx === rtContact) return null;
-                    const vIn = toVisual(inIdx, g);
-                    const vOut = toVisual(outIdx, g + 1);
+                <g key={`rotor-${ri}`}>
+                  {/* Background wires: iterate rightVis → leftVis via effectiveWiring */}
+                  {wiring.map((leftContact, rightVis) => {
+                    if (rightVis === activeFwdRV || rightVis === activeRetRV) return null;
+                    const leftVis = leftContact; // effectiveWiring already gives visual position
                     return (
-                      <path key={inIdx}
-                        d={`M ${x1} ${letterY(vIn)} C ${x1 + cp} ${letterY(vIn)}, ${x2 - cp} ${letterY(vOut)}, ${x2} ${letterY(vOut)}`}
-                        stroke={`hsla(${wireHue(inIdx)}, 40%, 45%, ${trace ? 0.12 : 0.22})`}
+                      <path key={rightVis}
+                        d={`M ${x1} ${letterY(leftVis)} C ${x1 + cp} ${letterY(leftVis)}, ${x2 - cp} ${letterY(rightVis)}, ${x2} ${letterY(rightVis)}`}
+                        stroke={`hsla(${wireHue(rightVis)}, 40%, 45%, ${trace ? 0.12 : 0.22})`}
                         strokeWidth={1} fill="none" />
                     );
                   })}
 
                   {/* Active forward wire */}
-                  {activeForward && (() => {
-                    const [inI, outI] = activeForward[g];
-                    const vIn = toVisual(inI, g);
-                    const vOut = toVisual(outI, g + 1);
+                  {fwdContacts && (() => {
+                    const rv = toVisual(fwdContacts[rc], rc);
+                    const lv = toVisual(fwdContacts[lc], lc);
                     return (
                       <path
-                        d={`M ${x1} ${letterY(vIn)} C ${x1 + cp} ${letterY(vIn)}, ${x2 - cp} ${letterY(vOut)}, ${x2} ${letterY(vOut)}`}
+                        d={`M ${x1} ${letterY(lv)} C ${x1 + cp} ${letterY(lv)}, ${x2 - cp} ${letterY(rv)}, ${x2} ${letterY(rv)}`}
                         stroke="#f59e0b" strokeWidth={2.5} fill="none" filter="url(#glow-fwd)" />
                     );
                   })()}
 
                   {/* Active return wire */}
-                  {activeReturn && (() => {
-                    const [inI, outI] = activeReturn[g];
-                    const vIn = toVisual(inI, g);
-                    const vOut = toVisual(outI, g + 1);
+                  {retContacts && (() => {
+                    const rv = toVisual(retContacts[rc], rc);
+                    const lv = toVisual(retContacts[lc], lc);
                     return (
                       <path
-                        d={`M ${x1} ${letterY(vIn)} C ${x1 + cp} ${letterY(vIn)}, ${x2 - cp} ${letterY(vOut)}, ${x2} ${letterY(vOut)}`}
+                        d={`M ${x1} ${letterY(lv)} C ${x1 + cp} ${letterY(lv)}, ${x2 - cp} ${letterY(rv)}, ${x2} ${letterY(rv)}`}
                         stroke="#06b6d4" strokeWidth={2.5} fill="none" filter="url(#glow-ret)" />
                     );
                   })()}
-
-                  {/* Gap watermark number */}
-                  <text x={(COL_X[g] + COL_X[g + 1]) / 2} y={SVG_H / 2 + 15}
-                    textAnchor="middle" dominantBaseline="central"
-                    fontSize={60} fontWeight="bold" fontFamily="monospace"
-                    fill="rgba(100, 116, 139, 0.04)">
-                    {g + 1}
-                  </text>
                 </g>
               );
             })}
 
-            {/* Reflector arcs — on the left side (col 0) */}
+            {/* ── Stator connections (thin lines showing rotation offset) ── */}
+            {STATOR_GAPS.map(({ lc, rc }, si) => {
+              const x1 = COL_X[lc] + WIRE_PAD;
+              const x2 = COL_X[rc] - WIRE_PAD;
+              const oL = colOffsets[lc];
+              const oR = colOffsets[rc];
+              // Active physical contacts at this stator
+              const activeFwdJ = fwdContacts ? fwdContacts[lc] : -1;
+              const activeRetJ = retContacts ? retContacts[lc] : -1;
+
+              return (
+                <g key={`stator-${si}`}>
+                  {/* Background stator wires */}
+                  {Array.from({ length: 26 }, (_, j) => {
+                    if (j === activeFwdJ || j === activeRetJ) return null;
+                    const lv = mod(j - oL);
+                    const rv = mod(j - oR);
+                    return (
+                      <line key={j}
+                        x1={x1} y1={letterY(lv)}
+                        x2={x2} y2={letterY(rv)}
+                        stroke={`rgba(100, 116, 139, ${trace ? 0.06 : 0.12})`}
+                        strokeWidth={0.7} />
+                    );
+                  })}
+
+                  {/* Active forward stator wire */}
+                  {fwdContacts && activeFwdJ >= 0 && (() => {
+                    const lv = mod(activeFwdJ - oL);
+                    const rv = mod(activeFwdJ - oR);
+                    return (
+                      <line x1={x1} y1={letterY(lv)} x2={x2} y2={letterY(rv)}
+                        stroke="#f59e0b" strokeWidth={2} filter="url(#glow-fwd)" />
+                    );
+                  })()}
+
+                  {/* Active return stator wire */}
+                  {retContacts && activeRetJ >= 0 && (() => {
+                    const lv = mod(activeRetJ - oL);
+                    const rv = mod(activeRetJ - oR);
+                    return (
+                      <line x1={x1} y1={letterY(lv)} x2={x2} y2={letterY(rv)}
+                        stroke="#06b6d4" strokeWidth={2} filter="url(#glow-ret)" />
+                    );
+                  })()}
+                </g>
+              );
+            })}
+
+            {/* ── Reflector arcs (off col 0 = Greek left face) ─── */}
             {(() => {
               const x = COL_X[0] - WIRE_PAD;
               const drawn = new Set<number>();
@@ -568,40 +613,38 @@ const App: React.FC = () => {
               });
             })()}
 
-            {/* Input / Output indicators — on the right side (col 4 = ENTRY) */}
+            {/* ── Input / Output indicators (off col 8 = Entry) ── */}
             {trace && (() => {
-              const inputVis = toVisual(trace.forward[0], 4);
-              const outputVis = toVisual(trace.backward[4], 4);
+              const inputVis = toVisual(trace.forward[0], 8);
+              const outputVis = toVisual(trace.backward[4], 8);
               return (
                 <g>
-                  {/* Input arrow & label */}
                   <polygon
-                    points={`${COL_X[4] + WIRE_PAD + 6},${letterY(inputVis) - 4} ${COL_X[4] + WIRE_PAD + 6},${letterY(inputVis) + 4} ${COL_X[4] + WIRE_PAD},${letterY(inputVis)}`}
+                    points={`${COL_X[8] + WIRE_PAD + 6},${letterY(inputVis) - 4} ${COL_X[8] + WIRE_PAD + 6},${letterY(inputVis) + 4} ${COL_X[8] + WIRE_PAD},${letterY(inputVis)}`}
                     fill="#f59e0b" />
-                  <text x={COL_X[4] + WIRE_PAD + 10} y={letterY(inputVis) + 1}
+                  <text x={COL_X[8] + WIRE_PAD + 10} y={letterY(inputVis) + 1}
                     textAnchor="start" dominantBaseline="central"
                     fontSize={13} fontWeight="bold" fontFamily="monospace" fill="#f59e0b">
                     {trace.inputChar}
                   </text>
                   {trace.pbIn && (
-                    <text x={COL_X[4] + WIRE_PAD + 10} y={letterY(inputVis) + 13}
+                    <text x={COL_X[8] + WIRE_PAD + 10} y={letterY(inputVis) + 13}
                       textAnchor="start" dominantBaseline="central"
                       fontSize={8} fontFamily="monospace" fill="#ec4899">
                       PB→{trace.pbIn}
                     </text>
                   )}
 
-                  {/* Output arrow & label */}
                   <polygon
-                    points={`${COL_X[4] + WIRE_PAD},${letterY(outputVis) - 4} ${COL_X[4] + WIRE_PAD},${letterY(outputVis) + 4} ${COL_X[4] + WIRE_PAD + 6},${letterY(outputVis)}`}
+                    points={`${COL_X[8] + WIRE_PAD},${letterY(outputVis) - 4} ${COL_X[8] + WIRE_PAD},${letterY(outputVis) + 4} ${COL_X[8] + WIRE_PAD + 6},${letterY(outputVis)}`}
                     fill="#10b981" />
-                  <text x={COL_X[4] + WIRE_PAD + 10} y={letterY(outputVis) + 1}
+                  <text x={COL_X[8] + WIRE_PAD + 10} y={letterY(outputVis) + 1}
                     textAnchor="start" dominantBaseline="central"
                     fontSize={13} fontWeight="bold" fontFamily="monospace" fill="#10b981">
                     {trace.outputChar}
                   </text>
                   {trace.pbOut && (
-                    <text x={COL_X[4] + WIRE_PAD + 10} y={letterY(outputVis) - 11}
+                    <text x={COL_X[8] + WIRE_PAD + 10} y={letterY(outputVis) - 11}
                       textAnchor="start" dominantBaseline="central"
                       fontSize={8} fontFamily="monospace" fill="#ec4899">
                       PB→{trace.pbOut}
@@ -621,6 +664,8 @@ const App: React.FC = () => {
               <text x={148} y={1} dominantBaseline="central" fontSize={9} fill="#64748b" fontFamily="monospace">Reflector</text>
               <circle cx={225} cy={0} r={4} fill="#10b981" />
               <text x={233} y={1} dominantBaseline="central" fontSize={9} fill="#64748b" fontFamily="monospace">Output</text>
+              <line x1={305} y1={0} x2={330} y2={0} stroke="rgba(100,116,139,0.3)" strokeWidth={1} />
+              <text x={335} y={1} dominantBaseline="central" fontSize={9} fill="#64748b" fontFamily="monospace">Stator</text>
             </g>
 
             {/* "Press a key" prompt */}
@@ -736,24 +781,26 @@ const App: React.FC = () => {
         <div className="bg-slate-900/30 border border-slate-800 rounded-xl p-5 text-xs text-slate-500 space-y-2">
           <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">How to Read the Wiring Diagram</div>
           <p>
-            Inspired by the <span className="text-white">Pringles Can Enigma</span> teaching model, this diagram shows the M4 Enigma
-            "unrolled" flat. Each column of A–Z represents a set of 26 electrical contacts. The colored curves between
-            columns show how each rotor's internal wiring scrambles the signal.
+            This diagram shows the M4 Enigma with <span className="text-white">mechanically accurate</span> rotor visualization.
+            Each rotor is shown as a <span className="text-amber-400">pair of columns</span> — the left column is the output face
+            and the right column is the input face. Both faces rotate together when the rotor steps, just like the
+            physical brass rotor barrel.
           </p>
           <p>
-            Press any key (or click the on-screen keyboard) to see the <span className="text-amber-400">forward path</span> (amber)
-            travel left-to-right through each rotor, bounce off the <span className="text-violet-400">reflector</span> (purple arcs),
+            The <span className="text-amber-400">colored curves</span> within each rotor pair show the internal wiring that
+            scrambles the signal. The thin <span className="text-slate-400">stator lines</span> between rotor pairs show how
+            spring-loaded contacts connect adjacent rotors. When rotors are at different positions, the stator lines
+            cross — this is the relative displacement between neighboring rotors.
+          </p>
+          <p>
+            Press any key to see the <span className="text-amber-400">forward path</span> (amber)
+            travel right-to-left through each rotor, bounce off the <span className="text-violet-400">reflector</span> (purple arcs),
             then trace the <span className="text-cyan-400">return path</span> (cyan) back to produce the
             <span className="text-emerald-400"> output</span> letter.
           </p>
-          <p>
-            The rotors step with each keypress, changing all the wiring connections. Use the position windows above the
-            diagram or open <span className="text-white">CONFIG</span> to change rotor types (I–VIII, Beta/Gamma), ring settings,
-            reflector (UKW-B/C thin), and plugboard connections.
-          </p>
           <p className="text-slate-600">
-            Tip: The forward and return signals always use different wires in each gap — this is why Enigma never
-            encrypts a letter to itself.
+            Tip: Step a single rotor and watch how the stator lines shift while the internal wiring stays fixed —
+            exactly what happens inside the real machine.
           </p>
         </div>
       </div>
