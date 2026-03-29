@@ -54,6 +54,7 @@ import LorenzWiringApp from './simulators/lorenz-wiring/App';
 import MorseApp from './simulators/morse/App';
 import PolluxApp from './simulators/pollux/App';
 import FortunaApp from './simulators/fortuna/App';
+import RailFenceApp from './simulators/rail-fence/App';
 
 const root = document.getElementById('root')!;
 
@@ -116,6 +117,7 @@ ReactDOM.createRoot(root).render(
           <Route path="/morse" element={<MorseApp />} />
           <Route path="/pollux" element={<PolluxApp />} />
           <Route path="/fortuna" element={<FortunaApp />} />
+          <Route path="/rail-fence" element={<RailFenceApp />} />
         </Route>
       </Routes>
     </HashRouter>

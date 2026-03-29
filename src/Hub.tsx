@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind, GitBranch, Key, UserCheck, Circle, SlidersHorizontal, Route, Activity, Fingerprint, Dice6 } from 'lucide-react';
+import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind, GitBranch, Key, UserCheck, Circle, SlidersHorizontal, Route, Activity, Fingerprint, Dice6, Fence } from 'lucide-react';
 
 const machines = [
   {
@@ -342,6 +342,16 @@ const machines = [
     icon: <Fingerprint size={32} />,
     color: 'teal',
     description: 'A tomographic cipher that encodes text via Morse code, then substitutes each dot, dash, and separator with digits from a configurable key. Homophonic substitution defeats frequency analysis.',
+  },
+  {
+    path: '/rail-fence',
+    name: 'Rail Fence',
+    subtitle: 'Zigzag Transposition',
+    country: 'Ancient',
+    era: 'Classical',
+    icon: <Fence size={32} />,
+    color: 'rose',
+    description: 'The simplest transposition cipher. Write plaintext in a zigzag across rails, then read off row by row. Color-coded visualization shows exactly how letter positions are rearranged.',
   },
 ];
 
