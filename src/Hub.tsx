@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind, GitBranch, Key, UserCheck, Circle, SlidersHorizontal, Route, Activity, Fingerprint, Dice6, Fence, Columns3, Hexagon, Cylinder, FileScan, Table2, SearchCode } from 'lucide-react';
+import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind, GitBranch, Key, UserCheck, Circle, SlidersHorizontal, Route, Activity, Fingerprint, Dice6, Fence, Columns3, Hexagon, Cylinder, FileScan, Table2, SearchCode, Scissors } from 'lucide-react';
 
 const machines = [
   {
@@ -392,6 +392,16 @@ const machines = [
     icon: <Table2 size={32} />,
     color: 'lime',
     description: 'The ancient Greek system that encodes each letter as a pair of coordinates on a 5×5 grid. Ancestor of ADFGVX and all fractionation ciphers. Supports keyword shuffling and 6×6 ADFGVX variant.',
+  },
+  {
+    path: '/pringles-enigma',
+    name: 'Pringles Can Enigma',
+    subtitle: 'Printable Paper Enigma',
+    country: 'Educational',
+    era: 'DIY',
+    icon: <Scissors size={32} />,
+    color: 'amber',
+    description: 'Generate printable paper strips that wrap around a Pringles can to create a working Enigma machine. Supports Enigma I, M3, and M4 models with full simulation mode, plugboard visualizer, and PDF export.',
   },
 ];
 

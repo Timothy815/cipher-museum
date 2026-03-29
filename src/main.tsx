@@ -61,6 +61,7 @@ import ScytaleApp from './simulators/scytale/App';
 import Sha256App from './simulators/sha256/App';
 import PolybiusApp from './simulators/polybius/App';
 import SubstitutionSolverApp from './simulators/substitution-solver/App';
+import PringlesEnigmaApp from './simulators/pringles-enigma/App';
 
 const root = document.getElementById('root')!;
 
@@ -130,6 +131,7 @@ ReactDOM.createRoot(root).render(
           <Route path="/sha256" element={<Sha256App />} />
           <Route path="/polybius" element={<PolybiusApp />} />
           <Route path="/substitution-solver" element={<SubstitutionSolverApp />} />
+          <Route path="/pringles-enigma" element={<PringlesEnigmaApp />} />
         </Route>
       </Routes>
     </HashRouter>
