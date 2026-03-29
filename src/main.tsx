@@ -56,6 +56,9 @@ import PolluxApp from './simulators/pollux/App';
 import FortunaApp from './simulators/fortuna/App';
 import RailFenceApp from './simulators/rail-fence/App';
 import ColumnarApp from './simulators/columnar/App';
+import PigpenApp from './simulators/pigpen/App';
+import ScytaleApp from './simulators/scytale/App';
+import Sha256App from './simulators/sha256/App';
 
 const root = document.getElementById('root')!;
 
@@ -120,6 +123,9 @@ ReactDOM.createRoot(root).render(
           <Route path="/fortuna" element={<FortunaApp />} />
           <Route path="/rail-fence" element={<RailFenceApp />} />
           <Route path="/columnar" element={<ColumnarApp />} />
+          <Route path="/pigpen" element={<PigpenApp />} />
+          <Route path="/scytale" element={<ScytaleApp />} />
+          <Route path="/sha256" element={<Sha256App />} />
         </Route>
       </Routes>
     </HashRouter>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind, GitBranch, Key, UserCheck, Circle, SlidersHorizontal, Route, Activity, Fingerprint, Dice6, Fence, Columns3 } from 'lucide-react';
+import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind, GitBranch, Key, UserCheck, Circle, SlidersHorizontal, Route, Activity, Fingerprint, Dice6, Fence, Columns3, Hexagon, Cylinder, FileScan } from 'lucide-react';
 
 const machines = [
   {
@@ -363,6 +363,26 @@ const machines = [
     color: 'sky',
     description: 'Write plaintext into a grid, then read columns in alphabetical keyword order. Used in ADFGVX, SOE field ciphers, and double transposition systems. Color-coded columns with interactive hover highlighting.',
   },
+  {
+    path: '/pigpen',
+    name: 'Pigpen Cipher',
+    subtitle: 'Masonic Geometric Substitution',
+    country: 'International',
+    era: '18th Century',
+    icon: <Hexagon size={32} />,
+    color: 'amber',
+    description: 'The Freemason\'s cipher — each letter is replaced by a geometric symbol from a tic-tac-toe grid or X pattern. SVG-rendered symbols with hover decode, full reference key, and live encoding.',
+  },
+  {
+    path: '/scytale',
+    name: 'Scytale',
+    subtitle: 'Spartan Rod Cipher',
+    country: 'Sparta',
+    era: '~700 BC',
+    icon: <Cylinder size={32} />,
+    color: 'emerald',
+    description: 'The oldest known military cipher device. Wrap a strip around a rod, write across the faces, and unwrap. Animated cross-section, color-coded faces, and brute force panel.',
+  },
 ];
 
 const colorMap: Record<string, { card: string; icon: string; badge: string; glow: string }> = {
@@ -575,6 +595,16 @@ const modernCrypto = [
     icon: <Dice6 size={32} />,
     color: 'cyan',
     description: 'Ferguson & Schneier\'s CSPRNG with 32 entropy pools, AES-256-CTR generator, and automatic rekeying. Used in FreeBSD, macOS, and Windows. Visualize entropy accumulation, reseed scheduling, and randomness quality.',
+  },
+  {
+    path: '/sha256',
+    name: 'SHA-256',
+    subtitle: 'Secure Hash Algorithm',
+    country: 'United States',
+    era: '2001',
+    icon: <FileScan size={32} />,
+    color: 'cyan',
+    description: 'The backbone of digital integrity — from Bitcoin to TLS. Step through all 64 compression rounds, inspect the message schedule, and watch the avalanche effect flip ~50% of bits from a single input change.',
   },
 ];
 
