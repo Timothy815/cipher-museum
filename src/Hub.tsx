@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind, GitBranch, Key, UserCheck, Circle, SlidersHorizontal, Route, Activity, Fingerprint, Dice6, Fence } from 'lucide-react';
+import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind, GitBranch, Key, UserCheck, Circle, SlidersHorizontal, Route, Activity, Fingerprint, Dice6, Fence, Columns3 } from 'lucide-react';
 
 const machines = [
   {
@@ -352,6 +352,16 @@ const machines = [
     icon: <Fence size={32} />,
     color: 'rose',
     description: 'The simplest transposition cipher. Write plaintext in a zigzag across rails, then read off row by row. Color-coded visualization shows exactly how letter positions are rearranged.',
+  },
+  {
+    path: '/columnar',
+    name: 'Columnar Transposition',
+    subtitle: 'Keyword Column Reorder',
+    country: 'International',
+    era: 'WWI–WWII',
+    icon: <Columns3 size={32} />,
+    color: 'sky',
+    description: 'Write plaintext into a grid, then read columns in alphabetical keyword order. Used in ADFGVX, SOE field ciphers, and double transposition systems. Color-coded columns with interactive hover highlighting.',
   },
 ];
 
