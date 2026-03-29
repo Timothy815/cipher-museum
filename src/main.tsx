@@ -59,6 +59,8 @@ import ColumnarApp from './simulators/columnar/App';
 import PigpenApp from './simulators/pigpen/App';
 import ScytaleApp from './simulators/scytale/App';
 import Sha256App from './simulators/sha256/App';
+import PolybiusApp from './simulators/polybius/App';
+import SubstitutionSolverApp from './simulators/substitution-solver/App';
 
 const root = document.getElementById('root')!;
 
@@ -126,6 +128,8 @@ ReactDOM.createRoot(root).render(
           <Route path="/pigpen" element={<PigpenApp />} />
           <Route path="/scytale" element={<ScytaleApp />} />
           <Route path="/sha256" element={<Sha256App />} />
+          <Route path="/polybius" element={<PolybiusApp />} />
+          <Route path="/substitution-solver" element={<SubstitutionSolverApp />} />
         </Route>
       </Routes>
     </HashRouter>

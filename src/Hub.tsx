@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind, GitBranch, Key, UserCheck, Circle, SlidersHorizontal, Route, Activity, Fingerprint, Dice6, Fence, Columns3, Hexagon, Cylinder, FileScan } from 'lucide-react';
+import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind, GitBranch, Key, UserCheck, Circle, SlidersHorizontal, Route, Activity, Fingerprint, Dice6, Fence, Columns3, Hexagon, Cylinder, FileScan, Table2, SearchCode } from 'lucide-react';
 
 const machines = [
   {
@@ -383,6 +383,16 @@ const machines = [
     color: 'emerald',
     description: 'The oldest known military cipher device. Wrap a strip around a rod, write across the faces, and unwrap. Animated cross-section, color-coded faces, and brute force panel.',
   },
+  {
+    path: '/polybius',
+    name: 'Polybius Square',
+    subtitle: 'Coordinate Substitution',
+    country: 'Greece',
+    era: '~150 BC',
+    icon: <Table2 size={32} />,
+    color: 'lime',
+    description: 'The ancient Greek system that encodes each letter as a pair of coordinates on a 5×5 grid. Ancestor of ADFGVX and all fractionation ciphers. Supports keyword shuffling and 6×6 ADFGVX variant.',
+  },
 ];
 
 const colorMap: Record<string, { card: string; icon: string; badge: string; glow: string }> = {
@@ -470,6 +480,12 @@ const colorMap: Record<string, { card: string; icon: string; badge: string; glow
     badge: 'bg-violet-500/20 text-violet-300 border-violet-700/50',
     glow: 'group-hover:shadow-violet-900/30',
   },
+  lime: {
+    card: 'hover:border-lime-700/60',
+    icon: 'text-lime-400 bg-lime-950/50 border-lime-800/50',
+    badge: 'bg-lime-500/20 text-lime-300 border-lime-700/50',
+    glow: 'group-hover:shadow-lime-900/30',
+  },
 };
 
 const cryptanalysisTools = [
@@ -522,6 +538,16 @@ const cryptanalysisTools = [
     icon: <SlidersHorizontal size={32} />,
     color: 'crimson',
     description: 'Crack the Vigenère cipher yourself. Find repeated sequences with Kasiski examination, then slide frequency bars to match English patterns and reveal each key letter.',
+  },
+  {
+    path: '/substitution-solver',
+    name: 'Substitution Solver',
+    subtitle: 'Interactive Frequency Attack',
+    country: 'Interactive',
+    era: '~850 AD',
+    icon: <SearchCode size={32} />,
+    color: 'crimson',
+    description: 'Break a random substitution cipher by hand. Live frequency bars, bigram/trigram hints, click-to-assign letter mappings, and lock/undo. Practice the technique Al-Kindi described over 1,000 years ago.',
   },
 ];
 
