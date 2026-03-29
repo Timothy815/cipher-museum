@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind, GitBranch, Key, UserCheck, Circle, SlidersHorizontal, Route } from 'lucide-react';
+import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind, GitBranch, Key, UserCheck, Circle, SlidersHorizontal, Route, Activity, Fingerprint } from 'lucide-react';
 
 const machines = [
   {
@@ -323,6 +323,26 @@ const machines = [
     color: 'red',
     description: 'Two dynamically mutating alphabets that change after every letter. Algorithm kept secret until 2010. Never adopted, never broken.',
   },
+  {
+    path: '/morse',
+    name: 'Morse Code',
+    subtitle: 'Telegraphic Communication',
+    country: 'International',
+    era: '1837',
+    icon: <Activity size={32} />,
+    color: 'orange',
+    description: 'Interactive Morse code keyer with straight key, single paddle, and dual paddle (iambic) modes. Tap out messages with audio feedback, adjustable speed, and real-time decoding.',
+  },
+  {
+    path: '/pollux',
+    name: 'Pollux Cipher',
+    subtitle: 'Morse-Numeric Substitution',
+    country: 'France',
+    era: 'WWII',
+    icon: <Fingerprint size={32} />,
+    color: 'teal',
+    description: 'A tomographic cipher that encodes text via Morse code, then substitutes each dot, dash, and separator with digits from a configurable key. Homophonic substitution defeats frequency analysis.',
+  },
 ];
 
 const colorMap: Record<string, { card: string; icon: string; badge: string; glow: string }> = {
@@ -385,6 +405,12 @@ const colorMap: Record<string, { card: string; icon: string; badge: string; glow
     icon: 'text-rose-400 bg-rose-950/50 border-rose-800/50',
     badge: 'bg-rose-500/20 text-rose-300 border-rose-700/50',
     glow: 'group-hover:shadow-rose-900/30',
+  },
+  orange: {
+    card: 'hover:border-orange-700/60',
+    icon: 'text-orange-400 bg-orange-950/50 border-orange-800/50',
+    badge: 'bg-orange-500/20 text-orange-300 border-orange-700/50',
+    glow: 'group-hover:shadow-orange-900/30',
   },
   crimson: {
     card: 'hover:border-red-600/60',
@@ -786,6 +812,42 @@ const Hub: React.FC = () => {
             );
           })}
         </div>
+      </div>
+
+      {/* Sister Project */}
+      <div className="w-full max-w-6xl mt-28">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-white mb-4">
+            SISTER <span className="text-emerald-500">PROJECT</span>
+          </h2>
+        </div>
+        <a
+          href="https://timothy815.github.io/Modular_crypto_worksbench/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group block bg-slate-900/70 border border-slate-800 rounded-2xl p-12 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:border-emerald-700/60 group-hover:shadow-emerald-900/30 max-w-2xl mx-auto"
+        >
+          <div className="flex items-start justify-between mb-6">
+            <div className="w-14 h-14 rounded-xl border flex items-center justify-center text-emerald-400 bg-emerald-950/50 border-emerald-800/50">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h4"/><path d="M14 12h4"/><path d="M12 6v12"/></svg>
+            </div>
+            <span className="text-[10px] font-bold px-2 py-1 rounded-full border bg-emerald-500/20 text-emerald-300 border-emerald-700/50">
+              External
+            </span>
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-2 group-hover:text-emerald-200 transition-colors">
+            Modular Crypto Workbench
+          </h2>
+          <p className="text-xs font-mono text-slate-500 mb-5 uppercase tracking-wider">
+            Hands-On Cryptographic Toolkit
+          </p>
+          <p className="text-sm text-slate-400 leading-relaxed">
+            A companion workbench for modular cryptographic experimentation. Build, combine, and test cryptographic primitives in an interactive environment.
+          </p>
+          <div className="mt-8 text-xs font-semibold text-slate-600 group-hover:text-slate-400 transition-colors">
+            VISIT WORKBENCH &rarr;
+          </div>
+        </a>
       </div>
 
       {/* Footer */}

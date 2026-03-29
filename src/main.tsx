@@ -51,6 +51,8 @@ import TriviumApp from './simulators/trivium/App';
 import PurpleWiringApp from './simulators/purple-wiring/App';
 import RedWiringApp from './simulators/red-wiring/App';
 import LorenzWiringApp from './simulators/lorenz-wiring/App';
+import MorseApp from './simulators/morse/App';
+import PolluxApp from './simulators/pollux/App';
 
 const root = document.getElementById('root')!;
 
@@ -110,6 +112,8 @@ ReactDOM.createRoot(root).render(
           <Route path="/purple-wiring" element={<PurpleWiringApp />} />
           <Route path="/red-wiring" element={<RedWiringApp />} />
           <Route path="/lorenz-wiring" element={<LorenzWiringApp />} />
+          <Route path="/morse" element={<MorseApp />} />
+          <Route path="/pollux" element={<PolluxApp />} />
         </Route>
       </Routes>
     </HashRouter>

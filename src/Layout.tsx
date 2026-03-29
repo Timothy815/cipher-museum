@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Home, ChevronRight, ChevronDown, Cog, Cpu, KeyRound, Lock, Shield, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind, GitBranch, Key, UserCheck, Circle, SlidersHorizontal, Route } from 'lucide-react';
+import { Home, ChevronRight, ChevronDown, Cog, Cpu, KeyRound, Lock, Shield, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind, GitBranch, Key, UserCheck, Circle, SlidersHorizontal, Route, Activity, Fingerprint } from 'lucide-react';
 
 const SIMULATORS = [
   { path: '/enigma-i', label: 'Enigma I', country: 'Germany', icon: <Cog size={14} /> },
@@ -35,6 +35,8 @@ const SIMULATORS = [
   { path: '/kl7-wiring', label: 'KL-7 Wiring Explorer', country: 'Educational', icon: <Route size={14} /> },
   { path: '/sigaba-wiring', label: 'SIGABA Wiring Explorer', country: 'Educational', icon: <Route size={14} /> },
   { path: '/chaocipher', label: 'Chaocipher', country: 'United States', icon: <Shuffle size={14} /> },
+  { path: '/morse', label: 'Morse Code', country: 'International', icon: <Activity size={14} /> },
+  { path: '/pollux', label: 'Pollux Cipher', country: 'France', icon: <Fingerprint size={14} /> },
 ];
 
 const CRYPTANALYSIS = [
