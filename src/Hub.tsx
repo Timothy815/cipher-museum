@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind, GitBranch, Key, UserCheck, Circle, SlidersHorizontal, Route, Activity, Fingerprint } from 'lucide-react';
+import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind, GitBranch, Key, UserCheck, Circle, SlidersHorizontal, Route, Activity, Fingerprint, Dice6 } from 'lucide-react';
 
 const machines = [
   {
@@ -545,6 +545,16 @@ const modernCrypto = [
     icon: <GitBranch size={32} />,
     color: 'cyan',
     description: 'Three coupled nonlinear feedback shift registers in just 288 bits. Designed for extreme hardware efficiency. eSTREAM Profile 2 winner. Watch the registers clock and generate keystream.',
+  },
+  {
+    path: '/fortuna',
+    name: 'Fortuna',
+    subtitle: 'Cryptographic PRNG',
+    country: 'International',
+    era: '2003',
+    icon: <Dice6 size={32} />,
+    color: 'cyan',
+    description: 'Ferguson & Schneier\'s CSPRNG with 32 entropy pools, AES-256-CTR generator, and automatic rekeying. Used in FreeBSD, macOS, and Windows. Visualize entropy accumulation, reseed scheduling, and randomness quality.',
   },
 ];
 
