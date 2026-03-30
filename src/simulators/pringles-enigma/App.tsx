@@ -774,7 +774,7 @@ const Lightboard = ({ litLetter }: { litLetter: string | null }) => {
               return (
                 <div key={char} className="relative flex items-center justify-center w-8 h-8 sm:w-12 sm:h-12 rounded-full border-2 border-slate-900 bg-slate-900 shadow-inner">
                   <div className={`absolute inset-0 rounded-full transition-opacity duration-75 ${isLit ? 'opacity-100' : 'opacity-0'}`} style={{ background: 'radial-gradient(circle, #fef08a 20%, #eab308 60%, #ca8a04 100%)', boxShadow: '0 0 15px 5px rgba(234, 179, 8, 0.4)' }} />
-                  <span className={`relative z-10 text-base sm:text-lg font-bold font-mono ${isLit ? 'text-slate-900' : 'text-slate-600 dark:text-slate-400'}`}>{char}</span>
+                  <span className={`relative z-10 text-base sm:text-lg font-bold font-mono ${isLit ? 'text-slate-900' : 'text-slate-400'}`}>{char}</span>
                 </div>
               );
             })}
@@ -1261,61 +1261,68 @@ export default function App() {
   return (
     <div className="dark flex-1 flex flex-col font-sans bg-slate-950 text-slate-200">
       {/* Toolbar */}
-      <div className="bg-slate-900/80 border-b border-slate-800 px-6 py-3 print:hidden">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center gap-3">
-          <div>
-            <h2 className="text-xl font-typewriter font-bold text-stone-100 tracking-tighter">
-              PRINGLES CAN <span className="text-amber-400">ENIGMA</span>
-            </h2>
-            <span className="text-stone-500 text-[10px] tracking-[0.3em] font-mono">PRINTABLE PAPER ENIGMA GENERATOR</span>
+      <div className="bg-slate-900/80 border-b border-slate-800 px-8 sm:px-12 py-5 print:hidden">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-wrap items-end justify-between gap-6 mb-5">
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-typewriter font-bold text-stone-100 tracking-tighter">
+                PRINGLES CAN <span className="text-amber-400">ENIGMA</span>
+              </h2>
+              <span className="text-stone-500 text-[10px] tracking-[0.3em] font-mono">PRINTABLE PAPER ENIGMA GENERATOR</span>
+            </div>
+            <div className="flex bg-slate-800 rounded-lg p-1">
+              <button
+                onClick={() => setViewMode('simulate')}
+                className={`px-5 py-2 rounded-md text-sm font-bold transition-colors ${viewMode === 'simulate' ? 'bg-amber-600 text-white' : 'text-slate-400 hover:text-white'}`}
+              >
+                Simulator
+              </button>
+              <button
+                onClick={() => setViewMode('print')}
+                className={`px-5 py-2 rounded-md text-sm font-bold transition-colors ${viewMode === 'print' ? 'bg-amber-600 text-white' : 'text-slate-400 hover:text-white'}`}
+              >
+                Print Layout
+              </button>
+            </div>
           </div>
-          <div className="flex bg-slate-800 rounded-md p-1 ml-auto">
-            <button
-              onClick={() => setViewMode('simulate')}
-              className={`px-4 py-1.5 rounded-sm text-sm font-medium transition-colors ${viewMode === 'simulate' ? 'bg-amber-600 text-white' : 'text-slate-300 hover:text-white'}`}
-            >
-              Simulator
+          <div className="flex flex-wrap items-center gap-2">
+            <button onClick={() => setSoundEnabled(!soundEnabled)} className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 px-4 py-2.5 rounded-lg transition-colors text-xs border border-slate-700" title="Toggle Sound">
+              {soundEnabled ? <Volume2 size={15} /> : <VolumeX size={15} />}
+              <span className="hidden sm:inline">{soundEnabled ? 'Sound On' : 'Sound Off'}</span>
             </button>
-            <button
-              onClick={() => setViewMode('print')}
-              className={`px-4 py-1.5 rounded-sm text-sm font-medium transition-colors ${viewMode === 'print' ? 'bg-amber-600 text-white' : 'text-slate-300 hover:text-white'}`}
-            >
-              Print Layout
+            <button onClick={handleShare} className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 px-4 py-2.5 rounded-lg transition-colors text-xs border border-slate-700" title="Share Configuration">
+              {copiedLink ? <Check size={15} className="text-green-400" /> : <Share2 size={15} />}
+              <span className="hidden sm:inline">{copiedLink ? 'Copied!' : 'Share'}</span>
+            </button>
+            <button onClick={() => setLineStyle(s => s === 'straight' ? 'hybrid' : s === 'hybrid' ? 'curved' : s === 'curved' ? 'stepped' : 'straight')} className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 px-4 py-2.5 rounded-lg transition-colors text-xs border border-slate-700">
+              {lineStyle === 'straight' ? "Straight" : lineStyle === 'hybrid' ? "Hybrid" : lineStyle === 'curved' ? "Curved" : "Stepped"}
+            </button>
+            <button onClick={() => setIsBWMode(!isBWMode)} className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 px-4 py-2.5 rounded-lg transition-colors text-xs border border-slate-700">
+              {isBWMode ? "Color" : "B&W"}
+            </button>
+            <button onClick={() => setPrintOrientation(o => o === 'portrait' ? 'landscape' : 'portrait')} className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 px-4 py-2.5 rounded-lg transition-colors text-xs border border-slate-700">
+              {printOrientation === 'landscape' ? "Landscape" : "Portrait"}
+            </button>
+            <div className="w-px h-6 bg-slate-700 mx-1 hidden sm:block" />
+            <button onClick={handlePrint} className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 px-4 py-2.5 rounded-lg transition-colors text-xs border border-slate-700">
+              <Printer size={14} /> Print
+            </button>
+            <button onClick={handleDownloadPDF} className="flex items-center gap-2 bg-amber-700 hover:bg-amber-600 px-5 py-2.5 rounded-lg transition-colors text-xs font-bold border border-amber-600">
+              <Download size={14} /> Download PDF
             </button>
           </div>
-          <button onClick={() => setSoundEnabled(!soundEnabled)} className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded-md transition-colors text-xs" title="Toggle Sound">
-            {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
-          </button>
-          <button onClick={handleShare} className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded-md transition-colors text-xs" title="Share Configuration">
-            {copiedLink ? <Check size={16} className="text-green-400" /> : <Share2 size={16} />}
-          </button>
-          <button onClick={() => setLineStyle(s => s === 'straight' ? 'hybrid' : s === 'hybrid' ? 'curved' : s === 'curved' ? 'stepped' : 'straight')} className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded-md transition-colors text-xs">
-            {lineStyle === 'straight' ? "Straight" : lineStyle === 'hybrid' ? "Hybrid" : lineStyle === 'curved' ? "Curved" : "Stepped"}
-          </button>
-          <button onClick={() => setIsBWMode(!isBWMode)} className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded-md transition-colors text-xs">
-            {isBWMode ? "Color" : "B&W"}
-          </button>
-          <button onClick={() => setPrintOrientation(o => o === 'portrait' ? 'landscape' : 'portrait')} className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded-md transition-colors text-xs">
-            {printOrientation === 'landscape' ? "Landscape" : "Portrait"}
-          </button>
-          <button onClick={handlePrint} className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded-md transition-colors text-xs">
-            <Printer size={14} /> Print
-          </button>
-          <button onClick={handleDownloadPDF} className="flex items-center gap-2 bg-amber-700 hover:bg-amber-600 px-3 py-2 rounded-md transition-colors text-xs font-bold">
-            <Download size={14} /> PDF
-          </button>
         </div>
       </div>
 
-      <main className="flex-1 max-w-7xl mx-auto w-full p-6 flex flex-col lg:flex-row gap-8 print:p-0 print:m-0">
+      <main className="flex-1 max-w-7xl mx-auto w-full px-8 sm:px-12 py-10 flex flex-col lg:flex-row gap-10 print:p-0 print:m-0">
         {/* Settings Panel */}
-        <aside className="w-full lg:w-80 flex flex-col gap-6 print:hidden">
-          <div className="bg-white dark:bg-slate-900 p-5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
-            <h2 className="text-lg font-semibold mb-4 text-slate-800 dark:text-slate-200">Machine Settings</h2>
+        <aside className="w-full lg:w-80 flex-shrink-0 flex flex-col gap-6 print:hidden">
+          <div className="bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-800">
+            <h2 className="text-lg font-semibold mb-4 text-slate-200">Machine Settings</h2>
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Model</label>
+                <label className="block text-sm font-medium text-slate-300 mb-1">Model</label>
                 <select 
                   value={model}
                   onChange={(e) => {
@@ -1336,18 +1343,18 @@ export default function App() {
                     setSimulationSteps([]);
                     setPlaintext('');
                   }}
-                  className="w-full border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 rounded-md p-2 text-sm"
+                  className="w-full border border-slate-700 bg-slate-800 text-slate-200 rounded-md p-2 text-sm"
                 >
                   {Object.keys(ENIGMA_MODELS).map(m => <option key={m} value={m}>{m}</option>)}
                 </select>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Reflector</label>
+                <label className="block text-sm font-medium text-slate-300 mb-1">Reflector</label>
                 <select 
                   value={reflector}
                   onChange={(e) => setReflector(e.target.value)}
-                  className="w-full border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 rounded-md p-2 text-sm"
+                  className="w-full border border-slate-700 bg-slate-800 text-slate-200 rounded-md p-2 text-sm"
                 >
                   {ENIGMA_MODELS[model as keyof typeof ENIGMA_MODELS].reflectors.map(r => <option key={r} value={r}>{r}</option>)}
                 </select>
@@ -1355,8 +1362,8 @@ export default function App() {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-900 p-5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
-            <h2 className="text-lg font-semibold mb-4 text-slate-800 dark:text-slate-200">Rotors (Right to Left)</h2>
+          <div className="bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-800">
+            <h2 className="text-lg font-semibold mb-4 text-slate-200">Rotors (Right to Left)</h2>
             <div className="space-y-4">
               {rotors.map((r, idx) => (
                 <div 
@@ -1396,7 +1403,7 @@ export default function App() {
                     <GripVertical size={16} />
                   </div>
                   <div className="flex-1">
-                    <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Rotor {idx + 1}</label>
+                    <label className="block text-xs font-medium text-slate-400 mb-1">Rotor {idx + 1}</label>
                     <select 
                       value={r}
                       onChange={(e) => {
@@ -1404,14 +1411,14 @@ export default function App() {
                         newRotors[idx] = e.target.value;
                         setRotors(newRotors);
                       }}
-                      className="w-full border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 rounded-md p-2 text-sm"
+                      className="w-full border border-slate-700 bg-slate-800 text-slate-200 rounded-md p-2 text-sm"
                     >
                       {ENIGMA_MODELS[model as keyof typeof ENIGMA_MODELS].rotors.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                       {model === 'M4 Navy' && idx === 3 && ENIGMA_MODELS['M4 Navy'].thinRotors?.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                     </select>
                   </div>
                   <div className="w-20">
-                    <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Ring</label>
+                    <label className="block text-xs font-medium text-slate-400 mb-1">Ring</label>
                     <select 
                       value={ringSettings[idx]}
                       onChange={(e) => {
@@ -1419,7 +1426,7 @@ export default function App() {
                         newRings[idx] = parseInt(e.target.value);
                         setRingSettings(newRings);
                       }}
-                      className="w-full border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 rounded-md p-2 text-sm"
+                      className="w-full border border-slate-700 bg-slate-800 text-slate-200 rounded-md p-2 text-sm"
                     >
                       {Array.from({length: 26}).map((_, i) => (
                         <option key={i} value={i}>{String.fromCharCode(65 + i)} ({i + 1})</option>
@@ -1427,7 +1434,7 @@ export default function App() {
                     </select>
                   </div>
                   <div className="w-20">
-                    <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Start Pos</label>
+                    <label className="block text-xs font-medium text-slate-400 mb-1">Start Pos</label>
                     <input
                       type="text"
                       maxLength={1}
@@ -1441,7 +1448,7 @@ export default function App() {
                         }
                       }}
                       onFocus={(e) => e.target.select()}
-                      className="w-full border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 rounded-md p-2 text-sm uppercase text-center font-mono"
+                      className="w-full border border-slate-700 bg-slate-800 text-slate-200 rounded-md p-2 text-sm uppercase text-center font-mono"
                     />
                   </div>
                 </div>
@@ -1449,26 +1456,26 @@ export default function App() {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-900 p-5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
-            <h2 className="text-lg font-semibold mb-4 text-slate-800 dark:text-slate-200">Plugboard</h2>
+          <div className="bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-800">
+            <h2 className="text-lg font-semibold mb-4 text-slate-200">Plugboard</h2>
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Connections (e.g. AB CD)</label>
+              <label className="block text-sm font-medium text-slate-300 mb-1">Connections (e.g. AB CD)</label>
               <input 
                 type="text" 
                 value={plugboard}
                 onChange={(e) => setPlugboard(e.target.value)}
                 placeholder="AB CD EF"
-                className="w-full border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 rounded-md p-2 text-sm uppercase font-mono"
+                className="w-full border border-slate-700 bg-slate-800 text-slate-200 rounded-md p-2 text-sm uppercase font-mono"
               />
             </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-900 p-5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
-            <h2 className="text-lg font-semibold mb-4 text-slate-800 dark:text-slate-200">Visual Settings</h2>
+          <div className="bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-800">
+            <h2 className="text-lg font-semibold mb-4 text-slate-200">Visual Settings</h2>
             
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Zebra Striping</label>
+                <label className="text-sm font-medium text-slate-300">Zebra Striping</label>
                 <button 
                   onClick={() => setShowZebra(!showZebra)}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${showZebra ? 'bg-indigo-600' : 'bg-slate-300 dark:bg-slate-600'}`}
@@ -1479,9 +1486,9 @@ export default function App() {
 
               {showZebra && (
                 <div>
-                  <label className="flex justify-between text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="flex justify-between text-sm font-medium text-slate-300 mb-1">
                     <span>Zebra Contrast</span>
-                    <span className="text-slate-500 dark:text-slate-400">{Math.round(zebraContrast * 100)}%</span>
+                    <span className="text-slate-400">{Math.round(zebraContrast * 100)}%</span>
                   </label>
                   <input 
                     type="range" 
@@ -1496,9 +1503,9 @@ export default function App() {
               )}
 
               <div>
-                <label className="flex justify-between text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                <label className="flex justify-between text-sm font-medium text-slate-300 mb-1">
                   <span>Line Thickness</span>
-                  <span className="text-slate-500 dark:text-slate-400">{lineWidth.toFixed(1)}</span>
+                  <span className="text-slate-400">{lineWidth.toFixed(1)}</span>
                 </label>
                 <input 
                   type="range" 
@@ -1513,15 +1520,15 @@ export default function App() {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-900 p-5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
-            <h2 className="text-lg font-semibold mb-4 text-slate-800 dark:text-slate-200">Saved Configurations</h2>
+          <div className="bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-800">
+            <h2 className="text-lg font-semibold mb-4 text-slate-200">Saved Configurations</h2>
             <div className="flex gap-2 mb-4">
               <input 
                 type="text" 
                 value={configName}
                 onChange={(e) => setConfigName(e.target.value)}
                 placeholder="Config Name"
-                className="flex-1 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 rounded-md p-2 text-sm"
+                className="flex-1 border border-slate-700 bg-slate-800 text-slate-200 rounded-md p-2 text-sm"
               />
               <button 
                 onClick={saveConfig}
@@ -1534,13 +1541,13 @@ export default function App() {
             
             <div className="space-y-2 max-h-48 overflow-y-auto">
               {savedConfigs.length === 0 ? (
-                <p className="text-sm text-slate-500 dark:text-slate-400 text-center py-2">No saved configs</p>
+                <p className="text-sm text-slate-400 text-center py-2">No saved configs</p>
               ) : (
                 savedConfigs.map(config => (
-                  <div key={config.id} className="flex items-center justify-between bg-slate-50 dark:bg-slate-800 p-2 rounded-md border border-slate-100 dark:border-slate-700">
+                  <div key={config.id} className="flex items-center justify-between bg-slate-800 p-2 rounded-md border border-slate-100 dark:border-slate-700">
                     <button 
                       onClick={() => loadConfig(config)}
-                      className="text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 text-left flex-1"
+                      className="text-sm font-medium text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 text-left flex-1"
                     >
                       {config.name}
                     </button>
@@ -1557,15 +1564,15 @@ export default function App() {
           </div>
 
           {viewMode === 'simulate' && (
-            <div className="bg-white dark:bg-slate-900 p-5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 print:hidden">
-              <h2 className="text-lg font-semibold mb-4 text-slate-800 dark:text-slate-200">Message Simulator</h2>
+            <div className="bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-800 print:hidden">
+              <h2 className="text-lg font-semibold mb-4 text-slate-200">Message Simulator</h2>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Plaintext</label>
+                  <label className="block text-sm font-medium text-slate-300 mb-1">Plaintext</label>
                   <textarea 
                     value={plaintext}
                     onChange={(e) => setPlaintext(e.target.value)}
-                    className="w-full border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 rounded-md p-2 text-sm uppercase font-mono"
+                    className="w-full border border-slate-700 bg-slate-800 text-slate-200 rounded-md p-2 text-sm uppercase font-mono"
                     rows={3}
                     placeholder="HELLO WORLD"
                   />
@@ -1579,24 +1586,24 @@ export default function App() {
                 
                 {simulationSteps.length > 0 && (
                   <div className="mt-4">
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Ciphertext</label>
-                    <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-md font-mono text-lg tracking-widest break-all dark:text-slate-200">
+                    <label className="block text-sm font-medium text-slate-300 mb-1">Ciphertext</label>
+                    <div className="p-3 bg-slate-800 rounded-md font-mono text-lg tracking-widest break-all dark:text-slate-200">
                       {simulationSteps.map(s => s.charOut || s.out).join('')}
                     </div>
                     
-                    <div className="mt-4 max-h-60 overflow-y-auto border border-slate-200 dark:border-slate-700 rounded-md">
+                    <div className="mt-4 max-h-60 overflow-y-auto border border-slate-700 rounded-md">
                       <table className="w-full text-sm text-left">
-                        <thead className="bg-slate-50 dark:bg-slate-800 sticky top-0">
+                        <thead className="bg-slate-800 sticky top-0">
                           <tr>
-                            <th className="px-3 py-2 font-medium text-slate-600 dark:text-slate-400">Step</th>
-                            <th className="px-3 py-2 font-medium text-slate-600 dark:text-slate-400">Align Strips To</th>
-                            <th className="px-3 py-2 font-medium text-slate-600 dark:text-slate-400">Trace</th>
+                            <th className="px-3 py-2 font-medium text-slate-400">Step</th>
+                            <th className="px-3 py-2 font-medium text-slate-400">Align Strips To</th>
+                            <th className="px-3 py-2 font-medium text-slate-400">Trace</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                           {simulationSteps.map((step, i) => (
                             <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-800">
-                              <td className="px-3 py-2 text-slate-500 dark:text-slate-400">{i + 1}</td>
+                              <td className="px-3 py-2 text-slate-400">{i + 1}</td>
                               <td className="px-3 py-2 font-mono font-bold text-indigo-600 dark:text-indigo-400">
                                 {(step.positions || []).map((p: number) => String.fromCharCode(65 + p)).join('-')}
                               </td>
@@ -1618,13 +1625,13 @@ export default function App() {
         {/* Preview Area */}
         <section className="flex-1 flex flex-col items-center overflow-auto print:overflow-visible">
           <div className="mb-4 text-center print:hidden">
-            <p className="text-slate-500 dark:text-slate-400 text-sm">
+            <p className="text-slate-400 text-sm">
               {viewMode === 'simulate' 
                 ? "Interactive simulation mode. Drag rotors up/down or use arrows to set starting position." 
                 : "Preview of the printable strips. Print at 100% scale."}
             </p>
           </div>
-          <div id="enigma-container" className={`print:w-full flex justify-center bg-white dark:bg-slate-900 ${printOrientation === 'landscape' ? 'print:max-h-[190mm]' : 'print:max-h-[250mm]'}`}>
+          <div id="enigma-container" className={`print:w-full flex justify-center bg-white bg-slate-900 ${printOrientation === 'landscape' ? 'print:max-h-[190mm]' : 'print:max-h-[250mm]'}`}>
             <EnigmaSVG 
               rotors={rotors} 
               setRotors={setRotors}
@@ -1655,14 +1662,14 @@ export default function App() {
           )}
           
           {viewMode === 'simulate' && (
-            <div className="mt-8 border-t border-slate-200 dark:border-slate-800 pt-6 print:hidden w-full">
+            <div className="mt-8 border-t border-slate-800 pt-6 print:hidden w-full">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+                <h3 className="text-lg font-semibold text-slate-200 flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-slate-400" />
                   Message Log (Ticker Tape)
                 </h3>
                 <div className="flex items-center gap-4">
-                  <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 cursor-pointer">
+                  <label className="flex items-center gap-2 text-sm text-slate-400 cursor-pointer">
                     <input type="checkbox" checked={groupOutput} onChange={(e) => setGroupOutput(e.target.checked)} className="rounded border-slate-300 dark:border-slate-700 dark:bg-slate-800 text-indigo-600 focus:ring-indigo-500" />
                     Format as 5-letter groups
                   </label>
@@ -1676,17 +1683,17 @@ export default function App() {
                       setPlaintext('');
                       setSimulationSteps([]);
                     }}
-                    className="px-3 py-1.5 text-sm bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 rounded-md transition-colors"
+                    className="px-3 py-1.5 text-sm bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-400 rounded-md transition-colors"
                   >
                     Clear Log
                   </button>
                 </div>
               </div>
-              <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700 font-mono text-sm overflow-x-auto whitespace-nowrap">
+              <div className="bg-slate-800 p-4 rounded-lg border border-slate-700 font-mono text-sm overflow-x-auto whitespace-nowrap">
                 <div className="flex flex-col gap-2 min-h-[4rem]">
                   <div className="flex items-center gap-4">
                     <span className="text-slate-400 dark:text-slate-500 font-semibold w-12 shrink-0">IN:</span>
-                    <span className="tracking-[0.2em] text-slate-700 dark:text-slate-300">{groupOutput ? plaintext.replace(/(.{5})/g, '$1 ').trim() : plaintext || <span className="text-slate-300 dark:text-slate-600 italic">Type to begin...</span>}</span>
+                    <span className="tracking-[0.2em] text-slate-300">{groupOutput ? plaintext.replace(/(.{5})/g, '$1 ').trim() : plaintext || <span className="text-slate-300 dark:text-slate-600 italic">Type to begin...</span>}</span>
                   </div>
                   <div className="flex items-center gap-4">
                     <span className="text-slate-400 dark:text-slate-500 font-semibold w-12 shrink-0">OUT:</span>
@@ -1698,9 +1705,9 @@ export default function App() {
           )}
 
           {viewMode === 'simulate' && (
-            <div className="mt-8 border-t border-slate-200 dark:border-slate-800 pt-6 print:hidden">
-              <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 text-slate-500 dark:text-slate-400"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            <div className="mt-8 border-t border-slate-800 pt-6 print:hidden">
+              <h3 className="text-lg font-semibold text-slate-200 mb-4 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 text-slate-400"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                 Plugboard Connections
               </h3>
               <PlugboardVisualizer plugboard={plugboard} setPlugboard={setPlugboard} />
