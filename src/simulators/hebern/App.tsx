@@ -32,7 +32,7 @@ function App() {
     setLitChar(result);
     setTapeText(prev => prev + result);
     setPressedKeys(prev => new Set(prev).add(char));
-  }, [machineState, pressedKeys]);
+  }, [machineState, pressedKeys, decrypt]);
 
   const handleKeyUp = useCallback((char: string) => {
     setLitChar(null);

@@ -458,7 +458,7 @@ const App: React.FC = () => {
         </div>
 
         {/* Tape */}
-        {tape && (
+        {(
           <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-4 mb-6">
             <div className="flex justify-between items-center mb-2">
               <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Output Tape</div>
@@ -473,7 +473,7 @@ const App: React.FC = () => {
               </div>
             </div>
             <div className="font-mono text-lg tracking-widest text-rose-400 break-all">
-              {tape.match(/.{1,5}/g)?.join(' ')}
+              {tape ? tape.match(/.{1,5}/g)?.join(' ') : <span className="text-slate-700 text-sm tracking-normal">Type or paste to begin...</span>}
             </div>
           </div>
         )}
