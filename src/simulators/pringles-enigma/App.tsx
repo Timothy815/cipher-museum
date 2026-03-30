@@ -1259,9 +1259,9 @@ export default function App() {
   };
 
   return (
-    <div className="dark flex-1 flex flex-col font-sans bg-slate-950 text-slate-200">
+    <div className="dark flex-1 flex flex-col font-sans bg-slate-950 text-slate-200 px-6 sm:px-10 lg:px-16">
       {/* Toolbar */}
-      <div className="bg-slate-900/80 border-b border-slate-800 px-8 sm:px-12 py-5 print:hidden">
+      <div className="bg-slate-900/80 border-b border-slate-800 rounded-xl mt-6 px-8 sm:px-10 py-6 print:hidden">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-wrap items-end justify-between gap-6 mb-5">
             <div>
@@ -1314,7 +1314,7 @@ export default function App() {
         </div>
       </div>
 
-      <main className="flex-1 max-w-7xl mx-auto w-full px-8 sm:px-12 py-10 flex flex-col lg:flex-row gap-10 print:p-0 print:m-0">
+      <main className="flex-1 max-w-7xl mx-auto w-full py-8 flex flex-col lg:flex-row gap-10 print:p-0 print:m-0">
         {/* Settings Panel */}
         <aside className="w-full lg:w-80 flex-shrink-0 flex flex-col gap-6 print:hidden">
           <div className="bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-800">
