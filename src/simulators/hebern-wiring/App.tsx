@@ -28,13 +28,19 @@ function computeWiring(wiring: string, position: number): number[] {
   });
 }
 
-function traceSignal(inputChar: string, wiring: string, position: number): DualColumnTrace {
+function traceSignal(inputChar: string, wiring: string, position: number, decrypt: boolean = false): DualColumnTrace {
   const inIdx = inputChar.charCodeAt(0) - 65;
   const pin = mod(inIdx + position);
-  const contact = wiring.charCodeAt(pin) - 65;
-  const outIdx = mod(contact - position);
+  let outIdx: number;
+  if (!decrypt) {
+    const contact = wiring.charCodeAt(pin) - 65;
+    outIdx = mod(contact - position);
+  } else {
+    const contact = wiring.indexOf(String.fromCharCode(pin + 65));
+    outIdx = mod(contact - position);
+  }
   return {
-    forward: [inIdx, outIdx],
+    forward: decrypt ? [outIdx, inIdx] : [inIdx, outIdx],
     inputChar,
     outputChar: toChar(outIdx),
   };
@@ -48,6 +54,7 @@ const App: React.FC = () => {
   const [pressedKey, setPressedKey] = useState<string | null>(null);
   const [tape, setTape] = useState('');
   const [history, setHistory] = useState<{ position: number }[]>([]);
+  const [decrypt, setDecrypt] = useState(false);
 
   const wiring = ROTORS[rotorId];
 
@@ -68,12 +75,12 @@ const App: React.FC = () => {
     if (pressedKey) return;
     setHistory(prev => [...prev, { position }]);
     const newPos = (position + 1) % 26;
-    const sig = traceSignal(char, wiring, newPos);
+    const sig = traceSignal(char, wiring, newPos, decrypt);
     setTrace(sig);
     setPressedKey(char);
     setTape(prev => prev + sig.outputChar);
     setPosition(newPos);
-  }, [position, wiring, pressedKey]);
+  }, [position, wiring, pressedKey, decrypt]);
 
   const handleKeyUp = useCallback(() => {
     setPressedKey(null);
@@ -86,7 +93,7 @@ const App: React.FC = () => {
     for (const char of chars) {
       historyBatch.push({ position: currentPos });
       const newPos = (currentPos + 1) % 26;
-      const sig = traceSignal(char, wiring, newPos);
+      const sig = traceSignal(char, wiring, newPos, decrypt);
       results.push(sig.outputChar!);
       currentPos = newPos;
     }
@@ -95,11 +102,12 @@ const App: React.FC = () => {
     setTape(prev => prev + results.join(''));
     setTrace(null);
     setPressedKey(null);
-  }, [position, wiring]);
+  }, [position, wiring, decrypt]);
 
   const handleLoadConfig = useCallback((loadedState: any) => {
     setRotorId(loadedState.rotorId);
     setPosition(loadedState.position);
+    if (loadedState.decrypt !== undefined) setDecrypt(loadedState.decrypt);
     setHistory([]);
     setTape('');
     setTrace(null);
@@ -164,7 +172,7 @@ const App: React.FC = () => {
 
         {/* Config Slots */}
         <div className="mb-4">
-          <ConfigSlots machineId="hebern-wiring" currentState={{ rotorId, position }} onLoadState={handleLoadConfig} accentColor="teal" />
+          <ConfigSlots machineId="hebern-wiring" currentState={{ rotorId, position, decrypt }} onLoadState={handleLoadConfig} accentColor="teal" />
         </div>
 
         {/* Controls */}
@@ -175,6 +183,19 @@ const App: React.FC = () => {
               className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white font-mono">
               {Object.keys(ROTORS).map(id => <option key={id} value={id}>{id}</option>)}
             </select>
+          </div>
+          <div className="flex flex-col items-center">
+            <div className="text-[9px] text-slate-600 font-bold uppercase mb-1">Mode</div>
+            <button
+              onClick={() => { setDecrypt(d => !d); setTrace(null); }}
+              className={`px-3 py-2 rounded-lg text-xs font-mono font-bold border transition-colors ${
+                decrypt
+                  ? 'bg-amber-900/50 border-amber-700 text-amber-300'
+                  : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
+              }`}
+            >
+              {decrypt ? '⟲ DECRYPT' : 'ENCRYPT'}
+            </button>
           </div>
           <div className="flex flex-col items-center">
             <div className="text-[9px] text-slate-600 font-bold uppercase mb-1">Position</div>
