@@ -211,7 +211,7 @@ const App: React.FC = () => {
 
         {/* SVG Wiring Diagram — constrained for single-rotor readability */}
         <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-2 sm:p-3 mb-6 overflow-x-auto flex justify-center">
-          <div className="w-full max-w-md">
+          <div className="w-full max-w-xs">
             <DualColumnWiring
               rotorPairs={rotorPairs}
               wirings={[dualWiring]}
