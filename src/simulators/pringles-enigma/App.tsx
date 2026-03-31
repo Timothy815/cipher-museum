@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Download, Printer, Save, Trash2, Volume2, VolumeX, Share2, Check, FileText, GripVertical } from 'lucide-react';
 import { jsPDF } from 'jspdf';
-import html2canvas from 'html2canvas';
 
 const ENIGMA_MODELS: Record<string, { rotors: string[], reflectors: string[], slots: number, thinRotors?: string[] }> = {
   'Enigma I': {
@@ -1053,16 +1052,62 @@ export default function App() {
   }, [rotors, ringSettings, reflector, plugboard, viewMode, soundEnabled]);
   
   const generatePDF = async () => {
-    const container = document.getElementById('enigma-container');
-    if (!container) return null;
+    const svgEl = document.getElementById('enigma-svg') as SVGSVGElement | null;
+    if (!svgEl) return null;
 
     try {
-      const canvas = await html2canvas(container, {
-        scale: 4,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff',
+      // Clone and inline all computed styles so the serialized SVG renders correctly
+      const svgClone = svgEl.cloneNode(true) as SVGSVGElement;
+      svgClone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+
+      // Inline computed styles on all elements
+      const inlineStyles = (source: Element, target: Element) => {
+        const computed = window.getComputedStyle(source);
+        const important = ['fill', 'stroke', 'stroke-width', 'opacity', 'font-size', 'font-weight', 'font-family', 'text-anchor', 'dominant-baseline', 'transform', 'clip-path', 'overflow'];
+        let style = '';
+        for (const prop of important) {
+          const val = computed.getPropertyValue(prop);
+          if (val && val !== 'none' && val !== 'normal' && val !== '') {
+            style += `${prop}:${val};`;
+          }
+        }
+        if (style) (target as SVGElement).setAttribute('style', ((target as SVGElement).getAttribute('style') || '') + style);
+        const sourceChildren = source.children;
+        const targetChildren = target.children;
+        for (let i = 0; i < sourceChildren.length; i++) {
+          if (targetChildren[i]) inlineStyles(sourceChildren[i], targetChildren[i]);
+        }
+      };
+      inlineStyles(svgEl, svgClone);
+
+      const serializer = new XMLSerializer();
+      const svgString = serializer.serializeToString(svgClone);
+
+      // Use data URI instead of blob URL to avoid browser security restrictions
+      const dataUri = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgString);
+
+      const viewBox = svgEl.viewBox.baseVal;
+      const scale = 4;
+      const canvas = document.createElement('canvas');
+      canvas.width = viewBox.width * scale;
+      canvas.height = viewBox.height * scale;
+      const ctx = canvas.getContext('2d')!;
+
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = (e) => {
+          console.error('Image load error:', e);
+          reject(new Error('Failed to load SVG as image'));
+        };
+        img.src = dataUri;
       });
+
+      ctx.fillStyle = 'white';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
       const imgData = canvas.toDataURL('image/png');
 
       const pdf = new jsPDF({
@@ -1073,9 +1118,7 @@ export default function App() {
 
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
-
-      const imgProps = pdf.getImageProperties(imgData);
-      const imgRatio = imgProps.height / imgProps.width;
+      const imgRatio = canvas.height / canvas.width;
 
       const margin = 15;
       const maxPdfWidth = pdfWidth - margin * 2;
