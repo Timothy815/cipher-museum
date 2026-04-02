@@ -5,7 +5,7 @@ import TapeActions from '../shared/TapeActions';
 
 // ── Constants ─────────────────────────────────────────────────────────
 const OUTER_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-const DEFAULT_INNER = 'GKLNPRTZVXYSALOMEBDFHIJQU'.toLowerCase();
+const DEFAULT_INNER = 'gklnprtzvxysawomebdfhijcqu';
 const KEYBOARD_LAYOUT = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'];
 const INDEX_LETTER = 'k';
 
@@ -77,7 +77,7 @@ const CipherDisk: React.FC<{
 
       {/* Inner letters (rotate with offset) */}
       {innerLetters.map((ch, i) => {
-        const angle = ((i + offset) * 360 / 26) - 90;
+        const angle = ((i - offset) * 360 / 26) - 90;
         const rad = angle * Math.PI / 180;
         const x = cx + innerTextR * Math.cos(rad);
         const y = cy + innerTextR * Math.sin(rad);
