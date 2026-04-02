@@ -299,17 +299,29 @@ const App: React.FC = () => {
     handleReset();
   }, []);
 
-  // Format output: uppercase letters (indicators) in amber, lowercase in green
+  // Format output: uppercase letters (indicators) in amber with brackets, lowercase in green
   const formatOutput = (text: string) => {
     if (!text) return <span className="text-stone-700 text-sm tracking-normal">Type or paste to begin...</span>;
-    return text.split('').map((ch, i) => {
-      const isIndicator = ch === ch.toUpperCase() && /[A-Z]/.test(ch);
-      return (
-        <span key={i} className={isIndicator ? 'text-amber-400 font-bold' : 'text-emerald-400'}>
-          {ch}
-        </span>
-      );
-    });
+    const hasIndicators = /[A-Z]/.test(text);
+    return (
+      <>
+        {text.split('').map((ch, i) => {
+          const isIndicator = ch === ch.toUpperCase() && /[A-Z]/.test(ch);
+          return isIndicator ? (
+            <span key={i} className="text-amber-400 font-bold text-sm" title="Disk rotation indicator">
+              [{ch}]
+            </span>
+          ) : (
+            <span key={i} className="text-emerald-400">{ch}</span>
+          );
+        })}
+        {hasIndicators && (
+          <div className="text-[10px] text-stone-600 mt-2 font-normal tracking-normal">
+            <span className="text-amber-400">[X]</span> = disk rotation indicator (tells recipient to realign disk)
+          </div>
+        )}
+      </>
+    );
   };
 
   return (
@@ -350,10 +362,10 @@ const App: React.FC = () => {
 
           <div className="w-px h-6 bg-stone-700" />
 
-          <label className="flex items-center gap-2 text-xs text-stone-400 cursor-pointer">
+          <label className="flex items-center gap-2 text-xs text-stone-400 cursor-pointer" title="Automatically rotate the inner disk mid-message, inserting uppercase indicators into ciphertext">
             <input type="checkbox" checked={autoRotate} onChange={e => setAutoRotate(e.target.checked)}
               className="rounded border-stone-600 bg-stone-800 text-amber-500 focus:ring-amber-500" />
-            Auto-rotate every
+            Auto-rotate disk every
           </label>
           <input type="number" min={1} max={26} value={rotateEvery}
             onChange={e => setRotateEvery(Math.max(1, Math.min(26, parseInt(e.target.value) || 4)))}
