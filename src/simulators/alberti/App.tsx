@@ -121,11 +121,15 @@ const CipherDisk: React.FC<{
 };
 
 // ══════════════════════════════════════════════════════════════════════
+type RotateMode = 'manual' | 'random' | 'keyword';
+
 const App: React.FC = () => {
   const [innerAlpha, setInnerAlpha] = useState(DEFAULT_INNER);
   const [offset, setOffset] = useState(0);
   const [decrypt, setDecrypt] = useState(false);
-  const [autoRotate, setAutoRotate] = useState(false);
+  const [rotateMode, setRotateMode] = useState<RotateMode>('manual');
+  const [keyword, setKeyword] = useState('');
+  const [keyIndex, setKeyIndex] = useState(0);
   const [rotateEvery, setRotateEvery] = useState(4);
   const [charsSinceRotate, setCharsSinceRotate] = useState(0);
   const [tape, setTape] = useState('');
@@ -133,7 +137,7 @@ const App: React.FC = () => {
   const [pressedKey, setPressedKey] = useState<string | null>(null);
   const [activeOuter, setActiveOuter] = useState<number | null>(null);
   const [activeInner, setActiveInner] = useState<number | null>(null);
-  const [history, setHistory] = useState<{ offset: number; charsSinceRotate: number }[]>([]);
+  const [history, setHistory] = useState<{ offset: number; charsSinceRotate: number; keyIndex: number }[]>([]);
   const [showInfo, setShowInfo] = useState(false);
 
   // Current substitution table for display
@@ -157,24 +161,47 @@ const App: React.FC = () => {
     setActiveInner(null);
   }, []);
 
+  // Compute rotation amount and whether to rotate
+  const getRotation = useCallback((mode: RotateMode, curKeyIndex: number): { amount: number; nextKeyIndex: number } | null => {
+    if (mode === 'random') {
+      return { amount: Math.floor(Math.random() * 25) + 1, nextKeyIndex: curKeyIndex };
+    }
+    if (mode === 'keyword' && keyword.length > 0) {
+      const letter = keyword[curKeyIndex % keyword.length].toUpperCase();
+      const amount = OUTER_ALPHABET.indexOf(letter);
+      if (amount < 0) return null;
+      return { amount, nextKeyIndex: curKeyIndex + 1 };
+    }
+    return null;
+  }, [keyword]);
+
   const processChar = useCallback((ch: string) => {
     const upper = ch.toUpperCase();
     if (!/^[A-Z]$/.test(upper)) return;
 
-    setHistory(prev => [...prev, { offset, charsSinceRotate }]);
+    setHistory(prev => [...prev, { offset, charsSinceRotate, keyIndex }]);
 
     let newOffset = offset;
     let newCharCount = charsSinceRotate;
+    let newKeyIndex = keyIndex;
     let outputPrefix = '';
 
-    // Auto-rotate: rotate before encrypting, insert indicator (encrypt only)
-    if (!decrypt && autoRotate && newCharCount >= rotateEvery && rotateEvery > 0) {
-      const rotateAmount = Math.floor(Math.random() * 25) + 1;
-      newOffset = (newOffset + rotateAmount) % 26;
-      // Insert the uppercase indicator: outer letter aligned with index
-      const indexPos = innerAlpha.indexOf(INDEX_LETTER);
-      const outerIdx = (indexPos - newOffset + 26) % 26;
-      outputPrefix = OUTER_ALPHABET[outerIdx];
+    // Auto-rotate check: random only in encrypt; keyword in both modes (deterministic)
+    const shouldRotate = rotateMode !== 'manual' && newCharCount >= rotateEvery && rotateEvery > 0
+      && (rotateMode === 'keyword' || !decrypt);
+
+    if (shouldRotate) {
+      const rot = getRotation(rotateMode, newKeyIndex);
+      if (rot && rot.amount > 0) {
+        newOffset = (newOffset + rot.amount) % 26;
+        newKeyIndex = rot.nextKeyIndex;
+        // Insert uppercase indicator: outer letter aligned with index
+        if (!decrypt) {
+          const indexPos = innerAlpha.indexOf(INDEX_LETTER);
+          const outerIdx = (indexPos - newOffset + 26) % 26;
+          outputPrefix = OUTER_ALPHABET[outerIdx];
+        }
+      }
       newCharCount = 0;
     }
 
@@ -187,7 +214,6 @@ const App: React.FC = () => {
       outerHighlight = OUTER_ALPHABET.indexOf(upper);
       innerHighlight = innerAlpha.indexOf(result);
     } else {
-      // In decrypt mode, lowercase input maps back to uppercase
       result = decryptChar(ch.toLowerCase(), innerAlpha, newOffset);
       innerHighlight = innerAlpha.indexOf(ch.toLowerCase());
       outerHighlight = OUTER_ALPHABET.indexOf(result);
@@ -195,11 +221,12 @@ const App: React.FC = () => {
 
     setOffset(newOffset);
     setCharsSinceRotate(newCharCount + 1);
+    setKeyIndex(newKeyIndex);
     setActiveOuter(outerHighlight);
     setActiveInner(innerHighlight);
     setTape(prev => prev + outputPrefix + result);
     setInputTape(prev => prev + upper);
-  }, [offset, innerAlpha, decrypt, autoRotate, rotateEvery, charsSinceRotate]);
+  }, [offset, innerAlpha, decrypt, rotateMode, rotateEvery, charsSinceRotate, keyIndex, getRotation]);
 
   const handleKeyDown = useCallback((char: string) => {
     if (pressedKey) return;
@@ -216,6 +243,7 @@ const App: React.FC = () => {
     const prev = history[history.length - 1];
     setOffset(prev.offset);
     setCharsSinceRotate(prev.charsSinceRotate);
+    setKeyIndex(prev.keyIndex);
     setHistory(h => h.slice(0, -1));
     setTape(t => t.slice(0, -1));
     setInputTape(t => t.slice(0, -1));
@@ -226,18 +254,27 @@ const App: React.FC = () => {
   const handlePasteInput = useCallback((chars: string[]) => {
     let curOffset = offset;
     let curCharCount = charsSinceRotate;
+    let curKeyIndex = keyIndex;
     const results: string[] = [];
-    const histBatch: { offset: number; charsSinceRotate: number }[] = [];
+    const histBatch: { offset: number; charsSinceRotate: number; keyIndex: number }[] = [];
 
     for (const ch of chars) {
-      histBatch.push({ offset: curOffset, charsSinceRotate: curCharCount });
+      histBatch.push({ offset: curOffset, charsSinceRotate: curCharCount, keyIndex: curKeyIndex });
 
-      if (!decrypt && autoRotate && curCharCount >= rotateEvery && rotateEvery > 0) {
-        const rotateAmount = Math.floor(Math.random() * 25) + 1;
-        curOffset = (curOffset + rotateAmount) % 26;
-        const indexPos = innerAlpha.indexOf(INDEX_LETTER);
-        const outerIdx = (indexPos - curOffset + 26) % 26;
-        results.push(OUTER_ALPHABET[outerIdx]);
+      const shouldRotate = rotateMode !== 'manual' && curCharCount >= rotateEvery && rotateEvery > 0
+        && (rotateMode === 'keyword' || !decrypt);
+
+      if (shouldRotate) {
+        const rot = getRotation(rotateMode, curKeyIndex);
+        if (rot && rot.amount > 0) {
+          curOffset = (curOffset + rot.amount) % 26;
+          curKeyIndex = rot.nextKeyIndex;
+          if (!decrypt) {
+            const indexPos = innerAlpha.indexOf(INDEX_LETTER);
+            const outerIdx = (indexPos - curOffset + 26) % 26;
+            results.push(OUTER_ALPHABET[outerIdx]);
+          }
+        }
         curCharCount = 0;
       }
 
@@ -252,11 +289,12 @@ const App: React.FC = () => {
     setHistory(prev => [...prev, ...histBatch]);
     setOffset(curOffset);
     setCharsSinceRotate(curCharCount);
+    setKeyIndex(curKeyIndex);
     setTape(prev => prev + results.join(''));
     setInputTape(prev => prev + chars.join(''));
     setActiveOuter(null);
     setActiveInner(null);
-  }, [offset, innerAlpha, decrypt, autoRotate, rotateEvery, charsSinceRotate]);
+  }, [offset, innerAlpha, decrypt, rotateMode, rotateEvery, charsSinceRotate, keyIndex, getRotation]);
 
   // Physical keyboard
   useEffect(() => {
@@ -285,6 +323,7 @@ const App: React.FC = () => {
     setInputTape('');
     setHistory([]);
     setCharsSinceRotate(0);
+    setKeyIndex(0);
     setActiveOuter(null);
     setActiveInner(null);
     setPressedKey(null);
@@ -294,7 +333,8 @@ const App: React.FC = () => {
     setInnerAlpha(state.innerAlpha || DEFAULT_INNER);
     setOffset(state.offset || 0);
     setDecrypt(state.decrypt || false);
-    setAutoRotate(state.autoRotate || false);
+    setRotateMode(state.rotateMode || (state.autoRotate ? 'random' : 'manual'));
+    setKeyword(state.keyword || '');
     setRotateEvery(state.rotateEvery || 4);
     handleReset();
   }, []);
@@ -353,7 +393,7 @@ const App: React.FC = () => {
 
         {/* Config Slots */}
         <div className="mb-6">
-          <ConfigSlots machineId="alberti" currentState={{ innerAlpha, offset, decrypt, autoRotate, rotateEvery }} onLoadState={handleLoadConfig} accentColor="amber" />
+          <ConfigSlots machineId="alberti" currentState={{ innerAlpha, offset, decrypt, rotateMode, keyword, rotateEvery }} onLoadState={handleLoadConfig} accentColor="amber" />
         </div>
 
         {/* Controls row */}
@@ -368,16 +408,47 @@ const App: React.FC = () => {
 
           <div className="w-px h-6 bg-stone-700" />
 
-          <label className="flex items-center gap-2 text-xs text-stone-400 cursor-pointer" title="Automatically rotate the inner disk mid-message, inserting uppercase indicators into ciphertext">
-            <input type="checkbox" checked={autoRotate} onChange={e => setAutoRotate(e.target.checked)}
-              className="rounded border-stone-600 bg-stone-800 text-amber-500 focus:ring-amber-500" />
-            Auto-rotate disk every
-          </label>
-          <input type="number" min={1} max={26} value={rotateEvery}
-            onChange={e => setRotateEvery(Math.max(1, Math.min(26, parseInt(e.target.value) || 4)))}
-            className="w-12 bg-stone-800 border border-stone-700 rounded px-2 py-1 text-xs text-stone-200 font-mono text-center"
-          />
-          <span className="text-xs text-stone-500">letters</span>
+          {/* Rotation mode selector */}
+          <div className="flex items-center gap-1 bg-stone-800 border border-stone-700 rounded-lg p-0.5">
+            {(['manual', 'random', 'keyword'] as RotateMode[]).map(mode => (
+              <button key={mode} onClick={() => setRotateMode(mode)}
+                className={`px-3 py-1.5 rounded-md text-[11px] font-mono font-bold transition-colors ${
+                  rotateMode === mode
+                    ? 'bg-amber-600 text-white'
+                    : 'text-stone-500 hover:text-stone-300'
+                }`}
+              >
+                {mode === 'manual' ? 'Manual' : mode === 'random' ? 'Random' : 'Keyword'}
+              </button>
+            ))}
+          </div>
+
+          {/* Rotate interval (shown for random & keyword) */}
+          {rotateMode !== 'manual' && (
+            <>
+              <span className="text-xs text-stone-500">every</span>
+              <input type="number" min={1} max={26} value={rotateEvery}
+                onChange={e => setRotateEvery(Math.max(1, Math.min(26, parseInt(e.target.value) || 4)))}
+                className="w-12 bg-stone-800 border border-stone-700 rounded px-2 py-1 text-xs text-stone-200 font-mono text-center"
+              />
+              <span className="text-xs text-stone-500">letters</span>
+            </>
+          )}
+
+          {/* Keyword input (shown for keyword mode) */}
+          {rotateMode === 'keyword' && (
+            <>
+              <div className="w-px h-6 bg-stone-700" />
+              <label className="text-xs text-stone-500 font-mono">KEY:</label>
+              <input
+                type="text"
+                value={keyword}
+                onChange={e => { setKeyword(e.target.value.toUpperCase().replace(/[^A-Z]/g, '')); }}
+                placeholder="ALBERTI"
+                className="w-32 bg-stone-800 border border-stone-700 rounded px-2 py-1 text-xs text-amber-300 font-mono tracking-wider placeholder:text-stone-700 focus:outline-none focus:border-amber-600"
+              />
+            </>
+          )}
 
           <div className="w-px h-6 bg-stone-700" />
 
@@ -387,6 +458,30 @@ const App: React.FC = () => {
             Shuffle Inner Disk
           </button>
         </div>
+
+        {/* Keyword visualization (shown when keyword mode active with a keyword) */}
+        {rotateMode === 'keyword' && keyword.length > 0 && (
+          <div className="flex items-center justify-center gap-1 mb-6">
+            <span className="text-[10px] text-stone-600 font-mono mr-2">KEY SEQUENCE:</span>
+            {keyword.split('').map((ch, i) => {
+              const isCurrent = i === (keyIndex % keyword.length);
+              return (
+                <span key={i} className={`w-6 h-6 flex items-center justify-center rounded text-xs font-mono font-bold border ${
+                  isCurrent
+                    ? 'bg-amber-600/30 border-amber-500 text-amber-300'
+                    : i < (keyIndex % keyword.length) || (keyIndex >= keyword.length && i <= (keyIndex % keyword.length))
+                      ? 'bg-stone-800/50 border-stone-700 text-stone-600'
+                      : 'bg-stone-800 border-stone-700 text-stone-400'
+                }`}>
+                  {ch}
+                </span>
+              );
+            })}
+            <span className="text-[10px] text-stone-600 font-mono ml-2">
+              shift +{OUTER_ALPHABET.indexOf(keyword[keyIndex % keyword.length] || 'A')}
+            </span>
+          </div>
+        )}
 
         {/* Disk + Substitution Table side by side */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -527,9 +622,10 @@ const App: React.FC = () => {
               the ciphertext as an uppercase indicator — telling the recipient to rotate their disk to match.
             </p>
             <p>
-              Enable <span className="text-stone-200">Auto-rotate</span> to see this in action: after every N characters, the disk
-              rotates randomly and an uppercase indicator appears in the output. This changes the substitution
-              alphabet mid-message, defeating simple frequency analysis.
+              Three rotation modes are available: <span className="text-stone-200">Manual</span> (you rotate the disk yourself),{' '}
+              <span className="text-stone-200">Random</span> (random rotation every N characters — indicators appear in ciphertext),
+              and <span className="text-stone-200">Keyword</span> (like Vigenère — each letter of your keyword determines the rotation
+              amount: A=0, B=1, ... Z=25). Keyword mode is deterministic, so encrypt and decrypt use the same key.
             </p>
             <p>
               Alberti's concept directly inspired the <span className="text-stone-200">Vigenère cipher</span> (1553) and ultimately
