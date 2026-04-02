@@ -419,7 +419,13 @@ const App: React.FC = () => {
         {/* Mode toggle + Key inputs */}
         <div className="bg-slate-900/60 rounded-2xl border border-slate-800 p-6 mb-6">
           <div className="flex flex-wrap items-center gap-4 mb-6">
-            <button onClick={() => setMode(m => m === 'encrypt' ? 'decrypt' : 'encrypt')}
+            <button onClick={() => {
+                if (mode === 'encrypt' && result) {
+                  // Auto-fill ciphertext when switching to decrypt
+                  setCipherInput(result.output);
+                }
+                setMode(m => m === 'encrypt' ? 'decrypt' : 'encrypt');
+              }}
               className={`px-4 py-2 rounded-lg text-xs font-mono font-bold border transition-colors ${
                 mode === 'decrypt' ? 'bg-amber-900/50 border-amber-700 text-amber-300' : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
               }`}
