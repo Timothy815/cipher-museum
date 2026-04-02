@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind, GitBranch, Key, UserCheck, Circle, SlidersHorizontal, Route, Activity, Fingerprint, Dice6, Fence, Columns3, Hexagon, Cylinder, FileScan, Table2, SearchCode, Scissors } from 'lucide-react';
+import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind, GitBranch, Key, UserCheck, Circle, SlidersHorizontal, Route, Activity, Fingerprint, Dice6, Fence, Columns3, Hexagon, Cylinder, FileScan, Table2, SearchCode, Scissors, CircleDot, Snowflake } from 'lucide-react';
 
 const machines = [
   {
@@ -402,6 +402,26 @@ const machines = [
     icon: <Scissors size={32} />,
     color: 'amber',
     description: 'Generate printable paper strips that wrap around a Pringles can to create a working Enigma machine. Supports Enigma I, M3, and M4 models with full simulation mode, plugboard visualizer, and PDF export.',
+  },
+  {
+    path: '/alberti',
+    name: 'Alberti Cipher Disk',
+    subtitle: 'First Polyalphabetic Cipher',
+    country: 'Italy',
+    era: 'c. 1467',
+    icon: <CircleDot size={32} />,
+    color: 'amber',
+    description: 'Leon Battista Alberti\'s rotating cipher disk — the world\'s first polyalphabetic cipher. Two concentric disks with an index letter mechanic that changes the substitution mid-message.',
+  },
+  {
+    path: '/vic-cipher',
+    name: 'VIC Cipher',
+    subtitle: 'Cold War KGB Hand Cipher',
+    country: 'Soviet Union',
+    era: 'c. 1950',
+    icon: <Snowflake size={32} />,
+    color: 'sky',
+    description: 'The most complex hand cipher ever used operationally. Combines straddling checkerboard substitution, chain addition key expansion, and double columnar transposition. Used by KGB agents during the Cold War.',
   },
 ];
 

@@ -62,6 +62,8 @@ import Sha256App from './simulators/sha256/App';
 import PolybiusApp from './simulators/polybius/App';
 import SubstitutionSolverApp from './simulators/substitution-solver/App';
 import PringlesEnigmaApp from './simulators/pringles-enigma/App';
+import AlbertiApp from './simulators/alberti/App';
+import VicCipherApp from './simulators/vic-cipher/App';
 
 const root = document.getElementById('root')!;
 
@@ -132,6 +134,8 @@ ReactDOM.createRoot(root).render(
           <Route path="/polybius" element={<PolybiusApp />} />
           <Route path="/substitution-solver" element={<SubstitutionSolverApp />} />
           <Route path="/pringles-enigma" element={<PringlesEnigmaApp />} />
+          <Route path="/alberti" element={<AlbertiApp />} />
+          <Route path="/vic-cipher" element={<VicCipherApp />} />
         </Route>
       </Routes>
     </HashRouter>
