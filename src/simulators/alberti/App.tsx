@@ -167,8 +167,8 @@ const App: React.FC = () => {
     let newCharCount = charsSinceRotate;
     let outputPrefix = '';
 
-    // Auto-rotate: rotate before encrypting, insert indicator
-    if (autoRotate && newCharCount >= rotateEvery && rotateEvery > 0) {
+    // Auto-rotate: rotate before encrypting, insert indicator (encrypt only)
+    if (!decrypt && autoRotate && newCharCount >= rotateEvery && rotateEvery > 0) {
       const rotateAmount = Math.floor(Math.random() * 25) + 1;
       newOffset = (newOffset + rotateAmount) % 26;
       // Insert the uppercase indicator: outer letter aligned with index
@@ -232,7 +232,7 @@ const App: React.FC = () => {
     for (const ch of chars) {
       histBatch.push({ offset: curOffset, charsSinceRotate: curCharCount });
 
-      if (autoRotate && curCharCount >= rotateEvery && rotateEvery > 0) {
+      if (!decrypt && autoRotate && curCharCount >= rotateEvery && rotateEvery > 0) {
         const rotateAmount = Math.floor(Math.random() * 25) + 1;
         curOffset = (curOffset + rotateAmount) % 26;
         const indexPos = innerAlpha.indexOf(INDEX_LETTER);
@@ -299,9 +299,15 @@ const App: React.FC = () => {
     handleReset();
   }, []);
 
-  // Format output: uppercase letters (indicators) in amber with brackets, lowercase in green
+  // Format output based on mode
   const formatOutput = (text: string) => {
     if (!text) return <span className="text-stone-700 text-sm tracking-normal">Type or paste to begin...</span>;
+    if (decrypt) {
+      // Decrypt mode: output is uppercase plaintext, show in a single style
+      const grouped = text.match(/.{1,5}/g)?.join(' ') || text;
+      return <span className="text-amber-300">{grouped}</span>;
+    }
+    // Encrypt mode: lowercase = cipher chars, uppercase = rotation indicators
     const hasIndicators = /[A-Z]/.test(text);
     return (
       <>
