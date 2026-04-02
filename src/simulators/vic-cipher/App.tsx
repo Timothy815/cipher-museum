@@ -61,31 +61,25 @@ function columnarTranspose(digits: number[], key: number[]): number[] {
 function reverseColumnarTranspose(digits: number[], key: number[]): number[] {
   const cols = key.length;
   const rows = Math.ceil(digits.length / cols);
-  const fullCells = digits.length;
-  const lastRowCols = fullCells % cols || cols;
+  const lastRowItems = digits.length % cols || cols;
 
+  // order[i] = which original column index is read i-th
   const order = key.map((_, i) => i).sort((a, b) => key[a] - key[b]);
 
-  // Calculate column lengths
-  const colLengths = new Array(cols).fill(rows);
-  if (fullCells < rows * cols) {
-    // Some columns in last row are empty
-    const sortedOrder = [...order];
-    for (let i = lastRowCols; i < cols; i++) {
-      colLengths[sortedOrder[i]] = rows - 1;
-    }
-  }
+  // Columns 0..lastRowItems-1 (original indices) have full 'rows'; rest have 'rows-1'
+  const colLen = (colIdx: number) => colIdx < lastRowItems ? rows : rows - 1;
 
-  // Split digits into columns (in key order)
+  // Distribute digits into columns in read order
   const columns: number[][] = new Array(cols).fill(null).map(() => []);
   let pos = 0;
-  for (const col of order) {
-    for (let r = 0; r < colLengths[col]; r++) {
-      if (pos < digits.length) columns[col].push(digits[pos++]);
+  for (const colIdx of order) {
+    const len = colLen(colIdx);
+    for (let r = 0; r < len; r++) {
+      if (pos < digits.length) columns[colIdx].push(digits[pos++]);
     }
   }
 
-  // Read off row by row
+  // Read row by row
   const result: number[] = [];
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
