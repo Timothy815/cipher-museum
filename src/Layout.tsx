@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, Suspense } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Home, ChevronRight, ChevronDown, Cog, Cpu, KeyRound, Lock, Shield, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind, GitBranch, Key, UserCheck, Circle, SlidersHorizontal, Route, Activity, Fingerprint, Dice6, Fence, Columns3, Hexagon, Cylinder, FileScan, Table2, SearchCode, Scissors, CircleDot, Snowflake, FunctionSquare, Infinity, Split, Boxes, Equal, Flame, Stamp, Blocks, PenLine, LockKeyhole } from 'lucide-react';
 
@@ -223,7 +223,16 @@ const Layout: React.FC = () => {
 
       {/* Page Content */}
       <main className="flex-1 flex flex-col">
-        <Outlet />
+        <Suspense fallback={
+          <div className="flex-1 flex items-center justify-center bg-[#0d1117]">
+            <div className="text-center">
+              <div className="w-8 h-8 border-2 border-amber-500/30 border-t-amber-500 rounded-full animate-spin mx-auto mb-3" />
+              <p className="text-slate-600 text-xs font-mono tracking-widest">LOADING</p>
+            </div>
+          </div>
+        }>
+          <Outlet />
+        </Suspense>
       </main>
     </div>
   );

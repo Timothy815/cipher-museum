@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from 'react';
+import React, { lazy } from 'react';
 import ReactDOM from 'react-dom/client';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import './index.css';
@@ -77,15 +77,6 @@ const BlockModesApp       = lazy(() => import('./simulators/block-modes/App'));
 const DigitalSignatureApp = lazy(() => import('./simulators/digital-signature/App'));
 const PasswordHashingApp  = lazy(() => import('./simulators/password-hashing/App'));
 
-// Loading fallback — matches the app's dark background
-const Loading = () => (
-  <div className="flex-1 flex items-center justify-center bg-[#0d1117]">
-    <div className="text-center">
-      <div className="w-8 h-8 border-2 border-amber-500/30 border-t-amber-500 rounded-full animate-spin mx-auto mb-3" />
-      <p className="text-slate-600 text-xs font-mono tracking-widest">LOADING</p>
-    </div>
-  </div>
-);
 
 const root = document.getElementById('root')!;
 
@@ -95,7 +86,6 @@ ReactDOM.createRoot(root).render(
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Hub />} />
-          <Suspense fallback={<Loading />}>
             <Route path="/enigma-m4" element={<EnigmaM4App />} />
             <Route path="/enigma-wiring" element={<EnigmaWiringApp />} />
             <Route path="/hebern-wiring" element={<HebernWiringApp />} />
@@ -166,7 +156,6 @@ ReactDOM.createRoot(root).render(
             <Route path="/block-modes" element={<BlockModesApp />} />
             <Route path="/digital-signature" element={<DigitalSignatureApp />} />
             <Route path="/password-hashing" element={<PasswordHashingApp />} />
-          </Suspense>
         </Route>
       </Routes>
     </HashRouter>
