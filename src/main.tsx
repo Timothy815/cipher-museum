@@ -69,6 +69,7 @@ import AutokeyApp from './simulators/autokey/App';
 import BifidApp from './simulators/bifid/App';
 import TrifidApp from './simulators/trifid/App';
 import IocApp from './simulators/ioc/App';
+import Rc4App from './simulators/rc4/App';
 
 const root = document.getElementById('root')!;
 
@@ -146,6 +147,7 @@ ReactDOM.createRoot(root).render(
           <Route path="/bifid" element={<BifidApp />} />
           <Route path="/trifid" element={<TrifidApp />} />
           <Route path="/ioc" element={<IocApp />} />
+          <Route path="/rc4" element={<Rc4App />} />
         </Route>
       </Routes>
     </HashRouter>

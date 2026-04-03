@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind, GitBranch, Key, UserCheck, Circle, SlidersHorizontal, Route, Activity, Fingerprint, Dice6, Fence, Columns3, Hexagon, Cylinder, FileScan, Table2, SearchCode, Scissors, CircleDot, Snowflake, FunctionSquare, Infinity, Split, Boxes, Equal } from 'lucide-react';
+import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind, GitBranch, Key, UserCheck, Circle, SlidersHorizontal, Route, Activity, Fingerprint, Dice6, Fence, Columns3, Hexagon, Cylinder, FileScan, Table2, SearchCode, Scissors, CircleDot, Snowflake, FunctionSquare, Infinity, Split, Boxes, Equal, Flame } from 'lucide-react';
 
 const machines = [
   {
@@ -723,6 +723,16 @@ const modernCrypto = [
     icon: <FileScan size={32} />,
     color: 'cyan',
     description: 'The backbone of digital integrity — from Bitcoin to TLS. Step through all 64 compression rounds, inspect the message schedule, and watch the avalanche effect flip ~50% of bits from a single input change.',
+  },
+  {
+    path: '/rc4',
+    name: 'RC4',
+    subtitle: 'Rivest Cipher 4 (Broken)',
+    country: 'United States',
+    era: '1987',
+    icon: <Flame size={32} />,
+    color: 'orange',
+    description: 'Once the most widely deployed stream cipher in history (SSL, WEP, WPA). Beautifully simple — just a 256-byte permutation and XOR. Now cryptographically broken and banned from TLS.',
   },
 ];
 
