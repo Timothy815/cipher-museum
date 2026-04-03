@@ -73,6 +73,7 @@ import Rc4App from './simulators/rc4/App';
 import HmacApp from './simulators/hmac/App';
 import BlockModesApp from './simulators/block-modes/App';
 import DigitalSignatureApp from './simulators/digital-signature/App';
+import PasswordHashingApp from './simulators/password-hashing/App';
 
 const root = document.getElementById('root')!;
 
@@ -154,6 +155,7 @@ ReactDOM.createRoot(root).render(
           <Route path="/hmac" element={<HmacApp />} />
           <Route path="/block-modes" element={<BlockModesApp />} />
           <Route path="/digital-signature" element={<DigitalSignatureApp />} />
+          <Route path="/password-hashing" element={<PasswordHashingApp />} />
         </Route>
       </Routes>
     </HashRouter>
