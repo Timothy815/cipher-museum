@@ -67,6 +67,7 @@ import VicCipherApp from './simulators/vic-cipher/App';
 import AffineApp from './simulators/affine/App';
 import AutokeyApp from './simulators/autokey/App';
 import BifidApp from './simulators/bifid/App';
+import TrifidApp from './simulators/trifid/App';
 
 const root = document.getElementById('root')!;
 
@@ -142,6 +143,7 @@ ReactDOM.createRoot(root).render(
           <Route path="/affine" element={<AffineApp />} />
           <Route path="/autokey" element={<AutokeyApp />} />
           <Route path="/bifid" element={<BifidApp />} />
+          <Route path="/trifid" element={<TrifidApp />} />
         </Route>
       </Routes>
     </HashRouter>

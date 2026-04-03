@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind, GitBranch, Key, UserCheck, Circle, SlidersHorizontal, Route, Activity, Fingerprint, Dice6, Fence, Columns3, Hexagon, Cylinder, FileScan, Table2, SearchCode, Scissors, CircleDot, Snowflake, FunctionSquare, Infinity, Split } from 'lucide-react';
+import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind, GitBranch, Key, UserCheck, Circle, SlidersHorizontal, Route, Activity, Fingerprint, Dice6, Fence, Columns3, Hexagon, Cylinder, FileScan, Table2, SearchCode, Scissors, CircleDot, Snowflake, FunctionSquare, Infinity, Split, Boxes } from 'lucide-react';
 
 const machines = [
   {
@@ -453,6 +453,16 @@ const machines = [
     color: 'fuchsia',
     description: 'Delastelle\'s fractionation cipher — splits letters into Polybius coordinates, interleaves rows and columns, then recombines. Blends substitution with transposition.',
   },
+  {
+    path: '/trifid',
+    name: 'Trifid Cipher',
+    subtitle: '3D Fractionation',
+    country: 'France',
+    era: '1901',
+    icon: <Boxes size={32} />,
+    color: 'indigo',
+    description: 'Extends Bifid into 3D with a 3×3×3 cube. Each letter splits into three coordinates (layer, row, column), creating even more diffusion than its 2D sibling.',
+  },
 ];
 
 const colorMap: Record<string, { card: string; icon: string; badge: string; glow: string }> = {
@@ -551,6 +561,12 @@ const colorMap: Record<string, { card: string; icon: string; badge: string; glow
     icon: 'text-fuchsia-400 bg-fuchsia-950/50 border-fuchsia-800/50',
     badge: 'bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-700/50',
     glow: 'group-hover:shadow-fuchsia-900/30',
+  },
+  indigo: {
+    card: 'hover:border-indigo-700/60',
+    icon: 'text-indigo-400 bg-indigo-950/50 border-indigo-800/50',
+    badge: 'bg-indigo-500/20 text-indigo-300 border-indigo-700/50',
+    glow: 'group-hover:shadow-indigo-900/30',
   },
 };
 
