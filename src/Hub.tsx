@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind, GitBranch, Key, UserCheck, Circle, SlidersHorizontal, Route, Activity, Fingerprint, Dice6, Fence, Columns3, Hexagon, Cylinder, FileScan, Table2, SearchCode, Scissors, CircleDot, Snowflake, FunctionSquare } from 'lucide-react';
+import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind, GitBranch, Key, UserCheck, Circle, SlidersHorizontal, Route, Activity, Fingerprint, Dice6, Fence, Columns3, Hexagon, Cylinder, FileScan, Table2, SearchCode, Scissors, CircleDot, Snowflake, FunctionSquare, Infinity } from 'lucide-react';
 
 const machines = [
   {
@@ -432,6 +432,16 @@ const machines = [
     icon: <FunctionSquare size={32} />,
     color: 'teal',
     description: 'Encrypts with E(x) = (ax + b) mod 26. Generalizes Caesar and Atbash. Introduces modular arithmetic and multiplicative inverses — concepts foundational to RSA.',
+  },
+  {
+    path: '/autokey',
+    name: 'Autokey Cipher',
+    subtitle: 'Self-Keying Vigenère',
+    country: 'France',
+    era: '1553',
+    icon: <Infinity size={32} />,
+    color: 'emerald',
+    description: 'Vigenère\'s actual invention — the plaintext extends the keyword into a non-repeating key stream. Resists Kasiski examination but falls to probable-word attacks.',
   },
 ];
 

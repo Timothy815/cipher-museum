@@ -65,6 +65,7 @@ import PringlesEnigmaApp from './simulators/pringles-enigma/App';
 import AlbertiApp from './simulators/alberti/App';
 import VicCipherApp from './simulators/vic-cipher/App';
 import AffineApp from './simulators/affine/App';
+import AutokeyApp from './simulators/autokey/App';
 
 const root = document.getElementById('root')!;
 
@@ -138,6 +139,7 @@ ReactDOM.createRoot(root).render(
           <Route path="/alberti" element={<AlbertiApp />} />
           <Route path="/vic-cipher" element={<VicCipherApp />} />
           <Route path="/affine" element={<AffineApp />} />
+          <Route path="/autokey" element={<AutokeyApp />} />
         </Route>
       </Routes>
     </HashRouter>
