@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind, GitBranch, Key, UserCheck, Circle, SlidersHorizontal, Route, Activity, Fingerprint, Dice6, Fence, Columns3, Hexagon, Cylinder, FileScan, Table2, SearchCode, Scissors, CircleDot, Snowflake, FunctionSquare, Infinity, Split, Boxes, Equal, Flame, Stamp, Search, X } from 'lucide-react';
+import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind, GitBranch, Key, UserCheck, Circle, SlidersHorizontal, Route, Activity, Fingerprint, Dice6, Fence, Columns3, Hexagon, Cylinder, FileScan, Table2, SearchCode, Scissors, CircleDot, Snowflake, FunctionSquare, Infinity, Split, Boxes, Equal, Flame, Stamp, Search, X, ChevronDown, GraduationCap, Swords, Milestone, Sparkles, Zap as ZapIcon } from 'lucide-react';
 
 // ── Data ────────────────────────────────────────────────────────────
 
@@ -206,6 +206,111 @@ const colorMap: Record<string, { card: string; icon: string; badge: string; glow
   indigo: { card: 'hover:border-indigo-700/60', icon: 'text-indigo-400 bg-indigo-950/50 border-indigo-800/50', badge: 'bg-indigo-500/20 text-indigo-300 border-indigo-700/50', glow: 'group-hover:shadow-indigo-900/30' },
 };
 
+// ── Learning Paths ──────────────────────────────────────────────────
+
+interface LearningPath {
+  id: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  color: string;
+  icon: React.ReactNode;
+  stops: { path: string; label: string; why: string }[];
+}
+
+const LEARNING_PATHS: LearningPath[] = [
+  {
+    id: 'codebreaker',
+    title: "The Codebreaker's Journey",
+    subtitle: 'Learn to break ciphers',
+    description: 'Start with the simplest cipher, learn frequency analysis, then tackle progressively harder systems.',
+    color: 'red',
+    icon: <Swords size={24} />,
+    stops: [
+      { path: '/caesar', label: 'Caesar Cipher', why: 'The simplest substitution — only 25 possible keys' },
+      { path: '/frequency-analysis', label: 'Frequency Analysis', why: 'Learn the technique that breaks any monoalphabetic cipher' },
+      { path: '/substitution-solver', label: 'Substitution Solver', why: 'Apply frequency analysis to crack a random cipher by hand' },
+      { path: '/vigenere', label: 'Vigenère Cipher', why: 'See why polyalphabetic ciphers defeated frequency analysis for 300 years' },
+      { path: '/ioc', label: 'Index of Coincidence', why: "Friedman's statistical key to finding polyalphabetic key lengths" },
+      { path: '/vigenere-breaker', label: 'Vigenère Breaker', why: 'Combine Kasiski + IoC + frequency analysis to crack the "unbreakable"' },
+      { path: '/vigenere-workshop', label: 'Vigenère Workshop', why: 'Do it all yourself — hands-on guided codebreaking' },
+    ],
+  },
+  {
+    id: 'rotor-evolution',
+    title: 'Evolution of the Rotor',
+    subtitle: 'From Hebern to Fialka',
+    description: 'Trace how rotor machines evolved from a single rotor to 15-rotor beasts — and see how each tried to fix its predecessor.',
+    color: 'amber',
+    icon: <Milestone size={24} />,
+    stops: [
+      { path: '/hebern', label: 'Hebern Electric', why: 'The first rotor machine — one rotor, easily broken' },
+      { path: '/hebern-wiring', label: 'Hebern Wiring', why: 'See why a single rotor is just a rotating substitution' },
+      { path: '/enigma-i', label: 'Enigma I', why: '3 rotors + plugboard + reflector = 158 trillion settings' },
+      { path: '/enigma-i-wiring', label: 'Enigma I Wiring', why: 'Trace the signal path that the Bombe had to defeat' },
+      { path: '/enigma-m4', label: 'Enigma M4', why: 'The Navy added a 4th rotor — the hardest Enigma to crack' },
+      { path: '/typex', label: 'Typex', why: 'Britain fixed Enigma\'s weaknesses: 5 rotors, multiple notches' },
+      { path: '/sigaba', label: 'SIGABA', why: '15 rotors, pseudo-random stepping — never broken' },
+      { path: '/fialka', label: 'Fialka M-125', why: 'The Soviet answer: 10 reversible rotors with punch-card keying' },
+    ],
+  },
+  {
+    id: 'ancient-to-internet',
+    title: 'From Sparta to TLS',
+    subtitle: '3,000 years of cryptography',
+    description: 'A complete tour from the oldest cipher device through WWII machines to the algorithms protecting your browser right now.',
+    color: 'emerald',
+    icon: <Sparkles size={24} />,
+    stops: [
+      { path: '/scytale', label: 'Scytale', why: 'The oldest known cipher device (~700 BC)' },
+      { path: '/caesar', label: 'Caesar Cipher', why: 'The simplest substitution cipher (~50 BC)' },
+      { path: '/alberti', label: 'Alberti Disk', why: 'The first polyalphabetic cipher (1467)' },
+      { path: '/vigenere', label: 'Vigenère', why: '"Le chiffre indéchiffrable" — unbroken for 300 years' },
+      { path: '/enigma-i', label: 'Enigma I', why: 'The machine that changed the course of WWII' },
+      { path: '/bombe', label: 'Bombe', why: 'Turing\'s machine that broke Enigma' },
+      { path: '/des', label: 'DES', why: 'The first federal encryption standard (1977)' },
+      { path: '/diffie-hellman', label: 'Diffie-Hellman', why: 'The breakthrough: key exchange over a public channel' },
+      { path: '/rsa', label: 'RSA', why: 'Public key encryption that secures the internet' },
+      { path: '/aes', label: 'AES', why: 'The cipher protecting your data right now' },
+      { path: '/chacha20', label: 'ChaCha20', why: 'Default stream cipher in TLS 1.3 and WireGuard' },
+      { path: '/ecc', label: 'Elliptic Curve', why: 'The future: RSA-level security with tiny keys' },
+    ],
+  },
+  {
+    id: 'stream-ciphers',
+    title: 'Stream Cipher Evolution',
+    subtitle: 'From pads to ChaCha20',
+    description: 'How stream ciphers evolved from the theoretically perfect one-time pad to the practical algorithms in your browser.',
+    color: 'cyan',
+    icon: <Waves size={24} />,
+    stops: [
+      { path: '/otp', label: 'One-Time Pad', why: 'Theoretically perfect — but impractical key distribution' },
+      { path: '/lfsr', label: 'LFSR', why: 'The building block: a shift register that generates pseudo-random bits' },
+      { path: '/rc4', label: 'RC4', why: 'Simple and fast, but fatally flawed — broke WEP and was banned from TLS' },
+      { path: '/trivium', label: 'Trivium', why: 'Three coupled shift registers in just 288 bits' },
+      { path: '/salsa20', label: 'Salsa20', why: 'Bernstein\'s elegant ARX design — Add, Rotate, XOR' },
+      { path: '/chacha20', label: 'ChaCha20', why: 'Salsa20\'s successor — default cipher in TLS 1.3' },
+      { path: '/fortuna', label: 'Fortuna', why: 'Where the randomness comes from: a CSPRNG with 32 entropy pools' },
+    ],
+  },
+  {
+    id: 'fractionation',
+    title: 'Fractionation & Diffusion',
+    subtitle: 'Polybius to AES',
+    description: 'How splitting letters into coordinates creates diffusion — the ancient technique that still powers modern block ciphers.',
+    color: 'fuchsia',
+    icon: <Split size={24} />,
+    stops: [
+      { path: '/polybius', label: 'Polybius Square', why: 'The ancestor: encode letters as coordinate pairs (150 BC)' },
+      { path: '/bifid', label: 'Bifid Cipher', why: 'Fractionation — split coordinates, interleave, recombine' },
+      { path: '/trifid', label: 'Trifid Cipher', why: 'Extend to 3D: three coordinates per letter, more diffusion' },
+      { path: '/adfgvx', label: 'ADFGVX', why: 'Fractionation + columnar transposition — nearly changed WWI' },
+      { path: '/hill', label: 'Hill Cipher', why: 'Matrix multiplication: every output letter depends on every input' },
+      { path: '/aes', label: 'AES', why: 'The culmination: SubBytes + ShiftRows + MixColumns = full diffusion' },
+    ],
+  },
+];
+
 // ── Reusable Card Component ─────────────────────────────────────────
 
 const Card: React.FC<{ item: { path: string; name: string; subtitle: string; country: string; era: string; icon: React.ReactNode; color: string; description: string }; hoverColor?: string; cta?: string }> = ({ item, hoverColor = 'text-amber-200', cta = 'LAUNCH SIMULATOR' }) => {
@@ -270,6 +375,8 @@ const Hub: React.FC = () => {
   const filteredModern = useMemo(() => modernCrypto.filter(matchesSearch), [search]);
   const filteredPublicKey = useMemo(() => publicKeyCrypto.filter(matchesSearch), [search]);
 
+  const [expandedPath, setExpandedPath] = useState<string | null>(null);
+
   const isSearching = search.length > 0;
   const totalResults = filteredMachines.length + filteredCryptanalysis.length + filteredModern.length + filteredPublicKey.length;
 
@@ -312,6 +419,75 @@ const Hub: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Learning Paths */}
+      {!isSearching && (
+        <div className="w-full max-w-6xl mb-14">
+          <div className="flex items-center gap-3 mb-6">
+            <GraduationCap size={20} className="text-amber-500" />
+            <h2 className="text-lg font-bold text-white">Learning Paths</h2>
+            <span className="text-xs text-slate-500 font-mono">{LEARNING_PATHS.length} guided journeys</span>
+          </div>
+          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+            {LEARNING_PATHS.map(lp => {
+              const c = colorMap[lp.color] || colorMap.amber;
+              const isExpanded = expandedPath === lp.id;
+              return (
+                <div key={lp.id} className={`rounded-2xl border transition-all duration-300 ${isExpanded ? 'md:col-span-2 lg:col-span-3 bg-slate-900/90 border-slate-700' : `bg-slate-900/50 border-slate-800 hover:border-slate-700 cursor-pointer`}`}>
+                  <button
+                    onClick={() => setExpandedPath(isExpanded ? null : lp.id)}
+                    className="w-full text-left p-5 flex items-start gap-4"
+                  >
+                    <div className={`w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 ${c.icon}`}>
+                      {lp.icon}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-sm font-bold text-white">{lp.title}</h3>
+                        <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border ${c.badge}`}>{lp.stops.length} stops</span>
+                      </div>
+                      <p className="text-[10px] text-slate-500 font-mono uppercase tracking-wider mt-0.5">{lp.subtitle}</p>
+                      {!isExpanded && (
+                        <p className="text-xs text-slate-400 mt-2 line-clamp-2">{lp.description}</p>
+                      )}
+                    </div>
+                    <ChevronDown size={16} className={`text-slate-500 shrink-0 mt-1 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {isExpanded && (
+                    <div className="px-5 pb-6">
+                      <p className="text-sm text-slate-400 mb-5 ml-14">{lp.description}</p>
+                      <div className="ml-14 relative">
+                        {/* Timeline line */}
+                        <div className="absolute left-[11px] top-3 bottom-3 w-px bg-slate-700" />
+                        <div className="space-y-1">
+                          {lp.stops.map((stop, i) => (
+                            <Link
+                              key={stop.path}
+                              to={stop.path}
+                              className="group/stop flex items-start gap-4 py-2.5 px-3 -ml-3 rounded-lg hover:bg-slate-800/60 transition-colors relative"
+                            >
+                              {/* Timeline dot */}
+                              <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 text-[10px] font-bold ${c.icon} bg-slate-900`}>
+                                {i + 1}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <span className="text-sm font-medium text-white group-hover/stop:text-amber-300 transition-colors">{stop.label}</span>
+                                <p className="text-xs text-slate-500 mt-0.5">{stop.why}</p>
+                              </div>
+                              <span className="text-[10px] text-slate-600 group-hover/stop:text-slate-400 shrink-0 font-mono self-center">OPEN &rarr;</span>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Category Filters (only for machines section when not searching) */}
       {!isSearching && (
