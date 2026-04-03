@@ -9,7 +9,7 @@ interface Props {
 
 export default function ExhibitPanel({ id }: Props) {
   const exhibit = exhibits[id];
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
 
   if (!exhibit) return null;
 
