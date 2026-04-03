@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind, GitBranch, Key, UserCheck, Circle, SlidersHorizontal, Route, Activity, Fingerprint, Dice6, Fence, Columns3, Hexagon, Cylinder, FileScan, Table2, SearchCode, Scissors, CircleDot, Snowflake, FunctionSquare, Infinity, Split, Boxes, Equal, Flame, Stamp, Search, X, ChevronDown, GraduationCap, Swords, Milestone, Sparkles, Zap as ZapIcon, Blocks } from 'lucide-react';
+import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind, GitBranch, Key, UserCheck, Circle, SlidersHorizontal, Route, Activity, Fingerprint, Dice6, Fence, Columns3, Hexagon, Cylinder, FileScan, Table2, SearchCode, Scissors, CircleDot, Snowflake, FunctionSquare, Infinity, Split, Boxes, Equal, Flame, Stamp, Search, X, ChevronDown, GraduationCap, Swords, Milestone, Sparkles, Zap as ZapIcon, Blocks, PenLine } from 'lucide-react';
 
 // ── Data ────────────────────────────────────────────────────────────
 
@@ -184,6 +184,8 @@ const publicKeyCrypto = [
     description: 'Public key encryption built on Diffie-Hellman. Same plaintext encrypts differently each time.' },
   { path: '/ecc', name: 'Elliptic Curve', subtitle: 'ECC / ECDH', country: 'International', era: '1985', icon: <Circle size={32} />, color: 'violet',
     description: 'Cryptography on elliptic curves — same security as RSA with far smaller keys.' },
+  { path: '/digital-signature', name: 'Digital Signatures', subtitle: 'RSA-SHA256 Sign & Verify', country: 'International', era: '1991', icon: <PenLine size={32} />, color: 'violet',
+    description: 'Sign a message with a private key, verify with a public key. Includes tamper detection demo showing the avalanche effect.' },
 ];
 
 // ── Color Map ───────────────────────────────────────────────────────

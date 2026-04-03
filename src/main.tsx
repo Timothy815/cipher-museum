@@ -72,6 +72,7 @@ import IocApp from './simulators/ioc/App';
 import Rc4App from './simulators/rc4/App';
 import HmacApp from './simulators/hmac/App';
 import BlockModesApp from './simulators/block-modes/App';
+import DigitalSignatureApp from './simulators/digital-signature/App';
 
 const root = document.getElementById('root')!;
 
@@ -152,6 +153,7 @@ ReactDOM.createRoot(root).render(
           <Route path="/rc4" element={<Rc4App />} />
           <Route path="/hmac" element={<HmacApp />} />
           <Route path="/block-modes" element={<BlockModesApp />} />
+          <Route path="/digital-signature" element={<DigitalSignatureApp />} />
         </Route>
       </Routes>
     </HashRouter>
