@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind, GitBranch, Key, UserCheck, Circle, SlidersHorizontal, Route, Activity, Fingerprint, Dice6, Fence, Columns3, Hexagon, Cylinder, FileScan, Table2, SearchCode, Scissors, CircleDot, Snowflake } from 'lucide-react';
+import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind, GitBranch, Key, UserCheck, Circle, SlidersHorizontal, Route, Activity, Fingerprint, Dice6, Fence, Columns3, Hexagon, Cylinder, FileScan, Table2, SearchCode, Scissors, CircleDot, Snowflake, FunctionSquare } from 'lucide-react';
 
 const machines = [
   {
@@ -422,6 +422,16 @@ const machines = [
     icon: <Snowflake size={32} />,
     color: 'sky',
     description: 'The most complex hand cipher ever used operationally. Combines straddling checkerboard substitution, chain addition key expansion, and double columnar transposition. Used by KGB agents during the Cold War.',
+  },
+  {
+    path: '/affine',
+    name: 'Affine Cipher',
+    subtitle: 'Mathematical Substitution',
+    country: 'International',
+    era: 'Classical',
+    icon: <FunctionSquare size={32} />,
+    color: 'teal',
+    description: 'Encrypts with E(x) = (ax + b) mod 26. Generalizes Caesar and Atbash. Introduces modular arithmetic and multiplicative inverses — concepts foundational to RSA.',
   },
 ];
 
