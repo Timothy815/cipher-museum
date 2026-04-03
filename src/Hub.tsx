@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind, GitBranch, Key, UserCheck, Circle, SlidersHorizontal, Route, Activity, Fingerprint, Dice6, Fence, Columns3, Hexagon, Cylinder, FileScan, Table2, SearchCode, Scissors, CircleDot, Snowflake, FunctionSquare, Infinity } from 'lucide-react';
+import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind, GitBranch, Key, UserCheck, Circle, SlidersHorizontal, Route, Activity, Fingerprint, Dice6, Fence, Columns3, Hexagon, Cylinder, FileScan, Table2, SearchCode, Scissors, CircleDot, Snowflake, FunctionSquare, Infinity, Split } from 'lucide-react';
 
 const machines = [
   {
@@ -443,6 +443,16 @@ const machines = [
     color: 'emerald',
     description: 'Vigenère\'s actual invention — the plaintext extends the keyword into a non-repeating key stream. Resists Kasiski examination but falls to probable-word attacks.',
   },
+  {
+    path: '/bifid',
+    name: 'Bifid Cipher',
+    subtitle: 'Fractionation Cipher',
+    country: 'France',
+    era: '1901',
+    icon: <Split size={32} />,
+    color: 'fuchsia',
+    description: 'Delastelle\'s fractionation cipher — splits letters into Polybius coordinates, interleaves rows and columns, then recombines. Blends substitution with transposition.',
+  },
 ];
 
 const colorMap: Record<string, { card: string; icon: string; badge: string; glow: string }> = {
@@ -535,6 +545,12 @@ const colorMap: Record<string, { card: string; icon: string; badge: string; glow
     icon: 'text-lime-400 bg-lime-950/50 border-lime-800/50',
     badge: 'bg-lime-500/20 text-lime-300 border-lime-700/50',
     glow: 'group-hover:shadow-lime-900/30',
+  },
+  fuchsia: {
+    card: 'hover:border-fuchsia-700/60',
+    icon: 'text-fuchsia-400 bg-fuchsia-950/50 border-fuchsia-800/50',
+    badge: 'bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-700/50',
+    glow: 'group-hover:shadow-fuchsia-900/30',
   },
 };
 
