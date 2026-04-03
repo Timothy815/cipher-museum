@@ -70,6 +70,7 @@ import BifidApp from './simulators/bifid/App';
 import TrifidApp from './simulators/trifid/App';
 import IocApp from './simulators/ioc/App';
 import Rc4App from './simulators/rc4/App';
+import HmacApp from './simulators/hmac/App';
 
 const root = document.getElementById('root')!;
 
@@ -148,6 +149,7 @@ ReactDOM.createRoot(root).render(
           <Route path="/trifid" element={<TrifidApp />} />
           <Route path="/ioc" element={<IocApp />} />
           <Route path="/rc4" element={<Rc4App />} />
+          <Route path="/hmac" element={<HmacApp />} />
         </Route>
       </Routes>
     </HashRouter>
