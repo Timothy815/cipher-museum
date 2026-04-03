@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind, GitBranch, Key, UserCheck, Circle, SlidersHorizontal, Route, Activity, Fingerprint, Dice6, Fence, Columns3, Hexagon, Cylinder, FileScan, Table2, SearchCode, Scissors, CircleDot, Snowflake, FunctionSquare, Infinity, Split, Boxes, Equal, Flame, Stamp, Search, X, ChevronDown, GraduationCap, Swords, Milestone, Sparkles, Zap as ZapIcon } from 'lucide-react';
+import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind, GitBranch, Key, UserCheck, Circle, SlidersHorizontal, Route, Activity, Fingerprint, Dice6, Fence, Columns3, Hexagon, Cylinder, FileScan, Table2, SearchCode, Scissors, CircleDot, Snowflake, FunctionSquare, Infinity, Split, Boxes, Equal, Flame, Stamp, Search, X, ChevronDown, GraduationCap, Swords, Milestone, Sparkles, Zap as ZapIcon, Blocks } from 'lucide-react';
 
 // ── Data ────────────────────────────────────────────────────────────
 
@@ -171,6 +171,8 @@ const modernCrypto = [
     description: 'Once the most widely deployed stream cipher (SSL, WEP). Now cryptographically broken and banned from TLS.' },
   { path: '/hmac', name: 'HMAC-SHA256', subtitle: 'Message Authentication Code', country: 'International', era: '1997', icon: <Stamp size={32} />, color: 'sky',
     description: 'The standard for message authentication. Two-pass SHA-256 with ipad/opad. Used in TLS, JWT, and 2FA.' },
+  { path: '/block-modes', name: 'Block Cipher Modes', subtitle: 'ECB / CBC / CTR / GCM', country: 'International', era: '1981–2004', icon: <Blocks size={32} />, color: 'amber',
+    description: 'See why mode matters more than the cipher. ECB leaks patterns, CBC chains blocks, CTR creates a stream cipher, and GCM adds authentication.' },
 ];
 
 const publicKeyCrypto = [
