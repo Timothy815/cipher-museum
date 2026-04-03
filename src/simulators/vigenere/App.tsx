@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Info } from 'lucide-react';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
@@ -28,7 +29,9 @@ function App() {
   const output = vigenereProcess(input, key, mode === 'decrypt');
 
   return (
-    <div className="flex-1 bg-[#12161a] flex flex-col items-center justify-start py-10 px-6 text-slate-200">
+    <div className="flex-1 bg-[#12161a] flex flex-col">
+      <ExhibitPanel id="vigenere" />
+      <div className="bg-[#12161a] flex flex-col items-center justify-start py-10 px-6 text-slate-200">
       <div className="w-full max-w-3xl">
         {/* Header */}
         <div className="flex justify-between items-center mb-10">
@@ -140,6 +143,7 @@ function App() {
           </p>
         </div>
       </div>
+    </div>
     </div>
   );
 }

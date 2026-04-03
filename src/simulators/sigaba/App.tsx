@@ -10,6 +10,7 @@ import Lampboard from './components/Lampboard';
 import Tape from './components/Tape';
 import SignalTrace from './components/SignalTrace';
 import SettingsPanel from './components/SettingsPanel';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 const App: React.FC = () => {
   const [machineState, setMachineState] = useState<MachineState>(getInitialState());
@@ -121,7 +122,9 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 bg-[#111] text-gray-200 flex flex-col items-center pb-20 overflow-hidden relative">
+    <div className="flex-1 bg-[#111] flex flex-col">
+      <ExhibitPanel id="sigaba" />
+      <div className="bg-[#111] text-gray-200 flex flex-col items-center pb-20 overflow-hidden relative">
       {/* Background Texture */}
       <div className="absolute inset-0 opacity-5 pointer-events-none"
            style={{
@@ -306,6 +309,7 @@ const App: React.FC = () => {
           setHistory([]);
         }}
       />
+    </div>
     </div>
   );
 };

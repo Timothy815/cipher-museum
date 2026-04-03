@@ -11,6 +11,7 @@ import { Keyboard } from './components/Keyboard';
 import { Tape } from './components/Tape';
 import { SettingsPanel } from './components/SettingsPanel';
 import { SignalPath } from './components/SignalPath';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 // Initial State Factory
 const createInitialState = (): MachineState => ({
@@ -142,7 +143,9 @@ function App() {
   };
 
   return (
-    <div className="flex-1 bg-slate-950 flex flex-col items-center justify-start py-10 px-6 text-slate-200">
+    <div className="flex-1 bg-slate-950 flex flex-col">
+      <ExhibitPanel id="enigma-m4" />
+      <div className="bg-slate-950 flex flex-col items-center justify-start py-10 px-6 text-slate-200">
       
       {/* Header / Top Bar */}
       <div className="w-full max-w-4xl flex justify-between items-center mb-8">
@@ -253,6 +256,7 @@ function App() {
         onReset={() => { setMachineState(createInitialState()); setTapeText(''); setStateHistory([]); }}
       />
 
+    </div>
     </div>
   );
 }

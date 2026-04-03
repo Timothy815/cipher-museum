@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { Binary, Info, X, Play, Pause, RotateCcw, Lock } from 'lucide-react';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 const ITA2_LETTERS: Record<string, number> = {
   'A': 0b00011, 'B': 0b11001, 'C': 0b01110, 'D': 0b01001, 'E': 0b00001,
@@ -176,7 +177,9 @@ const ColossusApp: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 bg-[#1a1814] text-stone-200 flex flex-col items-center px-6 py-8 sm:px-10 md:px-16">
+    <div className="flex-1 bg-[#1a1814] flex flex-col">
+      <ExhibitPanel id="colossus" />
+      <div className="bg-[#1a1814] text-stone-200 flex flex-col items-center px-6 py-8 sm:px-10 md:px-16">
       <div className="w-full max-w-6xl">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -586,6 +589,7 @@ const ColossusApp: React.FC = () => {
           </div>
         </details>
       </div>
+    </div>
     </div>
   );
 };

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Info, RotateCcw } from 'lucide-react';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
@@ -21,7 +22,9 @@ function App() {
   const output = caesarEncrypt(input, effectiveShift);
 
   return (
-    <div className="flex-1 bg-[#1a1814] flex flex-col items-center justify-start py-10 px-6 text-stone-200">
+    <div className="flex-1 bg-[#1a1814] flex flex-col">
+      <ExhibitPanel id="caesar" />
+      <div className="bg-[#1a1814] flex flex-col items-center justify-start py-10 px-6 text-stone-200">
       <div className="w-full max-w-3xl">
         {/* Header */}
         <div className="flex justify-between items-center mb-10">
@@ -154,6 +157,7 @@ function App() {
           </p>
         </div>
       </div>
+    </div>
     </div>
   );
 }

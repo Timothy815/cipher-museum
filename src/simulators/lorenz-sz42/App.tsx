@@ -6,6 +6,7 @@ import { LorenzMachine } from './services/lorenzService';
 import { INITIAL_WHEELS, BAUDOT_MAP } from './constants';
 import { WheelConfig } from './types';
 import WheelControl from './components/WheelControl';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 const VALID_CHARS = Object.keys(BAUDOT_MAP);
 
@@ -208,7 +209,9 @@ function App() {
   };
 
   return (
-    <div className="flex-1 bg-slate-950 flex flex-col items-center justify-start py-10 px-6 text-slate-200">
+    <div className="flex-1 bg-slate-950 flex flex-col">
+      <ExhibitPanel id="lorenz-sz42" />
+      <div className="bg-slate-950 flex flex-col items-center justify-start py-10 px-6 text-slate-200">
 
       {/* Header */}
       <div className="w-full max-w-4xl flex justify-between items-center mb-8">
@@ -496,6 +499,7 @@ function App() {
           </p>
         </div>
       </div>
+    </div>
     </div>
   );
 }

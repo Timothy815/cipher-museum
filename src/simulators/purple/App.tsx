@@ -8,6 +8,7 @@ import RotorDisplay from './components/RotorDisplay';
 import Keyboard from './components/Keyboard';
 import TapeDisplay from './components/TapeDisplay';
 import HelpModal from './components/HelpModal';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 // Initialize service outside component to persist state across re-renders if needed, 
 // though we will sync it with React state.
@@ -164,7 +165,9 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 bg-[#121212] text-neutral-200 flex flex-col items-center py-10 px-6 selection:bg-purple-500 selection:text-white">
+    <div className="flex-1 bg-[#121212] flex flex-col">
+      <ExhibitPanel id="purple" />
+      <div className="bg-[#121212] text-neutral-200 flex flex-col items-center py-10 px-6 selection:bg-purple-500 selection:text-white">
       
       {/* Header */}
       <header className="w-full max-w-4xl flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
@@ -281,6 +284,7 @@ const App: React.FC = () => {
       <footer className="mt-12 text-neutral-600 text-xs">
          Japanese Type 97 "Purple" Simulator
       </footer>
+    </div>
     </div>
   );
 };

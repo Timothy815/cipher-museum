@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { CircuitBoard, Info, X, Play, Pause, RotateCcw, Lock } from 'lucide-react';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
@@ -213,7 +214,9 @@ const BombeApp: React.FC = () => {
   const posLabel = (p: [number, number, number]) => `${ALPHABET[p[0]]}-${ALPHABET[p[1]]}-${ALPHABET[p[2]]}`;
 
   return (
-    <div className="flex-1 bg-[#1a1814] text-stone-200 flex flex-col items-center px-6 py-8 sm:px-10 md:px-16">
+    <div className="flex-1 bg-[#1a1814] flex flex-col">
+      <ExhibitPanel id="bombe" />
+      <div className="bg-[#1a1814] text-stone-200 flex flex-col items-center px-6 py-8 sm:px-10 md:px-16">
       <div className="w-full max-w-6xl">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -579,6 +582,7 @@ const BombeApp: React.FC = () => {
           </div>
         )}
       </div>
+    </div>
     </div>
   );
 };
