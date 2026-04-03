@@ -11,6 +11,7 @@ import { Keyboard } from './components/Keyboard';
 import { Tape } from './components/Tape';
 import { SettingsPanel } from './components/SettingsPanel';
 import { SignalPath } from './components/SignalPath';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 const createInitialState = (): MachineState => ({
   rotors: Array.from({ length: 10 }, (_, i) => ({
@@ -138,7 +139,9 @@ function App() {
   };
 
   return (
-    <div className="flex-1 bg-[#1a1210] flex flex-col items-center justify-start py-10 px-6 text-stone-200">
+    <div className="flex-1 bg-[#1a1210] flex flex-col">
+      <ExhibitPanel id="fialka" />
+      <div className="bg-[#1a1210] flex flex-col items-center justify-start py-10 px-6 text-stone-200">
 
       {/* Header */}
       <div className="w-full max-w-4xl flex justify-between items-center mb-8">
@@ -256,6 +259,7 @@ function App() {
         onUpdateState={setMachineState}
         onReset={() => { setMachineState(createInitialState()); setTapeText(''); setStateHistory([]); }}
       />
+    </div>
     </div>
   );
 }

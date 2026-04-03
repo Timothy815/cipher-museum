@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Info } from 'lucide-react';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 const GRID_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 const HEADERS = ['A', 'D', 'F', 'G', 'V', 'X'];
@@ -111,7 +112,9 @@ function App() {
   const decResult = mode === 'decrypt' && input ? adfgvxDecrypt(input, grid, transKey) : null;
 
   return (
-    <div className="flex-1 bg-[#161210] flex flex-col items-center justify-start py-10 px-6 text-stone-200">
+    <div className="flex-1 bg-[#161210] flex flex-col">
+      <ExhibitPanel id="adfgvx" />
+      <div className="bg-[#161210] flex flex-col items-center justify-start py-10 px-6 text-stone-200">
       <div className="w-full max-w-3xl">
         {/* Header */}
         <div className="flex justify-between items-center mb-10">
@@ -254,6 +257,7 @@ function App() {
           </p>
         </div>
       </div>
+    </div>
     </div>
   );
 }

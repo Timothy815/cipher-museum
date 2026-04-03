@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Info, Shuffle } from 'lucide-react';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
@@ -50,7 +51,9 @@ function App() {
   const ciphertext = lines ? lines[readRow]?.join('') || '' : '';
 
   return (
-    <div className="flex-1 bg-[#0e1416] flex flex-col items-center justify-start py-10 px-6 text-stone-200">
+    <div className="flex-1 bg-[#0e1416] flex flex-col">
+      <ExhibitPanel id="jefferson" />
+      <div className="bg-[#0e1416] flex flex-col items-center justify-start py-10 px-6 text-stone-200">
       <div className="w-full max-w-4xl">
         {/* Header */}
         <div className="flex justify-between items-center mb-10">
@@ -157,6 +160,7 @@ function App() {
           </p>
         </div>
       </div>
+    </div>
     </div>
   );
 }

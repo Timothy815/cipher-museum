@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { Info, RotateCcw, ChevronRight, Lock, Unlock } from 'lucide-react';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 // ── Constants ─────────────────────────────────────────────────────────
 const ENGLISH_FREQ = 'ESIANRTOLCDUGPMHBYFVKWZXJQ'; // by frequency
@@ -396,7 +397,9 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 bg-slate-950 flex flex-col items-center justify-start py-10 px-6 text-slate-200">
+    <div className="flex-1 bg-slate-950 flex flex-col">
+      <ExhibitPanel id="vic-cipher" />
+      <div className="bg-slate-950 flex flex-col items-center justify-start py-10 px-6 text-slate-200">
       <div className="w-full max-w-5xl">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
@@ -594,6 +597,7 @@ const App: React.FC = () => {
             </p>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Info } from 'lucide-react';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 const ALPHABET = 'ABCDEFGHIKLMNOPQRSTUVWXYZ'; // no J (merged with I)
 
@@ -70,7 +71,9 @@ function App() {
   const output = input ? playfairProcess(input, grid, mode === 'decrypt') : '';
 
   return (
-    <div className="flex-1 bg-[#14160e] flex flex-col items-center justify-start py-10 px-6 text-stone-200">
+    <div className="flex-1 bg-[#14160e] flex flex-col">
+      <ExhibitPanel id="playfair" />
+      <div className="bg-[#14160e] flex flex-col items-center justify-start py-10 px-6 text-stone-200">
       <div className="w-full max-w-3xl">
         {/* Header */}
         <div className="flex justify-between items-center mb-10">
@@ -155,6 +158,7 @@ function App() {
           </p>
         </div>
       </div>
+    </div>
     </div>
   );
 }

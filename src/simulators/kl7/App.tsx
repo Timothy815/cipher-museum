@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Eraser, Info, Settings } from 'lucide-react';
 import ConfigSlots from '../shared/ConfigSlots';
 import TapeActions from '../shared/TapeActions';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
@@ -213,7 +214,9 @@ function App() {
   ];
 
   return (
-    <div className="flex-1 bg-[#0e1218] flex flex-col items-center justify-start py-10 px-6 text-slate-200">
+    <div className="flex-1 bg-[#0e1218] flex flex-col">
+      <ExhibitPanel id="kl7" />
+      <div className="bg-[#0e1218] flex flex-col items-center justify-start py-10 px-6 text-slate-200">
       {/* Header */}
       <div className="w-full max-w-4xl flex justify-between items-center mb-8">
         <div className="flex flex-col">
@@ -394,6 +397,7 @@ function App() {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }

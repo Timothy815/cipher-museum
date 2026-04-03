@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Info, X, RefreshCw, Eye, EyeOff } from 'lucide-react';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 // ── Modular arithmetic ──────────────────────────────────────────────
 
@@ -101,7 +102,9 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 bg-[#1a1814] text-white flex flex-col items-center px-6 py-8 sm:px-10 md:px-16 md:py-8">
+    <div className="flex-1 bg-[#1a1814] flex flex-col">
+      <ExhibitPanel id="diffie-hellman" />
+      <div className="bg-[#1a1814] text-white flex flex-col items-center px-6 py-8 sm:px-10 md:px-16 md:py-8">
       <div className="w-full max-w-6xl space-y-8">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -404,6 +407,7 @@ const App: React.FC = () => {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 };
