@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind, GitBranch, Key, UserCheck, Circle, SlidersHorizontal, Route, Activity, Fingerprint, Dice6, Fence, Columns3, Hexagon, Cylinder, FileScan, Table2, SearchCode, Scissors, CircleDot, Snowflake, FunctionSquare, Infinity, Split, Boxes } from 'lucide-react';
+import { Shield, Lock, KeyRound, Cog, Cpu, Crown, Flower2, Plus, Radio, Zap, ArrowRightLeft, BookOpen, Grid3X3, Hash, Disc, Grid2X2, ShieldCheck, Settings, Layers, Shuffle, BarChart3, KeySquare, CircuitBoard, Binary, Waves, Box, Grid3x3 as Grid3x3Icon, Droplets, Wind, GitBranch, Key, UserCheck, Circle, SlidersHorizontal, Route, Activity, Fingerprint, Dice6, Fence, Columns3, Hexagon, Cylinder, FileScan, Table2, SearchCode, Scissors, CircleDot, Snowflake, FunctionSquare, Infinity, Split, Boxes, Equal } from 'lucide-react';
 
 const machines = [
   {
@@ -630,6 +630,16 @@ const cryptanalysisTools = [
     icon: <SearchCode size={32} />,
     color: 'crimson',
     description: 'Break a random substitution cipher by hand. Live frequency bars, bigram/trigram hints, click-to-assign letter mappings, and lock/undo. Practice the technique Al-Kindi described over 1,000 years ago.',
+  },
+  {
+    path: '/ioc',
+    name: 'Index of Coincidence',
+    subtitle: 'Friedman\'s Key Length Estimator',
+    country: 'Cryptanalysis',
+    era: '1922',
+    icon: <Equal size={32} />,
+    color: 'rose',
+    description: 'Friedman\'s statistical method for estimating polyalphabetic cipher key lengths. Compares letter distribution against language baselines and finds the key length that maximizes stream IoC.',
   },
 ];
 
