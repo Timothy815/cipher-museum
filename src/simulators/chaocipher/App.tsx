@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Info } from 'lucide-react';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
@@ -130,7 +131,9 @@ function App() {
   };
 
   return (
-    <div className="flex-1 bg-[#141010] flex flex-col items-center justify-start py-10 px-6 text-stone-200">
+    <div className="flex-1 bg-[#141010] flex flex-col">
+      <ExhibitPanel id="chaocipher" />
+      <div className="bg-[#141010] flex flex-col items-center justify-start py-10 px-6 text-stone-200">
       <div className="w-full max-w-3xl">
         {/* Header */}
         <div className="flex justify-between items-center mb-10">
@@ -299,6 +302,7 @@ function App() {
           </p>
         </div>
       </div>
+    </div>
     </div>
   );
 }

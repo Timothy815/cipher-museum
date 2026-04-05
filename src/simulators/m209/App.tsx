@@ -8,6 +8,7 @@ import InternalView from './components/InternalView';
 import ConfigSlots from '../shared/ConfigSlots';
 import TapeActions from '../shared/TapeActions';
 import { RefreshCw, RotateCcw, Trash2, Info, X, CheckCircle, Undo2, Wrench } from 'lucide-react';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 const App: React.FC = () => {
   const [state, setState] = useState<MachineState>(generateRandomState());
@@ -158,7 +159,9 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 bg-stone-900 text-stone-200 flex flex-col font-sans selection:bg-amber-500/30">
+    <div className="flex-1 bg-stone-900 flex flex-col">
+      <ExhibitPanel id="m209" />
+      <div className="bg-stone-900 text-stone-200 flex flex-col font-sans selection:bg-amber-500/30">
 
       {/* Toast Notification */}
       {toastMessage && (
@@ -374,6 +377,7 @@ const App: React.FC = () => {
       </footer>
 
 
+    </div>
     </div>
   );
 };

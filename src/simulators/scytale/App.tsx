@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Info, RotateCcw } from 'lucide-react';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 // ─── Scytale cipher logic ───────────────────────────────────────────────
 // A scytale with N faces means text is written in rows of N columns.
@@ -128,7 +129,9 @@ function App() {
   }, [cleanInput, mode]);
 
   return (
-    <div className="flex-1 bg-[#13110d] flex flex-col items-center justify-start py-10 px-6 text-stone-200">
+    <div className="flex-1 bg-[#13110d] flex flex-col">
+      <ExhibitPanel id="scytale" />
+      <div className="bg-[#13110d] flex flex-col items-center justify-start py-10 px-6 text-stone-200">
       <div className="w-full max-w-4xl">
         {/* Header */}
         <div className="flex justify-between items-center mb-10">
@@ -390,6 +393,7 @@ function App() {
           </p>
         </div>
       </div>
+    </div>
     </div>
   );
 }

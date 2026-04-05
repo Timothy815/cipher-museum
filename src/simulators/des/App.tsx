@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Info, X, Play, Pause, SkipForward, RotateCcw, Lock, Unlock } from 'lucide-react';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 // ─── DES Tables ───────────────────────────────────────────────────────────────
 
@@ -305,7 +306,9 @@ const App: React.FC = () => {
   const inputClass = 'bg-slate-900/80 border border-slate-700 rounded-lg px-5 py-4 font-mono text-base text-white focus:outline-none focus:border-cyan-700/50 w-full';
 
   return (
-    <div className="flex-1 bg-[#1a1814] text-white flex flex-col items-center px-6 py-8 sm:px-10 md:px-16 md:py-8">
+    <div className="flex-1 bg-[#1a1814] flex flex-col">
+      <ExhibitPanel id="des" />
+      <div className="bg-[#1a1814] text-white flex flex-col items-center px-6 py-8 sm:px-10 md:px-16 md:py-8">
       <div className="w-full max-w-6xl space-y-8">
 
         {/* Header */}
@@ -591,6 +594,7 @@ const App: React.FC = () => {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 };

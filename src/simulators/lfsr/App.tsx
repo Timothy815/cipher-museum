@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Info, X, Play, Pause, SkipForward, RotateCcw } from 'lucide-react';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 interface Preset { name: string; size: number; taps: number[]; }
 
@@ -170,7 +171,9 @@ const App: React.FC = () => {
   const outputBitsEnc = inputBits.map((b, i) => b ^ keystream[i]);
 
   return (
-    <div className="flex-1 bg-[#1a1814] text-white flex flex-col items-center px-6 py-8 sm:px-10 md:px-16 md:py-8">
+    <div className="flex-1 bg-[#1a1814] flex flex-col">
+      <ExhibitPanel id="lfsr" />
+      <div className="bg-[#1a1814] text-white flex flex-col items-center px-6 py-8 sm:px-10 md:px-16 md:py-8">
       <div className="w-full max-w-5xl space-y-8">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -444,6 +447,7 @@ const App: React.FC = () => {
           </div>
         )}
       </div>
+    </div>
     </div>
   );
 };

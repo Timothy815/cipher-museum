@@ -9,6 +9,7 @@ import { SwitchDisplay } from './components/SwitchDisplay';
 import { Lampboard } from './components/Lampboard';
 import { Keyboard } from './components/Keyboard';
 import { Tape } from './components/Tape';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 const createInitialState = (): MachineState => ({
   sixes: { position: 0, size: SIXES_WIRINGS.length, wiring: SIXES_WIRINGS },
@@ -114,7 +115,9 @@ function App() {
   };
 
   return (
-    <div className="flex-1 bg-[#161018] flex flex-col items-center justify-start py-10 px-6 text-neutral-200">
+    <div className="flex-1 bg-[#161018] flex flex-col">
+      <ExhibitPanel id="red" />
+      <div className="bg-[#161018] flex flex-col items-center justify-start py-10 px-6 text-neutral-200">
       {/* Header */}
       <div className="w-full max-w-4xl flex justify-between items-center mb-8">
         <div className="flex flex-col">
@@ -212,6 +215,7 @@ function App() {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }
