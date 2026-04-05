@@ -85,6 +85,23 @@ export default function ExhibitPanel({ id }: Props) {
                     ))}
                   </div>
                 )}
+
+                {/* Citations */}
+                {exhibit.citations && exhibit.citations.length > 0 && (
+                  <div className="mt-6 pt-6 border-t border-slate-800/60">
+                    <div className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.25em] font-mono mb-3">
+                      Sources &amp; Further Reading
+                    </div>
+                    <ol className="space-y-1.5">
+                      {exhibit.citations.map((cite, i) => (
+                        <li key={i} className="flex gap-2">
+                          <span className="text-[10px] text-slate-700 font-mono shrink-0 mt-0.5">[{i + 1}]</span>
+                          <span className="text-[10px] text-slate-600 leading-relaxed font-mono">{cite}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                )}
               </div>
 
               {/* Sidebar: key facts + quote */}

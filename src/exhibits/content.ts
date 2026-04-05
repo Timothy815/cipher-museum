@@ -9,6 +9,7 @@ export interface ExhibitContent {
   lead: string;
   body: string[];
   connections: { label: string; path: string }[];
+  citations?: string[];
 }
 
 const exhibits: Record<string, ExhibitContent> = {
@@ -45,6 +46,12 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'The Bombe', path: '/bombe' },
       { label: 'Typex (British answer)', path: '/typex' },
     ],
+    citations: [
+      'Kahn, David. The Codebreakers: The Comprehensive History of Secret Communication from Ancient Times to the Internet. Rev. ed. Scribner, 1996.',
+      'Rejewski, Marian. "How Polish Mathematicians Deciphered the Enigma." Annals of the History of Computing 3, no. 3 (1981): 213–234.',
+      'Hinsley, F. H., and Alan Stripp, eds. Codebreakers: The Inside Story of Bletchley Park. Oxford University Press, 1993.',
+      'Welchman, Gordon. The Hut Six Story: Breaking the Enigma Codes. McGraw-Hill, 1982.',
+    ],
   },
 
   'enigma-m4': {
@@ -78,6 +85,11 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'Enigma M4 Wiring Explorer', path: '/enigma-wiring' },
       { label: 'The Bombe', path: '/bombe' },
     ],
+    citations: [
+      'Kahn, David. The Codebreakers. Rev. ed. Scribner, 1996.',
+      'Hinsley, F. H. British Intelligence in the Second World War. Vol. 2. HMSO, 1981.',
+      'Sebag-Montefiore, Hugh. Enigma: The Battle for the Code. Wiley, 2000.',
+    ],
   },
 
   'caesar': {
@@ -110,6 +122,11 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'Vigenère Cipher', path: '/vigenere' },
       { label: 'Affine Cipher', path: '/affine' },
       { label: 'Substitution Solver', path: '/substitution-solver' },
+    ],
+    citations: [
+      'Suetonius. Lives of the Twelve Caesars. ca. 121 CE. Trans. J. C. Rolfe. Loeb Classical Library, 1914.',
+      'Kahn, David. The Codebreakers. Rev. ed. Scribner, 1996. pp. 83–85.',
+      'Singh, Simon. The Code Book: The Science of Secrecy from Ancient Egypt to Quantum Cryptography. Anchor Books, 1999.',
     ],
   },
 
@@ -146,6 +163,11 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'Autokey Cipher', path: '/autokey' },
       { label: 'Caesar Cipher', path: '/caesar' },
     ],
+    citations: [
+      'Singh, Simon. The Code Book. Anchor Books, 1999. Ch. 2.',
+      'Kahn, David. The Codebreakers. Rev. ed. Scribner, 1996. pp. 145–152.',
+      'Kasiski, Friedrich. Die Geheimschriften und die Dechiffrirkunst. Berlin: Mittler, 1863.',
+    ],
   },
 
   'bombe': {
@@ -179,6 +201,11 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'Enigma M4', path: '/enigma-m4' },
       { label: 'Colossus', path: '/colossus' },
       { label: 'Frequency Analysis', path: '/frequency-analysis' },
+    ],
+    citations: [
+      'Turing, Alan. "Prof\'s Book." Unpublished manuscript, ca. 1940. Reproduced in: Copeland, B. J., ed. The Essential Turing. Oxford University Press, 2004.',
+      'Welchman, Gordon. The Hut Six Story. McGraw-Hill, 1982.',
+      'Hinsley, F. H., and Alan Stripp, eds. Codebreakers: The Inside Story of Bletchley Park. Oxford University Press, 1993.',
     ],
   },
 
@@ -214,6 +241,11 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'The Bombe', path: '/bombe' },
       { label: 'LFSR', path: '/lfsr' },
     ],
+    citations: [
+      'Copeland, B. J., ed. Colossus: The Secrets of Bletchley Park\'s Codebreaking Computers. Oxford University Press, 2006.',
+      'Good, I. J., D. Michie, and G. Timms. General Report on Tunny. Declassified by GCHQ, 2000. Originally written 1945.',
+      'Kahn, David. The Codebreakers. Rev. ed. Scribner, 1996.',
+    ],
   },
 
   'lorenz-sz42': {
@@ -246,6 +278,11 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'Lorenz Visualizer', path: '/lorenz-wiring' },
       { label: 'LFSR', path: '/lfsr' },
       { label: 'One-Time Pad', path: '/otp' },
+    ],
+    citations: [
+      'Copeland, B. J., ed. Colossus: The Secrets of Bletchley Park\'s Codebreaking Computers. Oxford University Press, 2006.',
+      'Tutte, W. T. "Fish and I." Lecture transcript, University of Waterloo, 1998.',
+      'Good, I. J., D. Michie, and G. Timms. General Report on Tunny. Declassified 2000. GCHQ/National Archives.',
     ],
   },
 
@@ -280,6 +317,11 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'Purple (Japanese equivalent)', path: '/purple' },
       { label: 'KL-7 (successor)', path: '/kl7' },
     ],
+    citations: [
+      'Rowlett, Frank B. The Story of Magic: Memoirs of an American Cryptologic Pioneer. Aegean Park Press, 1998.',
+      'Kahn, David. The Codebreakers. Rev. ed. Scribner, 1996. pp. 402–406.',
+      'NSA. "SIGABA." Center for Cryptologic History, declassified documents series.',
+    ],
   },
 
   'purple': {
@@ -311,6 +353,11 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'Purple Wiring Explorer', path: '/purple-wiring' },
       { label: 'RED (predecessor)', path: '/red' },
       { label: 'SIGABA (American equivalent)', path: '/sigaba' },
+    ],
+    citations: [
+      'Rowlett, Frank B. The Story of Magic. Aegean Park Press, 1998.',
+      'Budiansky, Stephen. Battle of Wits: The Complete Story of Codebreaking in World War II. Free Press, 2000.',
+      'Kahn, David. The Codebreakers. Rev. ed. Scribner, 1996. pp. 18–22.',
     ],
   },
 
@@ -345,6 +392,11 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'Lorenz SZ42 (XOR-based machine)', path: '/lorenz-sz42' },
       { label: 'LFSR (keystream generation)', path: '/lfsr' },
     ],
+    citations: [
+      'Shannon, Claude E. "Communication Theory of Secrecy Systems." Bell System Technical Journal 28, no. 4 (1949): 656–715.',
+      'Kahn, David. The Codebreakers. Rev. ed. Scribner, 1996. pp. 398–400.',
+      'Vernam, Gilbert S. "Cipher Printing Telegraph Systems." Journal of the American Institute of Electrical Engineers 45 (1926): 109–115.',
+    ],
   },
 
 
@@ -378,6 +430,11 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'Typex Wiring Explorer', path: '/typex-wiring' },
       { label: 'SIGABA (American equivalent)', path: '/sigaba' },
     ],
+    citations: [
+      'Hinsley, F. H., and Alan Stripp, eds. Codebreakers. Oxford University Press, 1993.',
+      'Kahn, David. The Codebreakers. Rev. ed. Scribner, 1996.',
+      'Smith, Michael. The Secrets of Station X. Biteback Publishing, 2011.',
+    ],
   },
 
   'cx52': {
@@ -409,6 +466,11 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'M-209 (Hagelin\'s earlier machine)', path: '/m209' },
       { label: 'KL-7 (NATO alternative)', path: '/kl7' },
       { label: 'One-Time Pad (the alternative they avoided)', path: '/otp' },
+    ],
+    citations: [
+      'Hagelin, Boris. "The Story of the Hagelin Cryptos." Cryptologia 18, no. 3 (1994): 204–242.',
+      'Kahn, David. The Codebreakers. Rev. ed. Scribner, 1996. pp. 424–430.',
+      'Marks, Leo. Between Silk and Cyanide. Free Press, 1998.',
     ],
   },
 
@@ -442,6 +504,11 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'SIGABA (never compromised)', path: '/sigaba' },
       { label: 'CX-52 (another compromised system)', path: '/cx52' },
     ],
+    citations: [
+      'NSA. "KL-7 ADONIS." Center for Cryptologic History, National Security Agency, 2009.',
+      'Aid, Matthew M. The Secret Sentry: The Untold History of the National Security Agency. Bloomsbury, 2009.',
+      'Kahn, David. The Codebreakers. Rev. ed. Scribner, 1996.',
+    ],
   },
 
   'jefferson': {
@@ -473,6 +540,11 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'Vigenère (contemporary alternative)', path: '/vigenere' },
       { label: 'M-209 (replaced it)', path: '/m209' },
       { label: 'Caesar Cipher (simpler predecessor)', path: '/caesar' },
+    ],
+    citations: [
+      'Kahn, David. The Codebreakers. Rev. ed. Scribner, 1996. pp. 192–195.',
+      'Bazeries, Étienne. Les Chiffres Secrets Dévoilés. Paris: Charpentier, 1901.',
+      'National Cryptologic Museum. "Jefferson Wheel Cypher." NSA/CSS, Fort Meade, MD.',
     ],
   },
 
@@ -507,6 +579,11 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'KL-7 (NATO equivalent)', path: '/kl7' },
       { label: 'VIC Cipher (Soviet hand cipher)', path: '/vic-cipher' },
     ],
+    citations: [
+      'Stamp, Mark, and Richard M. Low. Applied Cryptanalysis. Wiley, 2007.',
+      'Kahn, David. The Codebreakers. Rev. ed. Scribner, 1996.',
+      'Rijmenants, Dirk. "Fialka M-125." Cipher Machines & Cryptology. dirkrij.be (technical reference).',
+    ],
   },
 
   'adfgvx': {
@@ -539,6 +616,11 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'Columnar Transposition (the second step)', path: '/columnar' },
       { label: 'Bifid Cipher (similar fractionation)', path: '/bifid' },
       { label: 'Frequency Analysis (the attack tool)', path: '/frequency-analysis' },
+    ],
+    citations: [
+      'Kahn, David. The Codebreakers. Rev. ed. Scribner, 1996. pp. 301–306.',
+      'Painvin, Georges. Decoded ADFGVX messages. Service du Chiffre, French Army, 1918. Archived, Service Historique de la Défense, Vincennes.',
+      'Singh, Simon. The Code Book. Anchor Books, 1999. Ch. 3.',
     ],
   },
 
@@ -573,6 +655,11 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'One-Time Pad (what it approximated)', path: '/otp' },
       { label: 'Fialka (Soviet machine cipher)', path: '/fialka' },
     ],
+    citations: [
+      'Kahn, David. The Codebreakers. Rev. ed. Scribner, 1996. pp. 666–673.',
+      'FBI. "SOLO: The FBI\'s Most Valuable Cold War Asset." FBI History Series, 2010.',
+      'Donovan, James B. Strangers on a Bridge: The Case of Colonel Abel. Atheneum, 1964.',
+    ],
   },
 
   'diffie-hellman': {
@@ -604,6 +691,11 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'RSA (built on the same ideas)', path: '/rsa' },
       { label: 'Elliptic Curve Cryptography', path: '/ecc' },
       { label: 'ElGamal (Diffie-Hellman variant)', path: '/elgamal' },
+    ],
+    citations: [
+      'Diffie, Whitfield, and Martin E. Hellman. "New Directions in Cryptography." IEEE Transactions on Information Theory 22, no. 6 (1976): 644–654.',
+      'Singh, Simon. The Code Book. Anchor Books, 1999. Ch. 6.',
+      'Schneier, Bruce. Applied Cryptography. 2nd ed. Wiley, 1996.',
     ],
   },
 
@@ -638,6 +730,11 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'Elliptic Curve Cryptography (modern alternative)', path: '/ecc' },
       { label: 'ElGamal', path: '/elgamal' },
     ],
+    citations: [
+      'Rivest, R. L., A. Shamir, and L. Adleman. "A Method for Obtaining Digital Signatures and Public-Key Cryptosystems." Communications of the ACM 21, no. 2 (1978): 120–126.',
+      'Diffie, Whitfield, and Martin E. Hellman. "New Directions in Cryptography." IEEE Transactions on Information Theory 22, no. 6 (1976): 644–654.',
+      'Singh, Simon. The Code Book. Anchor Books, 1999. Ch. 6.',
+    ],
   },
 
   'playfair': {
@@ -671,6 +768,11 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'Frequency Analysis (the attack)', path: '/frequency-analysis' },
       { label: 'Hill Cipher (matrix generalization)', path: '/hill' },
     ],
+    citations: [
+      'Kahn, David. The Codebreakers. Rev. ed. Scribner, 1996. pp. 198–202.',
+      'Wheatstone, Charles. Original letter to Prince Albert, 1854. Science Museum, London.',
+      'Singh, Simon. The Code Book. Anchor Books, 1999.',
+    ],
   },
 
   'm209': {
@@ -703,6 +805,11 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'Enigma I (what the Germans were using)', path: '/enigma-i' },
       { label: 'Columnar Transposition (used in combination)', path: '/columnar' },
     ],
+    citations: [
+      'Hagelin, Boris. "The Story of the Hagelin Cryptos." Cryptologia 18, no. 3 (1994): 204–242.',
+      'Kahn, David. The Codebreakers. Rev. ed. Scribner, 1996. pp. 422–424.',
+      'Yardley, Herbert O. The American Black Chamber. Bobbs-Merrill, 1931.',
+    ],
   },
 
   'hebern': {
@@ -734,6 +841,11 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'Enigma I (the German rotor machine)', path: '/enigma-i' },
       { label: 'SIGABA (the unbroken US machine)', path: '/sigaba' },
       { label: 'Hebern Wiring Explorer', path: '/hebern-wiring' },
+    ],
+    citations: [
+      'Kahn, David. The Codebreakers. Rev. ed. Scribner, 1996. pp. 415–420.',
+      'Layton, Edwin T. And I Was There. Morrow, 1985.',
+      'NSA Center for Cryptologic History. "American Cryptology during the Cold War." CCH Series VI, 1998.',
     ],
   },
 
@@ -768,6 +880,11 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'RED Wiring Explorer', path: '/red-wiring' },
       { label: 'Frequency Analysis (the attack technique)', path: '/frequency-analysis' },
     ],
+    citations: [
+      'Rowlett, Frank B. The Story of Magic. Aegean Park Press, 1998.',
+      'Kahn, David. The Codebreakers. Rev. ed. Scribner, 1996. pp. 1–22.',
+      'Budiansky, Stephen. Battle of Wits. Free Press, 2000. Ch. 1.',
+    ],
   },
 
   'nema': {
@@ -800,6 +917,11 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'Enigma M4 (the naval variant)', path: '/enigma-m4' },
       { label: 'NEMA Wiring Explorer', path: '/nema-wiring' },
       { label: 'The Bombe (what NEMA was designed to resist)', path: '/bombe' },
+    ],
+    citations: [
+      'Crypto Museum. "NEMA: Swiss Army Cipher Machine." cryptomuseum.com (technical and historical reference).',
+      'Kahn, David. The Codebreakers. Rev. ed. Scribner, 1996.',
+      'Rijmenants, Dirk. "NEMA: Neue Maschine." Cipher Machines & Cryptology. dirkrij.be.',
     ],
   },
 
@@ -834,6 +956,12 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'Affine Cipher (the 1×1 Hill cipher)', path: '/affine' },
       { label: 'Frequency Analysis (the attack Hill defeated)', path: '/frequency-analysis' },
     ],
+    citations: [
+      'Hill, Lester S. "Cryptography in an Algebraic Alphabet." American Mathematical Monthly 36, no. 6 (1929): 306–312.',
+      'Hill, Lester S. "Concerning Certain Linear Transformation Apparatus of Cryptography." American Mathematical Monthly 38, no. 3 (1931): 135–154.',
+      'Kahn, David. The Codebreakers. Rev. ed. Scribner, 1996. pp. 206–208.',
+      'Stinson, Douglas R. Cryptography: Theory and Practice. 3rd ed. CRC Press, 2005.',
+    ],
   },
 
   'chaocipher': {
@@ -865,6 +993,11 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'Vigenère (the periodic cipher Chaocipher improves on)', path: '/vigenere' },
       { label: 'One-Time Pad (the theoretically perfect cipher)', path: '/otp' },
       { label: 'LFSR (modern dynamic keystream generation)', path: '/lfsr' },
+    ],
+    citations: [
+      'Byrne, John F. Silent Years: An Autobiography with Memoirs of James Joyce and Our Ireland. Farrar, Straus and Young, 1953.',
+      'Moshal, Moshe, and Shmulik Tauber. "Chaocipher Revealed: The Algorithm." Cryptologia 34, no. 4 (2010): 362–374.',
+      'Kahn, David. The Codebreakers. Rev. ed. Scribner, 1996. pp. 779–780.',
     ],
   },
 
@@ -899,6 +1032,12 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'Block Cipher Modes (how block ciphers are used)', path: '/block-modes' },
       { label: 'Feistel structure: see DES rounds in action', path: '/des' },
     ],
+    citations: [
+      'NBS. "Data Encryption Standard." FIPS PUB 46. National Bureau of Standards, January 1977.',
+      'Diffie, Whitfield, and Martin E. Hellman. "Exhaustive Cryptanalysis of the NBS Data Encryption Standard." Computer 10, no. 6 (1977): 74–84.',
+      'EFF. Cracking DES: Secrets of Encryption Research, Wiretap Politics & Chip Design. O\'Reilly, 1998.',
+      'Biham, Eli, and Adi Shamir. Differential Cryptanalysis of the Data Encryption Standard. Springer, 1993.',
+    ],
   },
 
   'aes': {
@@ -931,6 +1070,12 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'Block Cipher Modes (how AES is actually used)', path: '/block-modes' },
       { label: 'Diffie-Hellman (often used alongside AES)', path: '/diffie-hellman' },
       { label: 'Hill Cipher (the linear algebra ancestor)', path: '/hill' },
+    ],
+    citations: [
+      'NIST. "Advanced Encryption Standard." FIPS PUB 197. November 2001.',
+      'Daemen, Joan, and Vincent Rijmen. The Design of Rijndael: AES — The Advanced Encryption Standard. Springer, 2002.',
+      'Stinson, Douglas R. Cryptography: Theory and Practice. 3rd ed. CRC Press, 2005.',
+      'NIST. "Report on the Development of the Advanced Encryption Standard." Journal of Research of NIST 106, no. 3 (2001).',
     ],
   },
 
@@ -965,6 +1110,11 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'Caesar Cipher (contemporary substitution)', path: '/caesar' },
       { label: 'Frequency Analysis (how transposition is broken)', path: '/frequency-analysis' },
     ],
+    citations: [
+      'Plutarch. "Life of Lysander." In Parallel Lives. ca. 100 CE. Trans. B. Perrin. Loeb Classical Library, 1916.',
+      'Kahn, David. The Codebreakers. Rev. ed. Scribner, 1996. pp. 71–74.',
+      'Singh, Simon. The Code Book. Anchor Books, 1999. Ch. 1.',
+    ],
   },
 
   'lfsr': {
@@ -997,6 +1147,12 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'Salsa20/ChaCha20 (non-LFSR stream ciphers)', path: '/salsa20' },
       { label: 'One-Time Pad (the theoretically perfect stream cipher)', path: '/otp' },
       { label: 'Lorenz SZ42 (WWII LFSR-based cipher)', path: '/lorenz-sz42' },
+    ],
+    citations: [
+      'Golomb, Solomon W. Shift Register Sequences. Holden-Day, 1967. Rev. ed. Aegean Park Press, 1982.',
+      'Berlekamp, Elwyn R. "Nonbinary BCH Decoding." IEEE Transactions on Information Theory 14, no. 2 (1968): 242–248.',
+      'Massey, James L. "Shift-Register Synthesis and BCH Decoding." IEEE Transactions on Information Theory 15, no. 1 (1969): 122–127.',
+      'Menezes, Alfred J., Paul C. van Oorschot, and Scott A. Vanstone. Handbook of Applied Cryptography. CRC Press, 1996. Ch. 6.',
     ],
   },
 
@@ -1031,6 +1187,12 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'Frequency Analysis (the attack Alberti defeated)', path: '/frequency-analysis' },
       { label: 'Autokey (Vigenère\'s self-keying improvement)', path: '/autokey' },
     ],
+    citations: [
+      'Alberti, Leon Battista. De Cifris. Rome, 1467. Trans. A. Zaccagnini as "A Treatise on Ciphers." Galimberti, 1997.',
+      'Kahn, David. The Codebreakers. Rev. ed. Scribner, 1996. pp. 127–131.',
+      'Singh, Simon. The Code Book. Anchor Books, 1999. Ch. 2.',
+      'Strasser, Gerhard F. "The Rise of Cryptology in the European Renaissance." In The History of Information Security, ed. Karl de Leeuw. Elsevier, 2007.',
+    ],
   },
 
   'polybius': {
@@ -1063,6 +1225,11 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'ADFGVX (Polybius + transposition)', path: '/adfgvx' },
       { label: 'Trifid (3D Polybius variant)', path: '/trifid' },
     ],
+    citations: [
+      'Polybius. The Histories. Vol. X, Ch. 45–47. ca. 150 BCE. Trans. W. R. Paton. Loeb Classical Library, 1922.',
+      'Kahn, David. The Codebreakers. Rev. ed. Scribner, 1996. pp. 82–83.',
+      'Solzhenitsyn, Aleksandr. The Gulag Archipelago. Harper & Row, 1973–1978.',
+    ],
   },
 
   'affine': {
@@ -1090,6 +1257,11 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'Hill Cipher (matrix generalization of affine)', path: '/hill' },
       { label: 'RSA (modular inverse at cryptographic scale)', path: '/rsa' },
       { label: 'Frequency Analysis (breaks affine instantly)', path: '/frequency-analysis' },
+    ],
+    citations: [
+      'Stinson, Douglas R. Cryptography: Theory and Practice. 3rd ed. CRC Press, 2005. Ch. 1.',
+      'Menezes, Alfred J., Paul C. van Oorschot, and Scott A. Vanstone. Handbook of Applied Cryptography. CRC Press, 1996. Ch. 7.',
+      'Kahn, David. The Codebreakers. Rev. ed. Scribner, 1996.',
     ],
   },
 
@@ -1123,6 +1295,11 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'Alberti (the inventor of polyalphabetic ciphers)', path: '/alberti' },
       { label: 'Vigenère Breaker (Kasiski/IC attack)', path: '/vigenere-breaker' },
     ],
+    citations: [
+      'Vigenère, Blaise de. Traicté des Chiffres, ou Secrètes Manières d\'Escrire. Paris: Abel l\'Angelier, 1586.',
+      'Kahn, David. The Codebreakers. Rev. ed. Scribner, 1996. pp. 148–151.',
+      'Friedman, William F. The Index of Coincidence and Its Applications in Cryptanalysis. Riverbank Laboratories, 1920.',
+    ],
   },
 
   'bifid': {
@@ -1155,6 +1332,11 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'Playfair (another Polybius-based digraph cipher)', path: '/playfair' },
       { label: 'AES (modern diffusion via MixColumns)', path: '/aes' },
     ],
+    citations: [
+      'Delastelle, Félix. Traité Élémentaire de Cryptographie. Paris: Gauthier-Villars, 1902.',
+      'Kahn, David. The Codebreakers. Rev. ed. Scribner, 1996. pp. 208–210.',
+      'Shannon, Claude E. "Communication Theory of Secrecy Systems." Bell System Technical Journal 28, no. 4 (1949): 656–715.',
+    ],
   },
 
   'trifid': {
@@ -1182,6 +1364,11 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'Polybius Square (the coordinate-encoding ancestor)', path: '/polybius' },
       { label: 'AES (modern confusion and diffusion)', path: '/aes' },
       { label: 'Playfair (contemporary digraph cipher)', path: '/playfair' },
+    ],
+    citations: [
+      'Delastelle, Félix. Traité Élémentaire de Cryptographie. Paris: Gauthier-Villars, 1902.',
+      'Kahn, David. The Codebreakers. Rev. ed. Scribner, 1996. pp. 208–210.',
+      'Shannon, Claude E. "Communication Theory of Secrecy Systems." Bell System Technical Journal 28, no. 4 (1949): 656–715.',
     ],
   },
 
@@ -1214,6 +1401,11 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'Morse Code (another symbolic encoding)', path: '/morse' },
       { label: 'Frequency Analysis (how Pigpen is broken)', path: '/frequency-analysis' },
       { label: 'Substitution Solver (solve Pigpen and other monoalphabetics)', path: '/substitution-solver' },
+    ],
+    citations: [
+      'Kahn, David. The Codebreakers. Rev. ed. Scribner, 1996. pp. 773–774.',
+      'Singh, Simon. The Code Book. Anchor Books, 1999.',
+      'Macoy, Robert. A Dictionary of Freemasonry. New York: Macoy Publishing, 1869.',
     ],
   },
 
@@ -1248,6 +1440,11 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'VIC Cipher (hand cipher using transposition)', path: '/vic-cipher' },
       { label: 'Frequency Analysis (how transposition is detected)', path: '/frequency-analysis' },
     ],
+    citations: [
+      'Kahn, David. The Codebreakers. Rev. ed. Scribner, 1996. pp. 232–236, 300–311.',
+      'Yardley, Herbert O. The American Black Chamber. Bobbs-Merrill, 1931.',
+      'Friedman, William F., and Lambros D. Callimahos. Military Cryptanalytics. Part I. Laguna Hills: Aegean Park Press, 1985.',
+    ],
   },
 
   'rail-fence': {
@@ -1274,6 +1471,11 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'Columnar Transposition (more flexible transposition)', path: '/columnar' },
       { label: 'Scytale (ancient transposition by rod)', path: '/scytale' },
       { label: 'Frequency Analysis (detects transposition ciphers)', path: '/frequency-analysis' },
+    ],
+    citations: [
+      'Kahn, David. The Codebreakers. Rev. ed. Scribner, 1996.',
+      'Stinson, Douglas R. Cryptography: Theory and Practice. 3rd ed. CRC Press, 2005. Ch. 1.',
+      'Singh, Simon. The Code Book. Anchor Books, 1999.',
     ],
   },
 
@@ -1307,6 +1509,12 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'Salsa20 (ChaCha20\'s predecessor)', path: '/salsa20' },
       { label: 'AES (block cipher alternative to RC4 in TLS)', path: '/aes' },
     ],
+    citations: [
+      'Fluhrer, Scott, Itsik Mantin, and Adi Shamir. "Weaknesses in the Key Scheduling Algorithm of RC4." In Selected Areas in Cryptography (SAC 2001), LNCS 2259. Springer, 2001. pp. 1–24.',
+      'AlFardan, Nadhem, et al. "On the Security of RC4 in TLS." In Proceedings of USENIX Security 2013.',
+      'IETF. RFC 7465: "Prohibiting RC4 Cipher Suites." February 2015.',
+      'Menezes, Alfred J., Paul C. van Oorschot, and Scott A. Vanstone. Handbook of Applied Cryptography. CRC Press, 1996. Ch. 6.',
+    ],
   },
 
   'sha256': {
@@ -1339,6 +1547,12 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'Digital Signatures (sign a SHA-256 hash, not the message)', path: '/digital-signature' },
       { label: 'RSA (often paired with SHA-256 in certificates)', path: '/rsa' },
     ],
+    citations: [
+      'NIST. "Secure Hash Standard." FIPS PUB 180-4. August 2015.',
+      'Wang, Xiaoyun, and Hongbo Yu. "How to Break MD5 and Other Hash Functions." In Advances in Cryptology — EUROCRYPT 2005, LNCS 3494. Springer, 2005.',
+      'Stevens, Marc, et al. "The First Collision for Full SHA-1." In Advances in Cryptology — CRYPTO 2017, LNCS 10401. Springer, 2017.',
+      'Nakamoto, Satoshi. "Bitcoin: A Peer-to-Peer Electronic Cash System." 2008.',
+    ],
   },
 
   'salsa20': {
@@ -1366,6 +1580,11 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'RC4 (the cipher Salsa20 helped retire)', path: '/rc4' },
       { label: 'LFSR (the classical stream cipher approach)', path: '/lfsr' },
       { label: 'AES (block cipher alternative, used in CTR mode)', path: '/aes' },
+    ],
+    citations: [
+      'Bernstein, Daniel J. "The Salsa20 Family of Stream Ciphers." In New Stream Cipher Designs, LNCS 4986. Springer, 2008. pp. 84–97.',
+      'Aumasson, Jean-Philippe, et al. "New Features of Latin Dances: Analysis of Salsa, ChaCha, and Rumba." In Fast Software Encryption (FSE 2008), LNCS 5086. Springer, 2008.',
+      'Bernstein, Daniel J., et al. eSTREAM: the ECRYPT Stream Cipher Project. ECRYPT Network of Excellence, 2005–2008.',
     ],
   },
 
@@ -1399,6 +1618,11 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'AES (the alternative; faster with hardware acceleration)', path: '/aes' },
       { label: 'HMAC (authentication counterpart to ChaCha20\'s Poly1305)', path: '/hmac' },
     ],
+    citations: [
+      'Bernstein, Daniel J. "ChaCha, a Variant of Salsa20." Workshop Record of SASC 2008.',
+      'Nir, Y., and A. Langley. RFC 8439: "ChaCha20 and Poly1305 for IETF Protocols." June 2018.',
+      'Langley, Adam, et al. "ChaCha20-Poly1305 Cipher Suites for Transport Layer Security (TLS)." IETF Internet Draft, 2014.',
+    ],
   },
 
   'elgamal': {
@@ -1430,6 +1654,11 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'RSA (the contemporary public-key system)', path: '/rsa' },
       { label: 'ECC (the modern discrete-log system)', path: '/ecc' },
       { label: 'Digital Signatures (ElGamal signature scheme → DSA)', path: '/digital-signature' },
+    ],
+    citations: [
+      'Elgamal, Taher. "A Public Key Cryptosystem and a Signature Scheme Based on Discrete Logarithms." IEEE Transactions on Information Theory 31, no. 4 (1985): 469–472.',
+      'Diffie, Whitfield, and Martin E. Hellman. "New Directions in Cryptography." IEEE Transactions on Information Theory 22, no. 6 (1976): 644–654.',
+      'Schneier, Bruce. Applied Cryptography. 2nd ed. Wiley, 1996. Ch. 19.',
     ],
   },
 
@@ -1463,6 +1692,12 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'ElGamal (the conceptual bridge between DH and ECC)', path: '/elgamal' },
       { label: 'Digital Signatures (ECDSA in practice)', path: '/digital-signature' },
     ],
+    citations: [
+      'Koblitz, Neal. "Elliptic Curve Cryptosystems." Mathematics of Computation 48, no. 177 (1987): 203–209.',
+      'Miller, Victor S. "Use of Elliptic Curves in Cryptography." In Advances in Cryptology — CRYPTO 1985, LNCS 218. Springer, 1986. pp. 417–426.',
+      'Bernstein, Daniel J., and Tanja Lange. "Curve25519: New Diffie-Hellman Speed Records." In Public Key Cryptography — PKC 2006, LNCS 3958. Springer, 2006.',
+      'Menezes, Alfred J., Paul C. van Oorschot, and Scott A. Vanstone. Handbook of Applied Cryptography. CRC Press, 1996. Ch. 4.',
+    ],
   },
 
   'fortuna': {
@@ -1495,6 +1730,11 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'RSA (breaks completely if random numbers are weak)', path: '/rsa' },
       { label: 'LFSR (the simple, insecure predecessor to CSPRNGs)', path: '/lfsr' },
     ],
+    citations: [
+      'Ferguson, Niels, and Bruce Schneier. Practical Cryptography. Wiley, 2003. Ch. 10.',
+      'Goldberg, Ian, and David Wagner. "Randomness and the Netscape Browser." Dr. Dobb\'s Journal, January 1996.',
+      'Checkoway, Stephen, et al. "On the Practical Exploitability of Dual EC in TLS Implementations." In Proceedings of USENIX Security 2014.',
+    ],
   },
 
   'morse': {
@@ -1526,6 +1766,11 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'Pigpen (another symbolic substitution)', path: '/pigpen' },
       { label: 'ADFGVX (designed for Morse transmission)', path: '/adfgvx' },
     ],
+    citations: [
+      'Standage, Tom. The Victorian Internet. Walker and Company, 1998.',
+      'Kahn, David. The Codebreakers. Rev. ed. Scribner, 1996. pp. 189–191.',
+      'ITU-R. "Recommendation M.1677-1: International Morse Code." International Telecommunication Union, 2009.',
+    ],
   },
 
   'pollux': {
@@ -1552,6 +1797,11 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'Morse Code (the encoding Pollux is built on)', path: '/morse' },
       { label: 'Vigenère (another polyalphabetic system)', path: '/vigenere' },
       { label: 'Frequency Analysis (the fundamental attack)', path: '/frequency-analysis' },
+    ],
+    citations: [
+      'Kahn, David. The Codebreakers. Rev. ed. Scribner, 1996.',
+      'Beker, Henry, and Fred Piper. Cipher Systems: The Protection of Communications. Wiley, 1982.',
+      'Menezes, Alfred J., Paul C. van Oorschot, and Scott A. Vanstone. Handbook of Applied Cryptography. CRC Press, 1996.',
     ],
   },
 
@@ -1585,6 +1835,11 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'Salsa20 (the other eSTREAM software winner)', path: '/salsa20' },
       { label: 'AES (KU Leuven\'s other famous cipher)', path: '/aes' },
     ],
+    citations: [
+      'De Cannière, Christophe, and Bart Preneel. "Trivium." In New Stream Cipher Designs, LNCS 4986. Springer, 2008. pp. 244–266.',
+      'Bernstein, Daniel J., et al. eSTREAM Final Report. ECRYPT, 2008.',
+      'Maximov, Alexander, and Alex Biryukov. "Two Trivial Attacks on Trivium." In Selected Areas in Cryptography (SAC 2007), LNCS 4876. Springer, 2007.',
+    ],
   },
 
   'hmac': {
@@ -1612,6 +1867,11 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'Password Hashing (PBKDF2 uses HMAC internally)', path: '/password-hashing' },
       { label: 'Digital Signatures (alternative to HMAC for authentication)', path: '/digital-signature' },
       { label: 'ChaCha20 (paired with Poly1305 instead of HMAC)', path: '/chacha20' },
+    ],
+    citations: [
+      'Bellare, Mihir, Ran Canetti, and Hugo Krawczyk. "Keyed Hash Functions and Message Authentication." In Advances in Cryptology — CRYPTO 1996, LNCS 1109. Springer, 1996. pp. 1–15.',
+      'Krawczyk, H., M. Bellare, and R. Canetti. RFC 2104: "HMAC: Keyed-Hashing for Message Authentication." February 1997.',
+      'NIST. "The Keyed-Hash Message Authentication Code (HMAC)." FIPS PUB 198-1. July 2008.',
     ],
   },
 
@@ -1645,6 +1905,11 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'Vigenère Breaker (frequency analysis on key-period slices)', path: '/vigenere-breaker' },
       { label: 'Index of Coincidence (statistical measure behind frequency analysis)', path: '/ioc' },
     ],
+    citations: [
+      'Al-Kindi, Abu Yusuf Yaqub. "Risalah fi Istikhraj al-Mu\'amma" (A Manuscript on Deciphering Cryptographic Messages). ca. 850 CE. First published in Arabic by al-Qalqashandi, 1412.',
+      'Singh, Simon. The Code Book. Anchor Books, 1999. Ch. 1.',
+      'Kahn, David. The Codebreakers. Rev. ed. Scribner, 1996. pp. 93–98.',
+    ],
   },
 
   'vigenere-breaker': {
@@ -1676,6 +1941,12 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'Index of Coincidence (the statistical tool)', path: '/ioc' },
       { label: 'Frequency Analysis (applied per-column after key length found)', path: '/frequency-analysis' },
       { label: 'Autokey (the improved Vigenère that resists Kasiski)', path: '/autokey' },
+    ],
+    citations: [
+      'Kasiski, Friedrich. Die Geheimschriften und die Dechiffrirkunst. Berlin: Mittler, 1863.',
+      'Friedman, William F. The Index of Coincidence and Its Applications in Cryptanalysis. Riverbank Laboratories Publication No. 22, 1920.',
+      'Singh, Simon. The Code Book. Anchor Books, 1999. Ch. 2.',
+      'Kahn, David. The Codebreakers. Rev. ed. Scribner, 1996. pp. 207–213.',
     ],
   },
 
@@ -1709,6 +1980,11 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'Frequency Analysis (the companion technique)', path: '/frequency-analysis' },
       { label: 'Autokey (resists IC analysis — non-periodic key)', path: '/autokey' },
     ],
+    citations: [
+      'Friedman, William F. The Index of Coincidence and Its Applications in Cryptanalysis. Riverbank Laboratories Publication No. 22, 1920.',
+      'Kahn, David. The Codebreakers. Rev. ed. Scribner, 1996. pp. 376–382.',
+      'Friedman, William F. Military Cryptanalysis. Parts I–IV. War Department, 1938–1941. Declassified and republished by Aegean Park Press.',
+    ],
   },
 
   'block-modes': {
@@ -1740,6 +2016,12 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'DES (the original block cipher modes were designed for)', path: '/des' },
       { label: 'ChaCha20 (stream cipher alternative to CTR mode)', path: '/chacha20' },
       { label: 'HMAC (authentication counterpart to GCM\'s GHASH)', path: '/hmac' },
+    ],
+    citations: [
+      'NIST. "Recommendation for Block Cipher Modes of Operation." Special Publication 800-38A. December 2001.',
+      'McGrew, David A., and John Viega. "The Galois/Counter Mode of Operation (GCM)." Submission to NIST Modes of Operation Process, 2004.',
+      'Rogaway, Phillip. "Evaluation of Some Blockcipher Modes of Operation." Cryptography Research Inc., 2011.',
+      'Bard, Gregory V. "The Vulnerability of SSL to Chosen-Plaintext Attack." IACR ePrint 2004/111.',
     ],
   },
 
@@ -1773,6 +2055,12 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'ECC (ECDSA and Ed25519 — smaller signatures)', path: '/ecc' },
       { label: 'Diffie-Hellman (the conceptual foundation)', path: '/diffie-hellman' },
     ],
+    citations: [
+      'Diffie, Whitfield, and Martin E. Hellman. "New Directions in Cryptography." IEEE Transactions on Information Theory 22, no. 6 (1976): 644–654.',
+      'Rivest, R. L., A. Shamir, and L. Adleman. "A Method for Obtaining Digital Signatures and Public-Key Cryptosystems." Communications of the ACM 21, no. 2 (1978): 120–126.',
+      'NIST. "Digital Signature Standard." FIPS PUB 186-5. February 2023.',
+      'European Parliament. "Regulation (EU) No 910/2014 on Electronic Identification and Trust Services (eIDAS)." 2014.',
+    ],
   },
 
   'password-hashing': {
@@ -1804,6 +2092,12 @@ const exhibits: Record<string, ExhibitContent> = {
       { label: 'HMAC (PBKDF2 uses HMAC-SHA256 internally)', path: '/hmac' },
       { label: 'One-Time Pad (the theoretical security ideal)', path: '/otp' },
       { label: 'Diffie-Hellman (secure channel to transmit passwords)', path: '/diffie-hellman' },
+    ],
+    citations: [
+      'Provos, Niels, and David Mazières. "A Future-Adaptable Password Scheme." In Proceedings of USENIX Annual Technical Conference, 1999.',
+      'Kaliski, B. RFC 2898: "PKCS #5: Password-Based Cryptography Specification Version 2.0." September 2000.',
+      'Biryukov, Alex, Daniel Dinu, and Dmitry Khovratovich. "Argon2: New Generation of Memory-Hard Functions for Password Hashing and Other Applications." In 2016 IEEE European Symposium on Security and Privacy (EuroS&P). IEEE, 2016.',
+      'NIST. "Digital Identity Guidelines: Authentication and Lifecycle Management." Special Publication 800-63B. 2017.',
     ],
   },
 
