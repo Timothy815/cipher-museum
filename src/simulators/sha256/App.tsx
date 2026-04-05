@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { Info, Copy, Check, Zap } from 'lucide-react';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 // ─── SHA-256 Constants ──────────────────────────────────────────────────
 const K = [
@@ -174,7 +175,9 @@ function App() {
   const tabInactive = 'bg-slate-800 border-slate-700 text-slate-400 hover:text-slate-200';
 
   return (
-    <div className="flex-1 bg-[#0d1117] flex flex-col items-center justify-start py-10 px-6 text-slate-200">
+    <div className="flex-1 bg-[#0d1117] flex flex-col">
+      <ExhibitPanel id="sha256" />
+      <div className="bg-[#0d1117] flex flex-col items-center justify-start py-10 px-6 text-slate-200">
       <div className="w-full max-w-5xl">
         {/* Header */}
         <div className="flex justify-between items-center mb-10">
@@ -566,6 +569,7 @@ function App() {
           </p>
         </div>
       </div>
+    </div>
     </div>
   );
 }

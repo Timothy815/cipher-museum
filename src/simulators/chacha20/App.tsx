@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { Info, X, RefreshCw, Play, ChevronLeft, ChevronRight } from 'lucide-react';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 // ── ChaCha20 core (RFC 8439) ────────────────────────────────────────────────
 
@@ -201,7 +202,9 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 bg-[#1a1814] flex flex-col items-center py-10 px-6 sm:px-10 md:px-16 text-stone-200">
+    <div className="flex-1 bg-[#1a1814] flex flex-col">
+      <ExhibitPanel id="chacha20" />
+      <div className="bg-[#1a1814] flex flex-col items-center py-10 px-6 sm:px-10 md:px-16 text-stone-200">
       <div className="w-full max-w-6xl">
         {/* Header */}
         <div className="flex justify-between items-center mb-10">
@@ -522,6 +525,7 @@ const App: React.FC = () => {
           )}
         </div>
       </div>
+    </div>
     </div>
   );
 };

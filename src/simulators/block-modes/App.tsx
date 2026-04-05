@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Info, RotateCcw } from 'lucide-react';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 // ── Simplified AES-like block cipher (deterministic, synchronous) ───
 // Uses a keyed permutation for educational purposes — the point is the MODE, not the cipher.
@@ -196,7 +197,9 @@ function App() {
   }, [blocks]);
 
   return (
-    <div className="flex-1 bg-[#0d1117] flex flex-col items-center justify-start py-10 px-6 text-slate-200">
+    <div className="flex-1 bg-[#0d1117] flex flex-col">
+      <ExhibitPanel id="block-modes" />
+      <div className="bg-[#0d1117] flex flex-col items-center justify-start py-10 px-6 text-slate-200">
       <div className="w-full max-w-5xl">
         {/* Header */}
         <div className="flex justify-between items-center mb-10">
@@ -547,6 +550,7 @@ function App() {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }

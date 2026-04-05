@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Info } from 'lucide-react';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 // ─── Pigpen cipher symbol definitions ───────────────────────────────────
 // Each letter maps to a path drawn on a small SVG canvas.
@@ -133,7 +134,9 @@ function App() {
   }, [cleanInput]);
 
   return (
-    <div className="flex-1 bg-[#16140e] flex flex-col items-center justify-start py-10 px-6 text-stone-200">
+    <div className="flex-1 bg-[#16140e] flex flex-col">
+      <ExhibitPanel id="pigpen" />
+      <div className="bg-[#16140e] flex flex-col items-center justify-start py-10 px-6 text-stone-200">
       <div className="w-full max-w-4xl">
         {/* Header */}
         <div className="flex justify-between items-center mb-10">
@@ -309,6 +312,7 @@ function App() {
           </p>
         </div>
       </div>
+    </div>
     </div>
   );
 }

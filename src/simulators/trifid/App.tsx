@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Info, RotateCcw } from 'lucide-react';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 // 27 symbols: 26 letters + "." as the 27th (filler/period)
 const TRIFID_ALPHA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ.';
@@ -114,7 +115,9 @@ function App() {
   const plainLetters = input.toUpperCase().split('').filter(c => cube.includes(c));
 
   return (
-    <div className="flex-1 bg-[#111318] flex flex-col items-center justify-start py-10 px-6 text-slate-200">
+    <div className="flex-1 bg-[#111318] flex flex-col">
+      <ExhibitPanel id="trifid" />
+      <div className="bg-[#111318] flex flex-col items-center justify-start py-10 px-6 text-slate-200">
       <div className="w-full max-w-4xl">
         {/* Header */}
         <div className="flex justify-between items-center mb-10">
@@ -327,6 +330,7 @@ function App() {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }

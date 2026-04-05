@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Info, RotateCcw, Check, X, ShieldCheck, ShieldX } from 'lucide-react';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 // ── Minimal SHA-256 ──────────────────────────────────────────────────
 const K = [
@@ -124,7 +125,9 @@ function App() {
   const preset = KEY_PRESETS[presetIdx];
 
   return (
-    <div className="flex-1 bg-[#0d1117] flex flex-col items-center justify-start py-10 px-6 text-slate-200">
+    <div className="flex-1 bg-[#0d1117] flex flex-col">
+      <ExhibitPanel id="digital-signature" />
+      <div className="bg-[#0d1117] flex flex-col items-center justify-start py-10 px-6 text-slate-200">
       <div className="w-full max-w-4xl">
 
         {/* Header */}
@@ -511,6 +514,7 @@ function App() {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }

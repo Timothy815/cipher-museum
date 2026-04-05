@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Info, RotateCcw, Shuffle } from 'lucide-react';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 // ─── Polybius Square logic ──────────────────────────────────────────────
 // Classic 5x5 grid (I/J merged) with configurable row/column headers.
@@ -124,7 +125,9 @@ function App() {
   }, [alphabet, headers, gridSize]);
 
   return (
-    <div className="flex-1 bg-[#141610] flex flex-col items-center justify-start py-10 px-6 text-stone-200">
+    <div className="flex-1 bg-[#141610] flex flex-col">
+      <ExhibitPanel id="polybius" />
+      <div className="bg-[#141610] flex flex-col items-center justify-start py-10 px-6 text-stone-200">
       <div className="w-full max-w-3xl">
         {/* Header */}
         <div className="flex justify-between items-center mb-10">
@@ -367,6 +370,7 @@ function App() {
           </p>
         </div>
       </div>
+    </div>
     </div>
   );
 }

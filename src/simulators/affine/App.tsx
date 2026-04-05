@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Info, RotateCcw } from 'lucide-react';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 const VALID_A = [1, 3, 5, 7, 9, 11, 15, 17, 19, 21, 23, 25]; // coprime with 26
@@ -75,7 +76,9 @@ function App() {
   }, [input]);
 
   return (
-    <div className="flex-1 bg-[#0f1419] flex flex-col items-center justify-start py-10 px-6 text-slate-200">
+    <div className="flex-1 bg-[#0f1419] flex flex-col">
+      <ExhibitPanel id="affine" />
+      <div className="bg-[#0f1419] flex flex-col items-center justify-start py-10 px-6 text-slate-200">
       <div className="w-full max-w-4xl">
         {/* Header */}
         <div className="flex justify-between items-center mb-10">
@@ -337,6 +340,7 @@ function App() {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }

@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { Info, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react';
 import ConfigSlots from '../shared/ConfigSlots';
 import TapeActions from '../shared/TapeActions';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 // ── Constants ─────────────────────────────────────────────────────────
 const OUTER_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -371,7 +372,9 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 bg-[#1a1814] flex flex-col items-center justify-start py-10 px-6 text-stone-200">
+    <div className="flex-1 bg-[#1a1814] flex flex-col">
+      <ExhibitPanel id="alberti" />
+      <div className="bg-[#1a1814] flex flex-col items-center justify-start py-10 px-6 text-stone-200">
       <div className="w-full max-w-4xl">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
@@ -634,6 +637,7 @@ const App: React.FC = () => {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 };

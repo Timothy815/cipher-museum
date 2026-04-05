@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useMemo, useRef } from 'react';
 import { Info, Play, RotateCcw, Zap, Plus, ArrowRight, BarChart3 } from 'lucide-react';
+import ExhibitPanel from '../../components/ExhibitPanel';
 import {
   createFortunaState, addEntropy, reseed, generateBytes, getReseedPools,
   byteFrequency, bitBalance, chiSquared, runsTest, monteCarloPi, toHex,
@@ -147,7 +148,9 @@ function App() {
   const maxPoolLen = Math.max(1, ...displayState.pools.map(p => p.length));
 
   return (
-    <div className="flex-1 bg-[#0d1117] flex flex-col items-center justify-start py-10 px-6 text-slate-200">
+    <div className="flex-1 bg-[#0d1117] flex flex-col">
+      <ExhibitPanel id="fortuna" />
+      <div className="bg-[#0d1117] flex flex-col items-center justify-start py-10 px-6 text-slate-200">
       <div className="w-full max-w-5xl">
         {/* Header */}
         <div className="flex justify-between items-center mb-10">
@@ -665,6 +668,7 @@ function App() {
           </p>
         </div>
       </div>
+    </div>
     </div>
   );
 }

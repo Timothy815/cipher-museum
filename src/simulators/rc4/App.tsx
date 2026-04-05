@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Info, RotateCcw } from 'lucide-react';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 function ksa(key: number[]): number[] {
   const S = Array.from({ length: 256 }, (_, i) => i);
@@ -72,7 +73,9 @@ function App() {
   const sBoxAfterKSA = useMemo(() => ksa(keyBytes), [keyBytes]);
 
   return (
-    <div className="flex-1 bg-[#0d1117] flex flex-col items-center justify-start py-10 px-6 text-slate-200">
+    <div className="flex-1 bg-[#0d1117] flex flex-col">
+      <ExhibitPanel id="rc4" />
+      <div className="bg-[#0d1117] flex flex-col items-center justify-start py-10 px-6 text-slate-200">
       <div className="w-full max-w-4xl">
         {/* Header */}
         <div className="flex justify-between items-center mb-10">
@@ -280,6 +283,7 @@ function App() {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }

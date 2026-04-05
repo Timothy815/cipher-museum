@@ -2,6 +2,7 @@ import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react'
 import { Info, Play, Square, Trash2, Volume2, VolumeX } from 'lucide-react';
 import { CHAR_TO_MORSE, MORSE_TO_CHAR, textToMorse, morseToText } from './morseCode';
 import { startTone, stopTone, playMorseString, getUnitMs } from './audioEngine';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 type KeyType = 'straight' | 'single-paddle' | 'dual-paddle';
 type Tab = 'keyer' | 'text';
@@ -301,7 +302,9 @@ function App() {
   const tabInactive = 'bg-stone-800 border-stone-700 text-stone-400 hover:text-stone-200';
 
   return (
-    <div className="flex-1 bg-[#17150f] flex flex-col items-center justify-start py-10 px-6 text-stone-200">
+    <div className="flex-1 bg-[#17150f] flex flex-col">
+      <ExhibitPanel id="morse" />
+      <div className="bg-[#17150f] flex flex-col items-center justify-start py-10 px-6 text-stone-200">
       <div className="w-full max-w-4xl">
         {/* Header */}
         <div className="flex justify-between items-center mb-10">
@@ -672,6 +675,7 @@ function App() {
           </p>
         </div>
       </div>
+    </div>
     </div>
   );
 }

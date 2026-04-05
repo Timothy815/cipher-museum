@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Info, RotateCcw, Shuffle } from 'lucide-react';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 // ─── Morse code tables ──────────────────────────────────────────────────
 const CHAR_TO_MORSE: Record<string, string> = {
@@ -186,7 +187,9 @@ function App() {
   const isValidKey = counts.dot >= 1 && counts.dash >= 1 && counts.separator >= 1;
 
   return (
-    <div className="flex-1 bg-[#0f1418] flex flex-col items-center justify-start py-10 px-6 text-stone-200">
+    <div className="flex-1 bg-[#0f1418] flex flex-col">
+      <ExhibitPanel id="pollux" />
+      <div className="bg-[#0f1418] flex flex-col items-center justify-start py-10 px-6 text-stone-200">
       <div className="w-full max-w-3xl">
         {/* Header */}
         <div className="flex justify-between items-center mb-10">
@@ -416,6 +419,7 @@ function App() {
           </p>
         </div>
       </div>
+    </div>
     </div>
   );
 }

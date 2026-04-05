@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { KeySquare, Info, X, ChevronRight, Lock } from 'lucide-react';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
@@ -241,7 +242,9 @@ const VigenereBreakerApp: React.FC = () => {
   const decryptedText = useMemo(() => vigenereDecrypt(clean, activeKey), [clean, activeKey]);
 
   return (
-    <div className="flex-1 bg-[#1a1814] text-stone-200 flex flex-col items-center px-6 py-8 sm:px-10 md:px-16">
+    <div className="flex-1 bg-[#1a1814] flex flex-col">
+      <ExhibitPanel id="vigenere-breaker" />
+      <div className="bg-[#1a1814] text-stone-200 flex flex-col items-center px-6 py-8 sm:px-10 md:px-16">
       <div className="w-full max-w-6xl">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -688,6 +691,7 @@ const VigenereBreakerApp: React.FC = () => {
 
         </div>)}
       </div>
+    </div>
     </div>
   );
 };

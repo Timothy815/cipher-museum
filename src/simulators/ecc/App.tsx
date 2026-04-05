@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { Info, X, Play, RotateCcw, Lock, Unlock, Shuffle, Copy, Check } from 'lucide-react';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 // ── Types ────────────────────────────────────────────────────────────
 type Point = { x: bigint; y: bigint } | 'infinity';
@@ -351,7 +352,9 @@ const App: React.FC = () => {
 
   // ── Render ─────────────────────────────────────────────────────────
   return (
-    <div className="flex-1 bg-[#1a1814] text-white flex flex-col items-center px-6 py-8 sm:px-10 md:px-16 md:py-8">
+    <div className="flex-1 bg-[#1a1814] flex flex-col">
+      <ExhibitPanel id="ecc" />
+      <div className="bg-[#1a1814] text-white flex flex-col items-center px-6 py-8 sm:px-10 md:px-16 md:py-8">
       <div className="w-full max-w-6xl space-y-8">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -1021,6 +1024,7 @@ const App: React.FC = () => {
           </>
         )}
       </div>
+    </div>
     </div>
   );
 };

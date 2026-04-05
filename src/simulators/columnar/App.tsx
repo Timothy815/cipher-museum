@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Info, RotateCcw, Shuffle } from 'lucide-react';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 // ─── Column colors ──────────────────────────────────────────────────────
 const COL_COLORS = [
@@ -198,7 +199,9 @@ function App() {
   }, [cleanKeyword]);
 
   return (
-    <div className="flex-1 bg-[#11140e] flex flex-col items-center justify-start py-10 px-6 text-stone-200">
+    <div className="flex-1 bg-[#11140e] flex flex-col">
+      <ExhibitPanel id="columnar" />
+      <div className="bg-[#11140e] flex flex-col items-center justify-start py-10 px-6 text-stone-200">
       <div className="w-full max-w-4xl">
         {/* Header */}
         <div className="flex justify-between items-center mb-10">
@@ -495,6 +498,7 @@ function App() {
           </p>
         </div>
       </div>
+    </div>
     </div>
   );
 }

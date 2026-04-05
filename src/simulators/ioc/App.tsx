@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Info, RotateCcw } from 'lucide-react';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
@@ -74,7 +75,9 @@ function App() {
   const maxIoC = Math.max(0.08, ...keyLengthAnalysis.map(r => r.avgIoC));
 
   return (
-    <div className="flex-1 bg-[#12100f] flex flex-col items-center justify-start py-10 px-6 text-slate-200">
+    <div className="flex-1 bg-[#12100f] flex flex-col">
+      <ExhibitPanel id="ioc" />
+      <div className="bg-[#12100f] flex flex-col items-center justify-start py-10 px-6 text-slate-200">
       <div className="w-full max-w-4xl">
         {/* Header */}
         <div className="flex justify-between items-center mb-10">
@@ -286,6 +289,7 @@ function App() {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }

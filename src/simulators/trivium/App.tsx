@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { Info, X, Play, Pause, SkipForward, RotateCcw, Lock, Unlock } from 'lucide-react';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 // ── Trivium state: 3 shift registers totaling 288 bits ──────────────
 // Register A: bits 0..92   (93 bits)
@@ -265,7 +266,9 @@ const App: React.FC = () => {
   const svgH = 3 * regH + 2 * regGap + 100;
 
   return (
-    <div className="flex-1 bg-slate-950 text-white flex flex-col items-center px-6 py-8 sm:px-10 md:px-16 md:py-8">
+    <div className="flex-1 bg-slate-950 flex flex-col">
+      <ExhibitPanel id="trivium" />
+      <div className="bg-slate-950 text-white flex flex-col items-center px-6 py-8 sm:px-10 md:px-16 md:py-8">
       <div className="w-full max-w-6xl space-y-8">
 
         {/* Header */}
@@ -657,6 +660,7 @@ const App: React.FC = () => {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 };

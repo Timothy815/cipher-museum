@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { Info, X, RefreshCw, Play, SkipForward, RotateCcw } from 'lucide-react';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 // ── Salsa20 Core ──────────────────────────────────────────────────────────────
 
@@ -249,7 +250,9 @@ const App: React.FC = () => {
   }, [allSteps.length]);
 
   return (
-    <div className="flex-1 bg-[#1a1814] flex flex-col items-center py-10 px-6 sm:px-10 md:px-16 text-stone-200 overflow-y-auto">
+    <div className="flex-1 bg-[#1a1814] flex flex-col">
+      <ExhibitPanel id="salsa20" />
+      <div className="bg-[#1a1814] flex flex-col items-center py-10 px-6 sm:px-10 md:px-16 text-stone-200 overflow-y-auto">
       <div className="w-full max-w-6xl space-y-8">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
@@ -616,6 +619,7 @@ const App: React.FC = () => {
 
       {/* Spacer at bottom */}
       <div className="h-10" />
+    </div>
     </div>
   );
 };

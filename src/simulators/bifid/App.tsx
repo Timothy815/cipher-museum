@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Info, RotateCcw } from 'lucide-react';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 const DEFAULT_KEY = 'BGWKZQPNDSIOAXEFCLUMTHYVR'; // 25-letter key (I/J combined)
 const DISPLAY_ALPHA = 'ABCDEFGHIKLMNOPQRSTUVWXYZ'; // no J
@@ -106,7 +107,9 @@ function App() {
   const plainLetters = input.toUpperCase().replace(/J/g, 'I').split('').filter(c => DISPLAY_ALPHA.includes(c));
 
   return (
-    <div className="flex-1 bg-[#141118] flex flex-col items-center justify-start py-10 px-6 text-slate-200">
+    <div className="flex-1 bg-[#141118] flex flex-col">
+      <ExhibitPanel id="bifid" />
+      <div className="bg-[#141118] flex flex-col items-center justify-start py-10 px-6 text-slate-200">
       <div className="w-full max-w-4xl">
         {/* Header */}
         <div className="flex justify-between items-center mb-10">
@@ -330,6 +333,7 @@ function App() {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }

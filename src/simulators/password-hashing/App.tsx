@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { Info, RotateCcw, RefreshCw, Check, X, ShieldCheck } from 'lucide-react';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 // ── SHA-256 ──────────────────────────────────────────────────────────
 const SHA_K = [
@@ -195,7 +196,9 @@ export default function App() {
   }
 
   return (
-    <div className="flex-1 bg-[#0d1117] flex flex-col items-center py-10 px-6 text-slate-200">
+    <div className="flex-1 bg-[#0d1117] flex flex-col">
+      <ExhibitPanel id="password-hashing" />
+      <div className="bg-[#0d1117] flex flex-col items-center py-10 px-6 text-slate-200">
       <div className="w-full max-w-4xl">
 
         {/* Header */}
@@ -533,6 +536,7 @@ export default function App() {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }

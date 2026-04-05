@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Info, RotateCcw } from 'lucide-react';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 // ─── Rail colors (one per rail, cycling) ────────────────────────────────
 const RAIL_COLORS = [
@@ -143,7 +144,9 @@ function App() {
   const isTruncated = vizText.length > maxDisplayCols;
 
   return (
-    <div className="flex-1 bg-[#14120e] flex flex-col items-center justify-start py-10 px-6 text-stone-200">
+    <div className="flex-1 bg-[#14120e] flex flex-col">
+      <ExhibitPanel id="rail-fence" />
+      <div className="bg-[#14120e] flex flex-col items-center justify-start py-10 px-6 text-stone-200">
       <div className="w-full max-w-4xl">
         {/* Header */}
         <div className="flex justify-between items-center mb-10">
@@ -392,6 +395,7 @@ function App() {
           </p>
         </div>
       </div>
+    </div>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { BarChart3, Info, X } from 'lucide-react';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
@@ -222,7 +223,9 @@ const FrequencyAnalysisApp: React.FC = () => {
   const top5 = new Set(sortedByFreq.slice(0, 5));
 
   return (
-    <div className="flex-1 bg-[#1a1814] text-stone-200 flex flex-col items-center px-6 py-8 sm:px-10 md:px-16">
+    <div className="flex-1 bg-[#1a1814] flex flex-col">
+      <ExhibitPanel id="frequency-analysis" />
+      <div className="bg-[#1a1814] text-stone-200 flex flex-col items-center px-6 py-8 sm:px-10 md:px-16">
       <div className="w-full max-w-6xl">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -656,6 +659,7 @@ const FrequencyAnalysisApp: React.FC = () => {
           </div>
         )}
       </div>
+    </div>
     </div>
   );
 };

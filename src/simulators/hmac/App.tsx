@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Info, RotateCcw } from 'lucide-react';
+import ExhibitPanel from '../../components/ExhibitPanel';
 
 // Minimal SHA-256 for educational HMAC (works in browser without crypto API)
 function sha256(message: Uint8Array): Uint8Array {
@@ -133,7 +134,9 @@ function App() {
     : 0;
 
   return (
-    <div className="flex-1 bg-[#0f1115] flex flex-col items-center justify-start py-10 px-6 text-slate-200">
+    <div className="flex-1 bg-[#0f1115] flex flex-col">
+      <ExhibitPanel id="hmac" />
+      <div className="bg-[#0f1115] flex flex-col items-center justify-start py-10 px-6 text-slate-200">
       <div className="w-full max-w-4xl">
         {/* Header */}
         <div className="flex justify-between items-center mb-10">
@@ -332,6 +335,7 @@ function App() {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }
