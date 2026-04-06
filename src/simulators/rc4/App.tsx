@@ -52,23 +52,36 @@ function hexToBytes(hex: string): number[] {
   return bytes;
 }
 
+function bytesToText(bytes: number[]): string {
+  try {
+    return new TextDecoder('utf-8', { fatal: true }).decode(new Uint8Array(bytes));
+  } catch {
+    return '';
+  }
+}
+
 function App() {
   const [key, setKey] = useState('SECRET');
   const [input, setInput] = useState('');
-  const [mode, setMode] = useState<'text' | 'hex'>('text');
+  const [direction, setDirection] = useState<'encrypt' | 'decrypt'>('encrypt');
   const [showInfo, setShowInfo] = useState(false);
   const [showSBox, setShowSBox] = useState(false);
 
   const keyBytes = useMemo(() => textToBytes(key || 'A'), [key]);
   const inputBytes = useMemo(() => {
-    if (mode === 'hex') return hexToBytes(input);
+    if (direction === 'decrypt') return hexToBytes(input);
     return textToBytes(input);
-  }, [input, mode]);
+  }, [input, direction]);
 
   const result = useMemo(() => {
     if (inputBytes.length === 0) return { output: [], keystream: [], states: [] };
     return rc4(inputBytes, keyBytes);
   }, [inputBytes, keyBytes]);
+
+  const decryptedText = useMemo(() => {
+    if (direction === 'decrypt' && result.output.length > 0) return bytesToText(result.output);
+    return '';
+  }, [direction, result.output]);
 
   const sBoxAfterKSA = useMemo(() => ksa(keyBytes), [keyBytes]);
 
@@ -138,41 +151,64 @@ function App() {
           </div>
         )}
 
-        {/* Mode + Input/Output */}
+        {/* Direction toggle */}
         <div className="flex justify-center gap-2 mb-6">
-          <button onClick={() => setMode('text')}
+          <button onClick={() => { setDirection('encrypt'); setInput(''); }}
             className={`px-6 py-2 rounded-lg font-bold text-sm border transition-colors ${
-              mode === 'text' ? 'bg-orange-900/50 border-orange-700 text-orange-300' : 'bg-slate-800 border-slate-700 text-slate-400'
+              direction === 'encrypt' ? 'bg-orange-900/50 border-orange-700 text-orange-300' : 'bg-slate-800 border-slate-700 text-slate-400'
             }`}
-          >TEXT INPUT</button>
-          <button onClick={() => setMode('hex')}
+          >ENCRYPT</button>
+          <button onClick={() => { setDirection('decrypt'); setInput(''); }}
             className={`px-6 py-2 rounded-lg font-bold text-sm border transition-colors ${
-              mode === 'hex' ? 'bg-orange-900/50 border-orange-700 text-orange-300' : 'bg-slate-800 border-slate-700 text-slate-400'
+              direction === 'decrypt' ? 'bg-orange-900/50 border-orange-700 text-orange-300' : 'bg-slate-800 border-slate-700 text-slate-400'
             }`}
-          >HEX INPUT</button>
+          >DECRYPT</button>
         </div>
 
         <div className="grid md:grid-cols-2 gap-6 mb-8">
           <div>
             <label className="block text-xs text-slate-400 font-bold uppercase tracking-wider mb-2">
-              {mode === 'text' ? 'Plaintext' : 'Hex Input'}
+              {direction === 'encrypt' ? 'Plaintext' : 'Ciphertext (hex)'}
             </label>
             <textarea
               value={input}
-              onChange={e => setInput(mode === 'hex' ? e.target.value : e.target.value)}
-              placeholder={mode === 'text' ? 'TYPE YOUR MESSAGE...' : '48 65 6c 6c 6f ...'}
+              onChange={e => setInput(e.target.value)}
+              placeholder={direction === 'encrypt' ? 'TYPE YOUR MESSAGE...' : 'PASTE HEX CIPHERTEXT...'}
               className="w-full h-32 bg-slate-900 border border-slate-700 rounded-xl p-4 font-mono text-sm tracking-wider focus:outline-none focus:ring-2 focus:ring-orange-500/50 resize-none text-slate-200 placeholder-slate-700"
               spellCheck={false}
             />
           </div>
           <div>
-            <label className="block text-xs text-orange-400 font-bold uppercase tracking-wider mb-2">
-              Ciphertext (hex)
-            </label>
-            <div className="w-full h-32 bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 font-mono text-sm tracking-wider text-orange-200 overflow-y-auto break-all">
-              {result.output.length > 0
-                ? bytesToHex(result.output)
-                : <span className="text-slate-700">...</span>}
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-xs text-orange-400 font-bold uppercase tracking-wider">
+                {direction === 'encrypt' ? 'Ciphertext (hex)' : 'Plaintext'}
+              </label>
+              {direction === 'encrypt' && result.output.length > 0 && (
+                <button
+                  onClick={() => { setDirection('decrypt'); setInput(bytesToHex(result.output)); }}
+                  className="text-[10px] text-orange-500 hover:text-orange-300 font-mono border border-orange-800/50 hover:border-orange-600 rounded px-2 py-0.5 transition-colors"
+                >
+                  → Decrypt this
+                </button>
+              )}
+            </div>
+            <div className="w-full h-32 bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 font-mono text-sm tracking-wider overflow-y-auto break-all">
+              {direction === 'encrypt' ? (
+                result.output.length > 0
+                  ? <span className="text-orange-200">{bytesToHex(result.output)}</span>
+                  : <span className="text-slate-700">...</span>
+              ) : (
+                result.output.length > 0 ? (
+                  <div className="space-y-2">
+                    {decryptedText ? (
+                      <div className="text-green-300">{decryptedText}</div>
+                    ) : (
+                      <div className="text-slate-500 text-xs italic">Output is not valid UTF-8 text</div>
+                    )}
+                    <div className="text-slate-600 text-xs border-t border-slate-700/50 pt-2">{bytesToHex(result.output)}</div>
+                  </div>
+                ) : <span className="text-slate-700">...</span>
+              )}
             </div>
           </div>
         </div>
@@ -185,7 +221,7 @@ function App() {
             </div>
             <div className="space-y-2 font-mono text-xs">
               <div className="flex items-center gap-1">
-                <span className="text-slate-600 w-20 shrink-0 text-right pr-2">Input:</span>
+                <span className="text-slate-600 w-20 shrink-0 text-right pr-2">{direction === 'encrypt' ? 'Plaintext' : 'Ciphertext'}:</span>
                 {inputBytes.slice(0, 16).map((b, i) => (
                   <div key={i} className="w-10 h-7 flex items-center justify-center rounded bg-slate-800/60 text-slate-300">
                     {b.toString(16).padStart(2, '0')}
@@ -207,7 +243,7 @@ function App() {
                 ))}
               </div>
               <div className="flex items-center gap-1">
-                <span className="text-slate-600 w-20 shrink-0 text-right pr-2">Output:</span>
+                <span className="text-slate-600 w-20 shrink-0 text-right pr-2">{direction === 'encrypt' ? 'Ciphertext' : 'Plaintext'}:</span>
                 {result.output.slice(0, 16).map((b, i) => (
                   <div key={i} className="w-10 h-7 flex items-center justify-center rounded bg-orange-900/40 text-orange-300 font-bold border border-orange-700/40">
                     {b.toString(16).padStart(2, '0')}
