@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { Swords, Info, X, Check, Copy, ChevronRight, Lightbulb, Lock } from 'lucide-react';
+import { Swords, Info, X, Check, Copy, ChevronRight, Lightbulb, Lock, ShieldQuestion, BookOpen, Shuffle } from 'lucide-react';
 
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
@@ -13,7 +13,125 @@ const DEMO_PLAINTEXT =
   'THE VIGENERE CIPHER WAS LONG CONSIDERED UNBREAKABLE AND WAS KNOWN AS LE CHIFFRE INDECHIFFRABLE FOR NEARLY THREE HUNDRED YEARS UNTIL CHARLES BABBAGE AND FRIEDRICH KASISKI INDEPENDENTLY DISCOVERED METHODS TO CRACK IT USING REPEATED SEQUENCES AND FREQUENCY ANALYSIS';
 const DEMO_KEY = 'KASISKI';
 
-// ── Vigenère helpers ────────────────────────────────────────────────
+// ── Challenge library ────────────────────────────────────────────────
+
+interface Challenge {
+  id: number;
+  title: string;
+  source: string;
+  difficulty: 'easy' | 'medium' | 'hard';
+  text: string;
+}
+
+// Word keys by difficulty — chosen so that key length is discoverable via Kasiski
+const EASY_KEYS   = ['LEMON', 'RIVER', 'STONE', 'FLAME', 'OCEAN'];
+const MEDIUM_KEYS = ['BABBAGE', 'ENIGMA', 'NEWTON', 'DARWIN', 'CAESAR'];
+const HARD_KEYS   = ['KASISKI', 'FREQUENCY', 'BLETCHLEY', 'POLYMATH', 'COINCIDE'];
+
+const CHALLENGES: Challenge[] = [
+  {
+    id: 1, difficulty: 'easy', title: 'The Gettysburg Address',
+    source: 'Abraham Lincoln, 1863',
+    text: 'FOUR SCORE AND SEVEN YEARS AGO OUR FATHERS BROUGHT FORTH ON THIS CONTINENT A NEW NATION CONCEIVED IN LIBERTY AND DEDICATED TO THE PROPOSITION THAT ALL MEN ARE CREATED EQUAL NOW WE ARE ENGAGED IN A GREAT CIVIL WAR TESTING WHETHER THAT NATION OR ANY NATION SO CONCEIVED AND SO DEDICATED CAN LONG ENDURE',
+  },
+  {
+    id: 2, difficulty: 'easy', title: 'Sherlock Holmes',
+    source: 'Arthur Conan Doyle, A Study in Scarlet, 1887',
+    text: 'WHEN YOU HAVE ELIMINATED THE IMPOSSIBLE WHATEVER REMAINS HOWEVER IMPROBABLE MUST BE THE TRUTH THE WORLD IS FULL OF OBVIOUS THINGS WHICH NOBODY BY ANY CHANCE EVER OBSERVES IT IS A CAPITAL MISTAKE TO THEORIZE BEFORE ONE HAS DATA',
+  },
+  {
+    id: 3, difficulty: 'easy', title: 'Declaration of Independence',
+    source: 'Thomas Jefferson, 1776',
+    text: 'WE HOLD THESE TRUTHS TO BE SELF EVIDENT THAT ALL MEN ARE CREATED EQUAL THAT THEY ARE ENDOWED BY THEIR CREATOR WITH CERTAIN UNALIENABLE RIGHTS THAT AMONG THESE ARE LIFE LIBERTY AND THE PURSUIT OF HAPPINESS THAT TO SECURE THESE RIGHTS GOVERNMENTS ARE INSTITUTED AMONG MEN',
+  },
+  {
+    id: 4, difficulty: 'easy', title: 'The Art of War',
+    source: 'Sun Tzu, ca. 500 BCE',
+    text: 'IF YOU KNOW THE ENEMY AND KNOW YOURSELF YOU NEED NOT FEAR THE RESULT OF A HUNDRED BATTLES IF YOU KNOW YOURSELF BUT NOT THE ENEMY FOR EVERY VICTORY GAINED YOU WILL ALSO SUFFER A DEFEAT IF YOU KNOW NEITHER THE ENEMY NOR YOURSELF YOU WILL SUCCUMB IN EVERY BATTLE',
+  },
+  {
+    id: 5, difficulty: 'easy', title: 'Benjamin Franklin on Secrets',
+    source: 'Benjamin Franklin, Poor Richard\'s Almanack, 1735',
+    text: 'THREE MAY KEEP A SECRET IF TWO OF THEM ARE DEAD A SECRET BETWEEN TWO PEOPLE IS NO LONGER A SECRET BETWEEN THREE IT IS A RUMOUR BETWEEN MORE IT IS COMMON KNOWLEDGE THE ONLY SECRET A MAN CAN KEEP IS THE ONE HE KNOWS ALONE',
+  },
+  {
+    id: 6, difficulty: 'easy', title: 'To Be or Not to Be',
+    source: 'William Shakespeare, Hamlet, 1603',
+    text: 'TO BE OR NOT TO BE THAT IS THE QUESTION WHETHER IT IS NOBLER IN THE MIND TO SUFFER THE SLINGS AND ARROWS OF OUTRAGEOUS FORTUNE OR TO TAKE ARMS AGAINST A SEA OF TROUBLES AND BY OPPOSING END THEM TO DIE TO SLEEP NO MORE',
+  },
+  {
+    id: 7, difficulty: 'medium', title: 'Alan Turing on Intelligence',
+    source: 'Alan Turing, Computing Machinery and Intelligence, 1950',
+    text: 'I PROPOSE TO CONSIDER THE QUESTION CAN MACHINES THINK THE ORIGINAL QUESTION WHETHER A MACHINE CAN THINK IS TOO MEANINGLESS TO DESERVE DISCUSSION A COMPUTER WOULD DESERVE TO BE CALLED INTELLIGENT IF IT COULD DECEIVE A HUMAN INTO BELIEVING THAT IT WAS HUMAN WE CAN ONLY SEE A SHORT DISTANCE AHEAD BUT WE CAN SEE PLENTY THERE THAT NEEDS TO BE DONE',
+  },
+  {
+    id: 8, difficulty: 'medium', title: 'Kerckhoffs\'s Principle',
+    source: 'Auguste Kerckhoffs, La Cryptographie Militaire, 1883',
+    text: 'A CRYPTOSYSTEM SHOULD BE SECURE EVEN IF EVERYTHING ABOUT THE SYSTEM EXCEPT THE KEY IS PUBLIC KNOWLEDGE THE ENEMY KNOWS THE SYSTEM SECURITY MUST DEPEND ON THE KEY ALONE A CIPHER IS BROKEN WHEN THE CRYPTANALYST CAN DECIPHER MESSAGES WITHOUT KNOWLEDGE OF THE KEY REGARDLESS OF HOW COMPLEX THE ALGORITHM APPEARS',
+  },
+  {
+    id: 9, difficulty: 'medium', title: 'Shannon on Secrecy',
+    source: 'Claude Shannon, Communication Theory of Secrecy Systems, 1949',
+    text: 'THE ENEMY KNOWS THE SYSTEM ANY SECRECY MUST RESIDE IN THE KEY A SYSTEM MAY BE CALLED THEORETICALLY UNBREAKABLE WHEN THE ENEMY EVEN WITH UNLIMITED TIME AND RESOURCES CANNOT DECIPHER IT THE AMOUNT OF INFORMATION IN THE KEY MUST BE AT LEAST AS GREAT AS THE AMOUNT OF INFORMATION IN THE MESSAGE',
+  },
+  {
+    id: 10, difficulty: 'medium', title: 'Newton\'s Laws of Motion',
+    source: 'Isaac Newton, Principia Mathematica, 1687',
+    text: 'EVERY BODY CONTINUES IN ITS STATE OF REST OR UNIFORM MOTION IN A STRAIGHT LINE UNLESS IT IS COMPELLED TO CHANGE THAT STATE BY FORCES IMPRESSED UPON IT THE CHANGE OF MOTION IS PROPORTIONAL TO THE MOTIVE FORCE IMPRESSED AND TAKES PLACE ALONG THE LINE IN WHICH THAT FORCE IS IMPRESSED TO EVERY ACTION THERE IS ALWAYS OPPOSED AN EQUAL REACTION',
+  },
+  {
+    id: 11, difficulty: 'medium', title: 'The Enigma Machine',
+    source: 'David Kahn, The Codebreakers, 1967',
+    text: 'THE ENIGMA MACHINE COMBINED THREE ROTORS A PLUGBOARD AND A REFLECTOR TO CREATE A CIPHER OF STAGGERING COMPLEXITY THE ROTORS STEPPED WITH EACH KEYSTROKE SO THAT THE SAME LETTER PRESSED TWICE IN SUCCESSION WOULD PRODUCE TWO DIFFERENT CIPHERTEXT LETTERS THE GERMAN HIGH COMMAND BELIEVED THE SYSTEM WAS MATHEMATICALLY UNBREAKABLE',
+  },
+  {
+    id: 12, difficulty: 'medium', title: 'Julius Caesar on the Rubicon',
+    source: 'Suetonius, Lives of the Twelve Caesars, ca. 121 CE',
+    text: 'CAESAR DROVE ON WITH HIS TROOPS AND WHEN HE REACHED THE RUBICON HE PAUSED FOR HE WELL KNEW THE LAWS OF ROME FORBADE ANY GENERAL TO CROSS THAT RIVER UNDER ARMS THEN LOOKING ACROSS THE STREAM HE SAID THE DIE IS CAST AND HE CROSSED INTO GAUL WITH ALL HIS LEGIONS BEHIND HIM',
+  },
+  {
+    id: 13, difficulty: 'hard', title: 'The Black Chamber',
+    source: 'Herbert O. Yardley, The American Black Chamber, 1931',
+    text: 'STATESMEN AND DIPLOMATS OF EVERY NATION WERE COMMUNICATING WITH EACH OTHER BY CODE AND CIPHER IN THE BELIEF THAT THEIR SECRETS WERE INVIOLATE THE AMERICAN BLACK CHAMBER HAD PENETRATED THE CODES OF TWENTY COUNTRIES THE JAPANESE DIPLOMATIC CODE WAS BROKEN IN NINETEEN TWENTY AND ITS CONTENTS LAID BEFORE THE AMERICAN DELEGATION AT THE WASHINGTON NAVAL CONFERENCE THE JAPANESE NEVER SUSPECTED THAT THEIR MOST SECRET COMMUNICATIONS HAD BEEN READ BY THEIR ADVERSARIES',
+  },
+  {
+    id: 14, difficulty: 'hard', title: 'Al-Kindi on Cryptanalysis',
+    source: 'Al-Kindi, A Manuscript on Deciphering Cryptographic Messages, ca. 850 CE',
+    text: 'ONE WAY TO SOLVE AN ENCRYPTED MESSAGE IS TO FIND A PLAINTEXT OF THE SAME LANGUAGE LONG ENOUGH TO FILL ONE SHEET AND THEN COUNT EACH LETTER THE MOST FREQUENT LETTER IS PROBABLY THE MOST COMMON IN THAT TONGUE CALL THIS LETTER THE FIRST AND SO ON UNTIL YOU HAVE ACCOUNTED FOR ALL THE LETTERS IN THE CRYPTOGRAM THEN OBSERVE THE CRYPTOGRAM YOU WISH TO SOLVE AND CLASSIFY ITS SYMBOLS BY FREQUENCY AND REPLACE THE MOST COMMON SYMBOL WITH THE FIRST LETTER OF THE PLAINTEXT ALPHABET',
+  },
+  {
+    id: 15, difficulty: 'hard', title: 'Bletchley Park',
+    source: 'F. H. Hinsley, British Intelligence in the Second World War, 1979',
+    text: 'THE WORK DONE AT BLETCHLEY PARK SHORTENED THE WAR IN EUROPE BY NOT LESS THAN TWO YEARS AND PROBABLY BY FOUR YEARS WITHOUT IT THE OUTCOME OF THE WAR AGAINST GERMANY WOULD AT LEAST HAVE BEEN IN DOUBT THE TOTAL NUMBER OF MESSAGES DECODED EXCEEDED TWO HUNDRED MILLION BY THE WAR\'S END THE PARK EMPLOYED NEARLY NINE THOUSAND PEOPLE AT ITS PEAK INCLUDING MATHEMATICIANS LINGUISTS CHESS CHAMPIONS AND CROSSWORD ENTHUSIASTS ALL SWORN TO ABSOLUTE SECRECY',
+  },
+  {
+    id: 16, difficulty: 'hard', title: 'Friedman on the Index of Coincidence',
+    source: 'William F. Friedman, The Index of Coincidence, 1922',
+    text: 'CRYPTANALYSIS IS THE SCIENCE OF RECOVERING THE PLAINTEXT OF A MESSAGE WITHOUT KNOWLEDGE OF THE KEY IT IS FUNDAMENTALLY A PROBLEM IN APPLIED PROBABILITY AND STATISTICS THE CRYPTANALYST MUST EXPLOIT EVERY STRUCTURAL REGULARITY IN LANGUAGE LETTER FREQUENCIES DIGRAPH FREQUENCIES WORD PATTERNS AND GRAMMATICAL CONSTRAINTS THE INDEX OF COINCIDENCE MEASURES HOW UNEVEN THE LETTER DISTRIBUTION IS IN A SAMPLE OF TEXT AND CAN BE USED TO DISTINGUISH A MONOALPHABETIC FROM A POLYALPHABETIC CIPHER',
+  },
+  {
+    id: 17, difficulty: 'hard', title: 'The Venona Project',
+    source: 'Robert Louis Benson, The Venona Story, NSA, 1996',
+    text: 'THE VENONA PROJECT BEGAN IN NINETEEN FORTY THREE WHEN AMERICAN CRYPTANALYSTS NOTICED THAT SOME SOVIET DIPLOMATIC TRAFFIC WAS ENCIPHERED USING ONE TIME PADS WHOSE PAGES HAD BEEN DUPLICATED IN VIOLATION OF THE FUNDAMENTAL RULE THIS REUSE CREATED STATISTICAL REGULARITIES THAT PERMITTED PARTIAL RECONSTRUCTION OF MORE THAN TWO THOUSAND MESSAGES EXCHANGED BETWEEN MOSCOW AND ITS AGENTS OPERATING INSIDE THE UNITED STATES GOVERNMENT THE PROJECT REMAINED CLASSIFIED UNTIL NINETEEN NINETY FIVE',
+  },
+  {
+    id: 18, difficulty: 'hard', title: 'Babbage and the Vigenère',
+    source: 'Simon Singh, The Code Book, 1999',
+    text: 'CHARLES BABBAGE CRACKED THE VIGENERE CIPHER AROUND EIGHTEEN FIFTY FOUR BUT NEVER PUBLISHED HIS WORK SOME HISTORIANS BELIEVE HE WAS ASKED TO KEEP HIS METHOD SECRET BY BRITISH MILITARY INTELLIGENCE WHICH WISHED TO EXPLOIT THE TECHNIQUE AGAINST RUSSIAN COMMUNICATIONS DURING THE CRIMEAN WAR NINE YEARS LATER FRIEDRICH KASISKI INDEPENDENTLY PUBLISHED THE SAME ATTACK AND RECEIVED ALL THE CREDIT IN THE SCIENTIFIC LITERATURE THE KEY INSIGHT WAS THAT REPEATED PLAINTEXT FRAGMENTS ENCRYPTED BY THE SAME PORTION OF THE KEY PRODUCE IDENTICAL CIPHERTEXT TRIGRAMS',
+  },
+  {
+    id: 19, difficulty: 'hard', title: 'The Voynich Manuscript',
+    source: 'Mary E. D\'Imperio, The Voynich Manuscript: An Elegant Enigma, 1978',
+    text: 'THE VOYNICH MANUSCRIPT HAS DEFIED EVERY ATTEMPT AT DECIPHERMENT SINCE ITS REDISCOVERY IN NINETEEN TWELVE ITS VELLUM HAS BEEN DATED TO THE EARLY FIFTEENTH CENTURY THE SCRIPT PROCEEDS LEFT TO RIGHT WITH CONSISTENT WORD AND LETTER FREQUENCIES SUGGESTING A GENUINE UNDERLYING LANGUAGE OR CODE RATHER THAN RANDOM INVENTION YET NO CRYPTANALYST HAS EXTRACTED A SINGLE CONFIRMED WORD OF MEANING DESPITE EFFORTS BY THE MOST ACCOMPLISHED CODEBREAKERS OF THE TWENTIETH CENTURY INCLUDING VETERANS OF BLETCHLEY PARK AND THE NATIONAL SECURITY AGENCY',
+  },
+  {
+    id: 20, difficulty: 'hard', title: 'Ada Lovelace on Computation',
+    source: 'Ada Lovelace, Notes on the Analytical Engine, 1843',
+    text: 'THE ANALYTICAL ENGINE HAS NO PRETENSIONS TO ORIGINATE ANYTHING IT CAN DO WHATEVER WE KNOW HOW TO ORDER IT TO PERFORM IT CAN FOLLOW ANALYSIS BUT IT HAS NO POWER OF ANTICIPATING ANY ANALYTICAL REVELATIONS OR TRUTHS ITS PROVINCE IS TO ASSIST US IN MAKING AVAILABLE WHAT WE ARE ALREADY ACQUAINTED WITH THIS IT WILL DO WITH EXTRAORDINARY FACILITY AND SPEED THE ENGINE MIGHT ACT UPON OTHER THINGS BESIDES NUMBER WERE OBJECTS FOUND WHOSE MUTUAL FUNDAMENTAL RELATIONS COULD BE EXPRESSED BY THOSE OF THE ABSTRACT SCIENCE OF OPERATIONS',
+  },
+];
+
+// ── Vigenère helpers ─────────────────────────────────────────────────
 
 function vigenereEncrypt(plain: string, key: string): string {
   const k = key.toUpperCase().replace(/[^A-Z]/g, '');
@@ -45,7 +163,7 @@ function vigenereDecrypt(cipher: string, key: string): string {
     .join('');
 }
 
-// ── Kasiski helpers ─────────────────────────────────────────────────
+// ── Kasiski helpers ──────────────────────────────────────────────────
 
 function findRepeatedSequences(
   text: string,
@@ -86,7 +204,7 @@ function getFactors(n: number): number[] {
   return factors;
 }
 
-// ── Frequency / chi-squared ─────────────────────────────────────────
+// ── Frequency / chi-squared ──────────────────────────────────────────
 
 function letterCounts(text: string): number[] {
   const counts = new Array(26).fill(0);
@@ -122,7 +240,12 @@ function bestShift(counts: number[]): number {
   return best;
 }
 
-// ── Step indicator ──────────────────────────────────────────────────
+function pickRandomKey(difficulty: Challenge['difficulty']): string {
+  const pool = difficulty === 'easy' ? EASY_KEYS : difficulty === 'medium' ? MEDIUM_KEYS : HARD_KEYS;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+// ── Step indicator ───────────────────────────────────────────────────
 
 const STEPS = ['Input', 'Kasiski', 'Frequency', 'Result'];
 
@@ -148,24 +271,29 @@ const StepIndicator: React.FC<{ current: number }> = ({ current }) => (
   </div>
 );
 
-// ── Main component ──────────────────────────────────────────────────
+const DIFF_COLOR = {
+  easy:   'text-green-400 border-green-800/50 bg-green-950/20',
+  medium: 'text-amber-400 border-amber-800/50 bg-amber-950/20',
+  hard:   'text-red-400 border-red-800/50 bg-red-950/20',
+};
+
+// ── Main component ───────────────────────────────────────────────────
 
 const VigenereWorkshopApp: React.FC = () => {
   const [showInfo, setShowInfo] = useState(false);
   const [step, setStep] = useState(0);
 
   // Step 0 state
-  const [inputMode, setInputMode] = useState<'encrypt' | 'paste'>('encrypt');
+  const [inputMode, setInputMode] = useState<'encrypt' | 'paste' | 'challenge'>('encrypt');
   const [plaintext, setPlaintext] = useState(DEMO_PLAINTEXT);
   const [encryptKey, setEncryptKey] = useState(DEMO_KEY);
   const [pastedCipher, setPastedCipher] = useState('');
 
-  const encryptedText = useMemo(
-    () => (inputMode === 'encrypt' ? vigenereEncrypt(plaintext, encryptKey) : ''),
-    [plaintext, encryptKey, inputMode],
-  );
-
-  const ciphertext = inputMode === 'encrypt' ? encryptedText : pastedCipher.toUpperCase().replace(/[^A-Z]/g, '');
+  // Challenge mode state
+  const [showChallengePicker, setShowChallengePicker] = useState(false);
+  const [activeChallenge, setActiveChallenge] = useState<Challenge | null>(null);
+  const [secretKey, setSecretKey] = useState('');
+  const [revealKey, setRevealKey] = useState(false);
 
   // Step 1 state
   const [selectedKeyLen, setSelectedKeyLen] = useState<number | null>(null);
@@ -174,6 +302,21 @@ const VigenereWorkshopApp: React.FC = () => {
   const [activePos, setActivePos] = useState(0);
   const [shifts, setShifts] = useState<(number | null)[]>([]);
   const [locked, setLocked] = useState<boolean[]>([]);
+
+  const encryptedText = useMemo(
+    () => (inputMode === 'encrypt' ? vigenereEncrypt(plaintext, encryptKey) : ''),
+    [plaintext, encryptKey, inputMode],
+  );
+
+  const challengeCiphertext = useMemo(() => {
+    if (inputMode !== 'challenge' || !activeChallenge || !secretKey) return '';
+    return vigenereEncrypt(activeChallenge.text, secretKey);
+  }, [inputMode, activeChallenge, secretKey]);
+
+  const ciphertext =
+    inputMode === 'encrypt' ? encryptedText
+    : inputMode === 'challenge' ? challengeCiphertext
+    : pastedCipher.toUpperCase().replace(/[^A-Z]/g, '');
 
   // Kasiski analysis
   const kasiskiResults = useMemo(() => findRepeatedSequences(ciphertext, 3, 5), [ciphertext]);
@@ -214,10 +357,7 @@ const VigenereWorkshopApp: React.FC = () => {
 
   // Recovered key
   const recoveredKey = useMemo(
-    () =>
-      shifts
-        .map((s, i) => (s !== null && locked[i] ? ALPHABET[s] : '?'))
-        .join(''),
+    () => shifts.map((s, i) => (s !== null && locked[i] ? ALPHABET[s] : '?')).join(''),
     [shifts, locked],
   );
 
@@ -245,9 +385,24 @@ const VigenereWorkshopApp: React.FC = () => {
       .join('');
   }, [ciphertext, selectedKeyLen, shifts, locked]);
 
+  // Challenge: start with a specific challenge
+  const startChallenge = useCallback((challenge: Challenge) => {
+    const key = pickRandomKey(challenge.difficulty);
+    setActiveChallenge(challenge);
+    setSecretKey(key);
+    setRevealKey(false);
+    setShowChallengePicker(false);
+  }, []);
+
+  const randomChallenge = useCallback(() => {
+    const c = CHALLENGES[Math.floor(Math.random() * CHALLENGES.length)];
+    startChallenge(c);
+  }, [startChallenge]);
+
   // Transition to step 1
   const startCracking = useCallback(() => {
     if (ciphertext.length < 20) return;
+    setRevealKey(false);
     setStep(1);
     setSelectedKeyLen(null);
   }, [ciphertext]);
@@ -279,7 +434,6 @@ const VigenereWorkshopApp: React.FC = () => {
       next[activePos] = true;
       return next;
     });
-    // advance to next unlocked position
     if (selectedKeyLen) {
       for (let i = 1; i < selectedKeyLen; i++) {
         const nextPos = (activePos + i) % selectedKeyLen;
@@ -312,13 +466,24 @@ const VigenereWorkshopApp: React.FC = () => {
 
   const matchQuality = currentChi === null ? null : currentChi < 30 ? 'great' : currentChi < 60 ? 'good' : currentChi < 120 ? 'fair' : 'poor';
 
-  // Max frequency in active column for bar scaling
   const activeMaxCount = useMemo(() => {
     if (!columnCounts[activePos]) return 1;
     return Math.max(...columnCounts[activePos], 1);
   }, [columnCounts, activePos]);
 
   const maxEnglishFreq = Math.max(...ENGLISH_FREQ);
+
+  // Challenge result comparison
+  const challengeSuccess = inputMode === 'challenge' && allLocked && recoveredKey === secretKey;
+  const challengePartial = inputMode === 'challenge' && allLocked && recoveredKey !== secretKey && recoveredKey.length === secretKey.length;
+
+  const resetAll = useCallback(() => {
+    setStep(0);
+    setSelectedKeyLen(null);
+    setShifts([]);
+    setLocked([]);
+    setRevealKey(false);
+  }, []);
 
   return (
     <div className="flex-1 bg-[#1a1814] text-stone-200 flex flex-col items-center px-6 py-8 sm:px-10 md:px-16">
@@ -376,19 +541,24 @@ const VigenereWorkshopApp: React.FC = () => {
           <div className="space-y-6">
             <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
               {/* Mode tabs */}
-              <div className="flex items-center gap-2 mb-5">
+              <div className="flex items-center gap-2 mb-5 flex-wrap">
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mr-2">Mode</label>
-                {(['encrypt', 'paste'] as const).map((m) => (
+                {([
+                  { id: 'encrypt',   label: 'Encrypt & Crack',  icon: null },
+                  { id: 'paste',     label: 'Paste Ciphertext', icon: null },
+                  { id: 'challenge', label: 'Challenge Mode',   icon: <ShieldQuestion size={12} /> },
+                ] as const).map(({ id, label, icon }) => (
                   <button
-                    key={m}
-                    onClick={() => setInputMode(m)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                      inputMode === m
+                    key={id}
+                    onClick={() => setInputMode(id)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 ${
+                      inputMode === id
                         ? 'bg-red-950/50 text-red-400 border border-red-700/50'
                         : 'text-slate-500 hover:text-white border border-slate-700 hover:border-slate-500'
                     }`}
                   >
-                    {m === 'encrypt' ? 'Encrypt & Crack' : 'Paste Ciphertext'}
+                    {icon}
+                    {label}
                   </button>
                 ))}
                 <button
@@ -403,29 +573,32 @@ const VigenereWorkshopApp: React.FC = () => {
                 </button>
               </div>
 
-              {inputMode === 'encrypt' ? (
+              {/* ── Encrypt & Crack mode ── */}
+              {inputMode === 'encrypt' && (
                 <>
                   <div className="mb-4">
                     <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                      Plaintext
+                      Plaintext <span className="text-slate-600 font-normal normal-case">— type your own or use the demo</span>
                     </label>
                     <textarea
                       value={plaintext}
                       onChange={(e) => setPlaintext(e.target.value)}
                       className="bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-red-700/50 w-full h-24 resize-none"
-                      placeholder="Type your plaintext message..."
+                      placeholder="Type your own plaintext message here..."
                     />
                   </div>
-                  <div className="flex items-center gap-4 mb-4">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Key</label>
+                  <div className="flex items-center gap-4 mb-4 flex-wrap">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                      Key <span className="text-slate-600 font-normal normal-case">— type any word</span>
+                    </label>
                     <input
                       value={encryptKey}
                       onChange={(e) => setEncryptKey(e.target.value.toUpperCase().replace(/[^A-Z]/g, ''))}
                       className="bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-2 font-mono text-sm text-white focus:outline-none focus:border-red-700/50 w-48"
                       placeholder="e.g. SECRET"
                     />
-                    <div className="flex gap-1">
-                      {['LEMON', 'SECRET', 'KASISKI', 'CRYPTO'].map((k) => (
+                    <div className="flex flex-wrap gap-1">
+                      {['LEMON', 'SECRET', 'KASISKI', 'CRYPTO', 'BABBAGE', 'ENIGMA'].map((k) => (
                         <button
                           key={k}
                           onClick={() => setEncryptKey(k)}
@@ -444,7 +617,7 @@ const VigenereWorkshopApp: React.FC = () => {
                     <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">
                       Ciphertext{' '}
                       <span className="text-slate-600 font-normal">
-                        (Vigenere key &ldquo;{encryptKey}&rdquo;)
+                        (key: &ldquo;{encryptKey}&rdquo;)
                       </span>
                     </label>
                     <div className="w-full bg-slate-800/60 border border-slate-700 rounded-lg px-4 py-3 font-mono text-sm text-red-300 min-h-[3rem] break-all leading-relaxed">
@@ -455,10 +628,13 @@ const VigenereWorkshopApp: React.FC = () => {
                     <div className="text-xs text-slate-600 mt-1">{ciphertext.length} letters</div>
                   </div>
                 </>
-              ) : (
+              )}
+
+              {/* ── Paste mode ── */}
+              {inputMode === 'paste' && (
                 <div>
                   <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                    Ciphertext
+                    Ciphertext <span className="text-slate-600 font-normal normal-case">— paste any Vigenère-encrypted text</span>
                   </label>
                   <textarea
                     value={pastedCipher}
@@ -467,6 +643,95 @@ const VigenereWorkshopApp: React.FC = () => {
                     placeholder="Paste Vigenere ciphertext here..."
                   />
                   <div className="text-xs text-slate-600 mt-1">{ciphertext.length} letters</div>
+                </div>
+              )}
+
+              {/* ── Challenge mode ── */}
+              {inputMode === 'challenge' && (
+                <div className="space-y-4">
+                  {/* Picker toggle + random */}
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <button
+                      onClick={() => setShowChallengePicker(!showChallengePicker)}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium border transition-colors ${
+                        showChallengePicker
+                          ? 'bg-red-950/50 text-red-400 border-red-700/50'
+                          : 'border-slate-700 text-slate-400 hover:text-white hover:border-slate-500'
+                      }`}
+                    >
+                      <BookOpen size={13} /> Choose Challenge
+                    </button>
+                    <button
+                      onClick={randomChallenge}
+                      className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 transition-colors"
+                    >
+                      <Shuffle size={13} /> Random Challenge
+                    </button>
+                  </div>
+
+                  {/* Challenge picker grid */}
+                  {showChallengePicker && (
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-80 overflow-y-auto pr-1">
+                      {CHALLENGES.map((c) => (
+                        <button
+                          key={c.id}
+                          onClick={() => startChallenge(c)}
+                          className={`text-left px-3 py-2.5 rounded-lg border transition-colors ${
+                            activeChallenge?.id === c.id
+                              ? 'border-red-700/60 bg-red-950/30'
+                              : 'border-slate-700 bg-slate-800/40 hover:border-slate-500 hover:bg-slate-800/70'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-2 mb-1">
+                            <span className="text-xs font-bold text-slate-200 leading-tight">{c.title}</span>
+                            <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded border shrink-0 ${DIFF_COLOR[c.difficulty]}`}>
+                              {c.difficulty}
+                            </span>
+                          </div>
+                          <div className="text-[10px] text-slate-600 font-mono">{c.source}</div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Active challenge display */}
+                  {activeChallenge ? (
+                    <div className="space-y-3">
+                      <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <div>
+                            <div className="text-sm font-bold text-white">{activeChallenge.title}</div>
+                            <div className="text-[10px] text-slate-500 font-mono mt-0.5">{activeChallenge.source}</div>
+                          </div>
+                          <span className={`text-[10px] font-bold uppercase px-2 py-1 rounded border ${DIFF_COLOR[activeChallenge.difficulty]}`}>
+                            {activeChallenge.difficulty}
+                          </span>
+                        </div>
+                        {/* Hidden key indicator */}
+                        <div className="flex items-center gap-2 mt-3 mb-3 px-3 py-2 bg-slate-900/60 rounded-lg border border-slate-700/60">
+                          <ShieldQuestion size={14} className="text-amber-400 shrink-0" />
+                          <span className="text-xs text-amber-400 font-medium">Key hidden — find it using Kasiski examination</span>
+                          <span className="ml-auto text-[10px] text-slate-600 font-mono">
+                            Key length: {secretKey.length} letters
+                          </span>
+                        </div>
+                        {/* Ciphertext */}
+                        <div>
+                          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
+                            Ciphertext ({challengeCiphertext.length} letters)
+                          </label>
+                          <div className="font-mono text-xs text-red-300 break-all leading-relaxed max-h-24 overflow-y-auto">
+                            {challengeCiphertext}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-10 border border-dashed border-slate-700 rounded-xl">
+                      <ShieldQuestion size={32} className="text-slate-700 mx-auto mb-3" />
+                      <p className="text-sm text-slate-600">Choose a challenge or click Random to begin</p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -484,6 +749,20 @@ const VigenereWorkshopApp: React.FC = () => {
         {/* ═══════════ STEP 1: KASISKI ═══════════ */}
         {step === 1 && (
           <div className="space-y-6">
+            {/* Challenge banner */}
+            {inputMode === 'challenge' && activeChallenge && (
+              <div className="flex items-center gap-3 px-4 py-3 bg-amber-950/20 border border-amber-800/40 rounded-xl">
+                <ShieldQuestion size={16} className="text-amber-400 shrink-0" />
+                <div>
+                  <span className="text-xs font-bold text-amber-400">{activeChallenge.title}</span>
+                  <span className="text-xs text-slate-500 ml-2">— key is hidden</span>
+                </div>
+                <span className={`ml-auto text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${DIFF_COLOR[activeChallenge.difficulty]}`}>
+                  {activeChallenge.difficulty}
+                </span>
+              </div>
+            )}
+
             {/* Ciphertext display */}
             <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
               <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">
@@ -516,12 +795,8 @@ const VigenereWorkshopApp: React.FC = () => {
                         <tr key={r.seq} className="border-b border-slate-800/50">
                           <td className="py-2 pr-4 font-mono font-bold text-red-400">{r.seq}</td>
                           <td className="py-2 pr-4 text-slate-400">{r.positions.length}</td>
-                          <td className="py-2 pr-4 font-mono text-slate-500">
-                            {r.positions.join(', ')}
-                          </td>
-                          <td className="py-2 pr-4 font-mono text-slate-400">
-                            {r.spacings.join(', ')}
-                          </td>
+                          <td className="py-2 pr-4 font-mono text-slate-500">{r.positions.join(', ')}</td>
+                          <td className="py-2 pr-4 font-mono text-slate-400">{r.spacings.join(', ')}</td>
                           <td className="py-2 font-mono text-slate-500">
                             {r.spacings
                               .flatMap(getFactors)
@@ -565,9 +840,7 @@ const VigenereWorkshopApp: React.FC = () => {
                       {count > 0 && (
                         <span
                           className={`absolute -top-2 -right-2 text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
-                            isTop
-                              ? 'bg-red-600 text-white'
-                              : 'bg-slate-700 text-slate-300'
+                            isTop ? 'bg-red-600 text-white' : 'bg-slate-700 text-slate-300'
                           }`}
                         >
                           {count}
@@ -606,6 +879,14 @@ const VigenereWorkshopApp: React.FC = () => {
         {/* ═══════════ STEP 2: FREQUENCY MATCHING ═══════════ */}
         {step === 2 && selectedKeyLen && (
           <div className="space-y-6">
+            {/* Challenge banner */}
+            {inputMode === 'challenge' && activeChallenge && (
+              <div className="flex items-center gap-3 px-4 py-3 bg-amber-950/20 border border-amber-800/40 rounded-xl">
+                <ShieldQuestion size={16} className="text-amber-400 shrink-0" />
+                <span className="text-xs font-bold text-amber-400">{activeChallenge.title} — key is still hidden</span>
+              </div>
+            )}
+
             {/* Position tabs */}
             <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
               <h3 className="text-sm font-bold text-slate-300 mb-3">Key Positions</h3>
@@ -634,9 +915,7 @@ const VigenereWorkshopApp: React.FC = () => {
                 Recovered key:{' '}
                 <span className="font-mono font-bold text-lg tracking-widest">
                   {recoveredKey.split('').map((c, i) => (
-                    <span key={i} className={c === '?' ? 'text-slate-600' : 'text-red-400'}>
-                      {c}
-                    </span>
+                    <span key={i} className={c === '?' ? 'text-slate-600' : 'text-red-400'}>{c}</span>
                   ))}
                 </span>
               </div>
@@ -694,25 +973,17 @@ const VigenereWorkshopApp: React.FC = () => {
 
                   return (
                     <div key={letter} className="flex-1 flex flex-col items-center h-full justify-end group relative">
-                      {/* Tooltip */}
                       <div className="absolute bottom-full mb-2 hidden group-hover:block bg-slate-800 border border-slate-600 rounded-lg px-2 py-1.5 text-[10px] z-10 whitespace-nowrap">
-                        <div className="text-red-300">
-                          Observed: {obsCount} ({obsPct.toFixed(1)}%)
-                        </div>
+                        <div className="text-red-300">Observed: {obsCount} ({obsPct.toFixed(1)}%)</div>
                         <div className="text-slate-400">English {letter}: {refPct.toFixed(1)}%</div>
                       </div>
-                      {/* Reference bar (behind) */}
                       <div
                         className="w-full bg-slate-700/25 rounded-t-sm absolute bottom-5"
                         style={{ height: `${Math.max(refBarH * 0.88, 0)}%` }}
                       />
-                      {/* Observed bar (in front) */}
                       <div
                         className="w-full bg-red-500/70 rounded-t-sm relative z-[1] transition-all duration-150"
-                        style={{
-                          height: `${Math.max(obsBarH * 0.88, 0)}%`,
-                          minHeight: obsCount > 0 ? '2px' : '0',
-                        }}
+                        style={{ height: `${Math.max(obsBarH * 0.88, 0)}%`, minHeight: obsCount > 0 ? '2px' : '0' }}
                       />
                       <div className="text-[9px] mt-0.5 font-mono text-slate-500">{letter}</div>
                     </div>
@@ -742,9 +1013,7 @@ const VigenereWorkshopApp: React.FC = () => {
                     <span className="text-slate-400">Shift: </span>
                     <span className="text-red-400">{shifts[activePos] ?? 0}</span>
                     <span className="text-slate-600 mx-2">&rarr;</span>
-                    <span className="text-white">
-                      Key letter: {ALPHABET[shifts[activePos] ?? 0]}
-                    </span>
+                    <span className="text-white">Key letter: {ALPHABET[shifts[activePos] ?? 0]}</span>
                   </div>
                 </div>
                 <input
@@ -801,8 +1070,7 @@ const VigenereWorkshopApp: React.FC = () => {
                   disabled={shifts[activePos] === null}
                   className="flex-1 py-2.5 rounded-lg bg-green-950/30 border border-green-800/50 text-green-400 font-bold text-sm hover:bg-green-950/50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  <Lock size={14} /> Lock Letter {ALPHABET[shifts[activePos] ?? 0]} for Position{' '}
-                  {activePos + 1}
+                  <Lock size={14} /> Lock Letter {ALPHABET[shifts[activePos] ?? 0]} for Position {activePos + 1}
                 </button>
               </div>
             </div>
@@ -812,12 +1080,7 @@ const VigenereWorkshopApp: React.FC = () => {
               <h3 className="text-sm font-bold text-slate-300 mb-3">Partial Decryption</h3>
               <div className="font-mono text-xs break-all leading-relaxed">
                 {partialDecrypt.split('').map((c, i) => (
-                  <span
-                    key={i}
-                    className={c === '\u00B7' ? 'text-slate-700' : 'text-white'}
-                  >
-                    {c}
-                  </span>
+                  <span key={i} className={c === '\u00B7' ? 'text-slate-700' : 'text-white'}>{c}</span>
                 ))}
               </div>
             </div>
@@ -844,42 +1107,102 @@ const VigenereWorkshopApp: React.FC = () => {
         {/* ═══════════ STEP 3: RESULT ═══════════ */}
         {step === 3 && (
           <div className="space-y-6">
-            {/* Recovered key */}
-            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
-              <h3 className="text-sm font-bold text-slate-300 mb-3">Recovered Key</h3>
-              <div className="flex items-center gap-4">
-                <div className="text-4xl font-mono font-black tracking-[0.3em] text-red-400">
-                  {recoveredKey}
+
+            {/* Challenge result banner */}
+            {inputMode === 'challenge' && activeChallenge && (
+              <div className={`rounded-xl border p-5 ${
+                challengeSuccess
+                  ? 'bg-green-950/30 border-green-700/50'
+                  : challengePartial
+                    ? 'bg-amber-950/30 border-amber-700/50'
+                    : 'bg-slate-900/60 border-slate-800'
+              }`}>
+                <div className="flex items-center gap-3 mb-3">
+                  {challengeSuccess ? (
+                    <Check size={20} className="text-green-400" />
+                  ) : (
+                    <ShieldQuestion size={20} className="text-amber-400" />
+                  )}
+                  <h3 className={`text-sm font-bold ${challengeSuccess ? 'text-green-400' : 'text-amber-400'}`}>
+                    {challengeSuccess ? 'Key Cracked! Excellent work.' : challengePartial ? 'Close — some letters differ.' : 'Key comparison'}
+                  </h3>
+                  <span className={`ml-auto text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${DIFF_COLOR[activeChallenge.difficulty]}`}>
+                    {activeChallenge.difficulty}
+                  </span>
                 </div>
-                <div className="text-xs text-slate-500">
-                  Length: {selectedKeyLen}
-                </div>
-              </div>
-              {/* Per-position confidence */}
-              <div className="mt-4 flex flex-wrap gap-2">
-                {shifts.map((s, i) => {
-                  if (s === null) return null;
-                  const chi = chiSquared(columnCounts[i], s);
-                  const qual = chi < 30 ? 'great' : chi < 60 ? 'good' : chi < 120 ? 'fair' : 'poor';
-                  return (
-                    <div
-                      key={i}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-mono border ${
-                        qual === 'great'
-                          ? 'border-green-800/40 text-green-400 bg-green-950/20'
-                          : qual === 'good'
-                            ? 'border-green-800/30 text-green-300 bg-green-950/10'
-                            : qual === 'fair'
-                              ? 'border-yellow-800/30 text-yellow-400 bg-yellow-950/10'
-                              : 'border-slate-700 text-slate-400 bg-slate-800/30'
-                      }`}
-                    >
-                      L{i + 1}={ALPHABET[s]} <span className="text-[10px] opacity-60">(X²={chi.toFixed(0)})</span>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <div className="text-[10px] text-slate-500 uppercase tracking-wider font-mono mb-1">You recovered</div>
+                    <div className="font-mono font-black text-2xl tracking-[0.3em] text-red-400">{recoveredKey}</div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] text-slate-500 uppercase tracking-wider font-mono mb-1">
+                      {revealKey ? 'Secret key' : 'Secret key (hidden)'}
                     </div>
-                  );
-                })}
+                    {revealKey ? (
+                      <div className={`font-mono font-black text-2xl tracking-[0.3em] ${challengeSuccess ? 'text-green-400' : 'text-amber-400'}`}>
+                        {secretKey}
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setRevealKey(true)}
+                        className="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 transition-colors text-xs font-medium"
+                      >
+                        <Lock size={12} /> Reveal secret key
+                      </button>
+                    )}
+                  </div>
+                </div>
+                {revealKey && !challengeSuccess && (
+                  <div className="mt-3 flex gap-2 flex-wrap">
+                    {recoveredKey.split('').map((c, i) => (
+                      <span key={i} className={`font-mono text-sm px-2 py-1 rounded border ${
+                        c === secretKey[i]
+                          ? 'text-green-400 border-green-800/50 bg-green-950/20'
+                          : 'text-red-400 border-red-800/50 bg-red-950/20'
+                      }`}>
+                        {c}
+                        <span className="text-[9px] block text-center opacity-60">{secretKey[i]}</span>
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
-            </div>
+            )}
+
+            {/* Recovered key (non-challenge) */}
+            {inputMode !== 'challenge' && (
+              <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
+                <h3 className="text-sm font-bold text-slate-300 mb-3">Recovered Key</h3>
+                <div className="flex items-center gap-4">
+                  <div className="text-4xl font-mono font-black tracking-[0.3em] text-red-400">{recoveredKey}</div>
+                  <div className="text-xs text-slate-500">Length: {selectedKeyLen}</div>
+                </div>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {shifts.map((s, i) => {
+                    if (s === null) return null;
+                    const chi = chiSquared(columnCounts[i], s);
+                    const qual = chi < 30 ? 'great' : chi < 60 ? 'good' : chi < 120 ? 'fair' : 'poor';
+                    return (
+                      <div
+                        key={i}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-mono border ${
+                          qual === 'great'
+                            ? 'border-green-800/40 text-green-400 bg-green-950/20'
+                            : qual === 'good'
+                              ? 'border-green-800/30 text-green-300 bg-green-950/10'
+                              : qual === 'fair'
+                                ? 'border-yellow-800/30 text-yellow-400 bg-yellow-950/10'
+                                : 'border-slate-700 text-slate-400 bg-slate-800/30'
+                        }`}
+                      >
+                        L{i + 1}={ALPHABET[s]} <span className="text-[10px] opacity-60">(X²={chi.toFixed(0)})</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Decrypted plaintext */}
             <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
@@ -898,12 +1221,10 @@ const VigenereWorkshopApp: React.FC = () => {
               </div>
             </div>
 
-            {/* Original ciphertext for comparison */}
+            {/* Original ciphertext */}
             <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
               <h3 className="text-sm font-bold text-slate-300 mb-3">Original Ciphertext</h3>
-              <div className="font-mono text-xs text-slate-500 break-all leading-relaxed">
-                {ciphertext}
-              </div>
+              <div className="font-mono text-xs text-slate-500 break-all leading-relaxed">{ciphertext}</div>
             </div>
 
             <div className="flex gap-3">
@@ -914,15 +1235,10 @@ const VigenereWorkshopApp: React.FC = () => {
                 Back to Frequency
               </button>
               <button
-                onClick={() => {
-                  setStep(0);
-                  setSelectedKeyLen(null);
-                  setShifts([]);
-                  setLocked([]);
-                }}
+                onClick={resetAll}
                 className="flex-1 py-3 rounded-xl bg-red-950/40 border border-red-700/50 text-red-400 font-bold text-sm hover:bg-red-950/60 transition-colors"
               >
-                Crack Another Message
+                {inputMode === 'challenge' ? 'Try Another Challenge' : 'Crack Another Message'}
               </button>
             </div>
           </div>
