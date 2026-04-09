@@ -110,24 +110,105 @@ const PUZZLES: Puzzle[] = [
   {
     id: 19, difficulty: 'hard', title: 'Al-Kindi on Frequency',
     source: 'Al-Kindi, A Manuscript on Deciphering Cryptographic Messages, ca. 850 CE',
-    text: 'One way to solve an encrypted message is to find a plaintext of the same language, long enough to fill one sheet, and then count each letter. The most frequent letter is probably the most common in that tongue.',
+    text: 'One way to solve an encrypted message is to find a plaintext of the same language, long enough to fill one sheet, and then count each letter. The most frequent letter is probably the most common in that tongue. Call this letter the first, and so on until you have accounted for all the letters in the cryptogram.',
   },
   {
     id: 20, difficulty: 'hard', title: 'Heraclitus on Change',
     source: 'Heraclitus of Ephesus, ca. 500 BCE',
-    text: 'You cannot step into the same river twice, for new waters are always flowing. Everything changes and nothing stands still. The only constant in the universe is change itself.',
+    text: 'You cannot step into the same river twice, for new waters are always flowing on to you. The river where you set your foot just now is gone, those waters giving way to this, now this. Everything changes and nothing stands still. The only constant in the universe is perpetual change itself.',
   },
   {
     id: 21, difficulty: 'hard', title: 'Bletchley Park',
     source: 'F. H. Hinsley, British Intelligence in the Second World War, 1979',
-    text: 'The work done at Bletchley Park shortened the war in Europe by not less than two years and probably by four years. Without it the outcome might have been different.',
+    text: 'The work done at Bletchley Park shortened the war in Europe by not less than two years and probably by four years. Without it the outcome of the war against Germany would at least have been in doubt. The total number of messages decoded exceeded two hundred million by the war\'s end.',
   },
   {
     id: 22, difficulty: 'hard', title: 'The Vigenère Boast',
     source: 'Encyclopédie Britannique, 19th century',
-    text: 'The Vigenère cipher is the acme of human art. It has defeated every attempt at analysis. No cryptanalyst has yet discovered a method of solving it without the key.',
+    text: 'The Vigenère cipher is the acme of human art in the science of secret writing. It has defeated every attempt at analysis for three centuries. No cryptanalyst had yet discovered a method of solving it without the key, until Babbage demonstrated his index of coincidence technique to a startled Royal Society.',
+  },
+  {
+    id: 23, difficulty: 'medium', title: 'Caesar on the Gallic Wars',
+    source: 'Julius Caesar, Commentarii de Bello Gallico, ca. 50 BCE',
+    text: 'All Gaul is divided into three parts, one of which the Belgae inhabit, the Aquitani another, and the third are those who in their own tongue are called Celts, but in ours are called Gauls. All these differ from each other in language, customs, and laws.',
+  },
+  {
+    id: 24, difficulty: 'medium', title: 'The Prince',
+    source: 'Niccolò Machiavelli, The Prince, 1532',
+    text: 'It is better to be feared than loved, if you cannot be both. Men are wretched creatures who would not keep their word to you, and so you need not keep your word to them. The prince must be both a lion and a fox.',
+  },
+  {
+    id: 25, difficulty: 'medium', title: 'Newton\'s Laws',
+    source: 'Isaac Newton, Principia Mathematica, 1687',
+    text: 'Every body continues in its state of rest or uniform motion in a straight line unless it is compelled to change that state by forces impressed upon it. The change of motion is proportional to the motive force impressed and takes place along the line in which that force is impressed.',
+  },
+  {
+    id: 26, difficulty: 'medium', title: 'Mary Shelley on Creation',
+    source: 'Mary Shelley, Frankenstein, 1818',
+    text: 'I saw the pale student of unhallowed arts kneeling beside the thing he had put together. I saw the hideous phantasm of a man stretched out, and then, on the working of some powerful engine, show signs of life and stir with an uneasy, half vital motion.',
+  },
+  {
+    id: 27, difficulty: 'medium', title: 'The Double Helix',
+    source: 'James Watson, The Double Helix, 1968',
+    text: 'It was almost eleven in the morning when Francis Crick walked into the Eagle pub to tell everyone within hearing distance that we had found the secret of life. The base pairs fit so perfectly that no fiddling with the molecular models had been necessary.',
+  },
+  {
+    id: 28, difficulty: 'medium', title: 'Babbage on the Analytical Engine',
+    source: 'Charles Babbage, Passages from the Life of a Philosopher, 1864',
+    text: 'On two occasions I have been asked whether I can program the Engine to give wrong answers. Had malice or stupidity whispered this question, I could have understood it. The analytical engine has no power of originating anything. It can only do what we order it to perform.',
+  },
+  {
+    id: 29, difficulty: 'hard', title: 'The Zimmermann Telegram',
+    source: 'Arthur Zimmermann, German Foreign Secretary, January 1917',
+    text: 'We intend to begin unrestricted submarine warfare on the first of February. We shall endeavor to keep the United States neutral. In the event of this not succeeding, we make Mexico a proposal of alliance on the following basis: make war together, make peace together, generous financial support, and understanding that Mexico is to reconquer the lost territory in Texas, New Mexico, and Arizona.',
+  },
+  {
+    id: 30, difficulty: 'hard', title: 'Ada Lovelace on the Analytical Engine',
+    source: 'Ada Lovelace, Notes on the Analytical Engine, 1843',
+    text: 'The Analytical Engine has no pretensions to originate anything. It can do whatever we know how to order it to perform. It can follow analysis, but it has no power of anticipating any analytical revelations or truths. Its province is to assist us in making available what we are already acquainted with. This it will do with extraordinary facility and speed.',
+  },
+  {
+    id: 31, difficulty: 'hard', title: 'One-Time Pad Security Proof',
+    source: 'Claude Shannon, Bell Labs Technical Memo, 1945',
+    text: 'The one-time pad possesses perfect secrecy in a precise mathematical sense. Given any ciphertext of length n, every possible plaintext of length n is equally probable as the source, provided the key was chosen uniformly at random and used only once. No adversary with unbounded computational power can extract any information about the plaintext beyond its length.',
+  },
+  {
+    id: 32, difficulty: 'hard', title: 'The Black Chamber',
+    source: 'Herbert O. Yardley, The American Black Chamber, 1931',
+    text: 'Statesmen and diplomats of every nation were communicating with each other by code and cipher, in the belief that their secrets were inviolate. The American Black Chamber had penetrated the codes of twenty countries. The Japanese diplomatic code was broken in nineteen twenty, and its contents laid before the American delegation at the Washington Naval Conference.',
+  },
+  {
+    id: 33, difficulty: 'hard', title: 'Friedman on Cryptanalysis',
+    source: 'William F. Friedman, The Index of Coincidence, 1922',
+    text: 'Cryptanalysis is the science of recovering the plaintext of a message without knowledge of the key. It is fundamentally a problem in applied probability and statistics. The cryptanalyst must exploit every structural regularity in language: letter frequencies, digraph frequencies, word patterns, and grammatical constraints. An expert cryptanalyst sees not the ciphertext but the ghost of the plaintext behind it.',
+  },
+  {
+    id: 34, difficulty: 'hard', title: 'Turing on Decidability',
+    source: 'Alan Turing, On Computable Numbers, 1936',
+    text: 'We may compare a man in the process of computing a real number to a machine which is only capable of a finite number of conditions. The machine is supplied with a tape running through it and divided into sections, each capable of bearing a symbol. At any moment there is just one symbol in the machine, and the behaviour of the machine at any moment is determined by the scanned symbol and the state of mind of the machine at that moment.',
+  },
+  {
+    id: 35, difficulty: 'hard', title: 'The Rosetta Stone Discovery',
+    source: 'Description of Egypt, French Institut, 1802',
+    text: 'The stone was found by soldiers of the French expedition near the town of Rosetta in the delta of the Nile. It bears an inscription in three scripts: the upper portion in Egyptian hieroglyphics, the middle in Demotic, and the lower in Greek. The Greek passage declares that all three carry the same decree issued by Egyptian priests in honor of Ptolemy the Fifth.',
+  },
+  {
+    id: 36, difficulty: 'hard', title: 'Venona and Soviet Espionage',
+    source: 'Robert Louis Benson, The Venona Story, NSA, 1996',
+    text: 'The Venona project began in nineteen forty-three when American cryptanalysts noticed that some Soviet diplomatic traffic was enciphered using one-time pads whose pages had been duplicated in violation of the fundamental rule. This reuse created statistical regularities that permitted partial reconstruction of more than two thousand messages exchanged between Moscow and its agents operating inside the United States government.',
+  },
+  {
+    id: 37, difficulty: 'hard', title: 'The Voynich Manuscript',
+    source: 'Mary E. D\'Imperio, The Voynich Manuscript: An Elegant Enigma, 1978',
+    text: 'The Voynich manuscript has defied every attempt at decipherment since its rediscovery in nineteen twelve. Its vellum has been dated to the early fifteenth century. The script proceeds left to right with consistent word and letter frequencies, suggesting a genuine underlying language or code rather than random invention, yet no cryptanalyst has extracted a single confirmed word of meaning.',
+  },
+  {
+    id: 38, difficulty: 'hard', title: 'NSA Founding Directive',
+    source: 'National Security Act, President Truman\'s Memorandum, October 1952',
+    text: 'The signals intelligence mission of the United States shall be coordinated under a single agency. That agency is charged with collecting, processing, and disseminating signals intelligence information for the national foreign intelligence and counterintelligence purposes of the United States government. Its existence and methods shall remain classified at the highest level.',
   },
 ];
+
 
 // ─── Cipher logic ─────────────────────────────────────────────────────────────
 const ALPHA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
