@@ -188,6 +188,63 @@ const PHASE_EXPLANATIONS: PhaseExplanation[] = [
   },
 ];
 
+// ── Feistel decryption: same structure, reversed key order, swapped I/O ───────
+function computeDecryptRounds(ct: number, key16: number): RoundState[] {
+  const roundKeys = deriveRoundKeys(key16);
+  // Apply keys in reverse: k4, k3, k2, k1
+  const rk = [roundKeys[3], roundKeys[2], roundKeys[1], roundKeys[0]];
+  // Swap ciphertext halves: feed low byte as L, high byte as R
+  let L = ct & 0xFF;         // = R₄ from encryption
+  let R = (ct >> 8) & 0xFF;  // = L₄ from encryption
+  const rounds: RoundState[] = [];
+  for (let r = 0; r < 4; r++) {
+    const k = rk[r];
+    const xored = (R ^ k) & 0xFF;
+    const fOut  = applySboxByte(xored);
+    const newL  = R;
+    const newR  = (L ^ fOut) & 0xFF;
+    rounds.push({ L_in: L, R_in: R, roundKey: k, xored, F_out: fOut, L_out: newL, R_out: newR });
+    L = newL; R = newR;
+  }
+  return rounds;
+}
+
+const DECRYPT_PHASE_EXPLANATIONS: PhaseExplanation[] = [
+  {
+    heading: 'Ciphertext Split — starting decryption',
+    what: 'Decryption starts with the ciphertext. Crucially, the two halves are fed in swapped: the ciphertext\'s low byte becomes L₀ and the high byte becomes R₀. This swap, combined with reversed key order, is all it takes to make the Feistel structure run in reverse.',
+    why: 'This is the key insight of Feistel networks: the same hardware decrypts as encrypts. No inverse F-function is needed — only reversed keys and swapped halves. This is why DES, Triple-DES, and Blowfish can share encryption and decryption circuits.',
+    tip: 'Compare the initial values here with the final values from encryption. The decryption L₀ = encryption R₄ and decryption R₀ = encryption L₄. They are mirror images of each other.',
+  },
+  {
+    heading: 'Decryption Round Inputs: tracing backwards',
+    what: 'Each decryption round begins the same way as an encryption round — L and R are passed in. But the values here correspond to encryption\'s intermediate states in reverse. The round will recover the encryption state from one step earlier.',
+    why: 'Because the Feistel swap (L_new = R_old) is trivially reversed by reading L_new back as R_old, each decryption round peels away exactly one encryption round. No complex algebra is needed — just XOR cancellation.',
+  },
+  {
+    heading: 'F-Function: XOR with Reversed Round Key',
+    what: 'The F-function applies exactly as in encryption: R is XORed with the current round key (which is now a reversed-order subkey). The XOR is the same operation, the S-box is the same table — the only difference is which subkey is used.',
+    why: 'The reversed key order is what makes the XOR cancellation work. In the last encryption round, L was XORed with F(R, K₄). In the first decryption round, applying F with K₄ again produces the same F-output, and XOR undoes itself.',
+    tip: 'XOR self-cancellation: if in encryption R_new = L_old ⊕ F(R_old, K), then in decryption L_old = R_new ⊕ F(R_old, K) — the same formula, the same key.',
+  },
+  {
+    heading: 'F-Function: S-Box (identical to encryption)',
+    what: 'The S-box lookup is performed identically to encryption — same table, same nibble split, same output. The S-box does not need to be invertible here because the XOR in the next step handles the reversal.',
+    why: 'This is Feistel\'s genius: F can be any function, even a completely one-way hash, and the network is still invertible. The S-box just needs to be deterministic — given the same input it always produces the same output — so the XOR cancellation is reliable.',
+  },
+  {
+    heading: 'XOR with L: recovering the previous state',
+    what: 'F(R, K) is XORed with L to produce the new R. In decryption this new R corresponds to a value from the encryption pipeline one round earlier. Because XOR is self-inverse and the same F-output is produced, the previous state is perfectly recovered.',
+    why: 'This step is mathematically identical to the encryption XOR step. The "magic" is that the two XORs — one during encryption, one during decryption — cancel each other out: x ⊕ F ⊕ F = x.',
+  },
+  {
+    heading: 'Swap: stepping one round back',
+    what: 'After the XOR, L and R swap again — same as in encryption. After 4 decryption rounds, the final L and R (swapped one more time) give back the original plaintext halves.',
+    why: 'The four decryption swaps undo the four encryption swaps. The final result has L = R₀ from encryption and R = L₀ from encryption. Concatenating as (R || L) — i.e., high byte = R, low byte = L — recovers the original plaintext.',
+    tip: 'In real ciphers like DES, the final swap is omitted in encryption specifically so that decryption can use the exact same circuit without any special-casing at the end.',
+  },
+];
+
 // ── Main Component ────────────────────────────────────────────────────────────
 const FeistelApp: React.FC = () => {
   const [ptHex, setPtHex] = useState('ABCD');
@@ -195,6 +252,7 @@ const FeistelApp: React.FC = () => {
   const [ptError, setPtError] = useState('');
   const [keyError, setKeyError] = useState('');
 
+  const [mode, setMode] = useState<'encrypt' | 'decrypt'>('encrypt');
   const [currentStep, setCurrentStep] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(800);
@@ -207,17 +265,29 @@ const FeistelApp: React.FC = () => {
   const validPt = /^[0-9A-Fa-f]{1,4}$/.test(ptHex);
   const validKey = /^[0-9A-Fa-f]{1,4}$/.test(keyHex);
 
-  const rounds = (validPt && validKey)
+  const encRounds = (validPt && validKey)
     ? computeRounds(isNaN(ptVal) ? 0 : ptVal & 0xFFFF, isNaN(keyVal) ? 0 : keyVal & 0xFFFF)
     : Array.from({ length: 4 }, () => ({ L_in: 0, R_in: 0, roundKey: 0, xored: 0, F_out: 0, L_out: 0, R_out: 0 }));
+  const encFinalL = encRounds[3]?.L_out ?? 0;
+  const encFinalR = encRounds[3]?.R_out ?? 0;
+  const ciphertext = ((encFinalL << 8) | encFinalR) & 0xFFFF;
 
+  const decRounds = (validPt && validKey)
+    ? computeDecryptRounds(ciphertext, isNaN(keyVal) ? 0 : keyVal & 0xFFFF)
+    : Array.from({ length: 4 }, () => ({ L_in: 0, R_in: 0, roundKey: 0, xored: 0, F_out: 0, L_out: 0, R_out: 0 }));
+
+  const rounds = mode === 'encrypt' ? encRounds : decRounds;
   const roundKeys = validKey ? deriveRoundKeys(isNaN(keyVal) ? 0 : keyVal & 0xFFFF) : [0, 0, 0, 0];
 
   const { round: activeRound, phase: activePhase } = stepToRoundPhase(currentStep);
 
   const finalL = rounds[3]?.L_out ?? 0;
   const finalR = rounds[3]?.R_out ?? 0;
-  const ciphertext = ((finalL << 8) | finalR) & 0xFFFF;
+  // Encrypt: PT → CT = (L4<<8)|R4; Decrypt: CT → PT = (R4<<8)|L4 (swapped)
+  const outputValue = mode === 'encrypt'
+    ? ((finalL << 8) | finalR) & 0xFFFF
+    : ((finalR << 8) | finalL) & 0xFFFF;
+  const activeExplanations = mode === 'encrypt' ? PHASE_EXPLANATIONS : DECRYPT_PHASE_EXPLANATIONS;
 
   const handlePtChange = (v: string) => {
     const clean = v.replace(/[^0-9A-Fa-f]/g, '').toUpperCase().slice(0, 4);
@@ -343,6 +413,23 @@ const FeistelApp: React.FC = () => {
             </div>
             {keyError && <span className="text-xs text-red-400">{keyError}</span>}
           </div>
+          {/* Mode toggle */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Mode</label>
+            <div className="flex items-center gap-1">
+              <button onClick={() => { setMode('encrypt'); setCurrentStep(0); setPlaying(false); }}
+                className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${mode === 'encrypt' ? 'bg-amber-900/50 text-amber-200 border border-amber-600/60' : 'bg-slate-800 text-slate-400 border border-slate-700 hover:text-white'}`}>
+                Encrypt
+              </button>
+              <button onClick={() => { setMode('decrypt'); setCurrentStep(0); setPlaying(false); }}
+                className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${mode === 'decrypt' ? 'bg-cyan-900/50 text-cyan-200 border border-cyan-600/60' : 'bg-slate-800 text-slate-400 border border-slate-700 hover:text-white'}`}>
+                Decrypt
+              </button>
+            </div>
+            {mode === 'decrypt' && validPt && validKey && (
+              <div className="text-[10px] text-cyan-400 font-mono">CT: {toHex4(ciphertext)}</div>
+            )}
+          </div>
           {/* Vertical divider */}
           <div className="h-10 w-px bg-slate-700/60 self-center" />
           {/* Playback controls */}
@@ -398,7 +485,9 @@ const FeistelApp: React.FC = () => {
         {/* Left: Feistel Ladder */}
         <div className="bg-slate-900/60 border border-slate-800 rounded-xl overflow-y-auto p-5 space-y-2">
           <div className="flex items-center justify-between mb-4">
-            <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Feistel Ladder</div>
+            <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+              {mode === 'encrypt' ? 'Feistel Ladder — Encryption' : 'Feistel Ladder — Decryption'}
+            </div>
             <div className="text-[10px] text-slate-600 italic">Click any row to jump to that step</div>
           </div>
 
@@ -408,7 +497,9 @@ const FeistelApp: React.FC = () => {
                 onClick={() => setCurrentStep(0)}
               >
                 <div className="flex-1">
-                  <div className="text-xs font-bold text-amber-400 mb-1">L₀ (plaintext high byte)</div>
+                  <div className="text-xs font-bold text-amber-400 mb-1">
+                    {mode === 'encrypt' ? 'L₀ (plaintext high byte)' : 'L₀ = CT low byte (R₄)'}
+                  </div>
                   <div className="flex items-center gap-2">
                     <BitRow bits={to8Bits(rounds[0]?.L_in ?? 0)} color="bg-amber-900/70 border-amber-600 text-amber-200" />
                     <span className="font-mono text-xs text-amber-400">{toHex2(rounds[0]?.L_in ?? 0)}</span>
@@ -416,7 +507,9 @@ const FeistelApp: React.FC = () => {
                 </div>
                 <div className="w-px self-stretch bg-slate-700" />
                 <div className="flex-1">
-                  <div className="text-xs font-bold text-cyan-400 mb-1">R₀ (plaintext low byte)</div>
+                  <div className="text-xs font-bold text-cyan-400 mb-1">
+                    {mode === 'encrypt' ? 'R₀ (plaintext low byte)' : 'R₀ = CT high byte (L₄)'}
+                  </div>
                   <div className="flex items-center gap-2">
                     <BitRow bits={to8Bits(rounds[0]?.R_in ?? 0)} color="bg-cyan-900/70 border-cyan-600 text-cyan-200" />
                     <span className="font-mono text-xs text-cyan-400">{toHex2(rounds[0]?.R_in ?? 0)}</span>
@@ -525,27 +618,31 @@ const FeistelApp: React.FC = () => {
                 );
               })}
 
-              {/* Final ciphertext */}
+              {/* Final output row */}
               <div className={`flex gap-4 items-start p-3 rounded-lg transition-all cursor-pointer hover:bg-slate-800/40 ${currentStep >= TOTAL_STEPS - 1 ? 'bg-slate-800/60 ring-2 ring-cyan-600/20' : 'opacity-40'}`}
                 onClick={() => setCurrentStep(TOTAL_STEPS - 1)}>
                 <div className="flex-1">
-                  <div className="text-xs font-bold text-amber-400 mb-1">Ciphertext high byte</div>
+                  <div className="text-xs font-bold text-amber-400 mb-1">
+                    {mode === 'encrypt' ? 'Ciphertext high byte' : 'Recovered PT high byte (= R)'}
+                  </div>
                   <div className="flex items-center gap-2">
-                    <BitRow bits={to8Bits(finalL)} color="bg-amber-900/70 border-amber-600 text-amber-200" />
-                    <span className="font-mono text-xs text-amber-400">{toHex2(finalL)}</span>
+                    <BitRow bits={to8Bits(mode === 'encrypt' ? finalL : finalR)} color="bg-amber-900/70 border-amber-600 text-amber-200" />
+                    <span className="font-mono text-xs text-amber-400">{toHex2(mode === 'encrypt' ? finalL : finalR)}</span>
                   </div>
                 </div>
                 <div className="w-px self-stretch bg-slate-700" />
                 <div className="flex-1">
-                  <div className="text-xs font-bold text-cyan-400 mb-1">Ciphertext low byte</div>
+                  <div className="text-xs font-bold text-cyan-400 mb-1">
+                    {mode === 'encrypt' ? 'Ciphertext low byte' : 'Recovered PT low byte (= L)'}
+                  </div>
                   <div className="flex items-center gap-2">
-                    <BitRow bits={to8Bits(finalR)} color="bg-cyan-900/70 border-cyan-600 text-cyan-200" />
-                    <span className="font-mono text-xs text-cyan-400">{toHex2(finalR)}</span>
+                    <BitRow bits={to8Bits(mode === 'encrypt' ? finalR : finalL)} color="bg-cyan-900/70 border-cyan-600 text-cyan-200" />
+                    <span className="font-mono text-xs text-cyan-400">{toHex2(mode === 'encrypt' ? finalR : finalL)}</span>
                   </div>
                 </div>
                 <div className="flex flex-col justify-center ml-4">
-                  <div className="text-[10px] text-slate-500 mb-1">Ciphertext</div>
-                  <div className="font-mono text-lg font-bold text-white">{toHex4(ciphertext)}</div>
+                  <div className="text-[10px] text-slate-500 mb-1">{mode === 'encrypt' ? 'Ciphertext' : 'Recovered PT'}</div>
+                  <div className="font-mono text-lg font-bold text-white">{toHex4(outputValue)}</div>
                 </div>
               </div>
 
@@ -651,9 +748,15 @@ const FeistelApp: React.FC = () => {
                   </div>
 
                   {/* Sliding window visualization */}
-                  <div className="text-slate-500 mb-1">Sliding 8-bit windows</div>
+                  <div className="text-slate-500 mb-1">
+                    {mode === 'encrypt' ? 'Sliding 8-bit windows' : 'Sliding 8-bit windows (applied K4→K3→K2→K1)'}
+                  </div>
                   {roundKeys.map((rk, ki) => {
-                    const isUsed = activeRound === ki + 1;
+                    // Encrypt: round r uses key ki+1; Decrypt: round r uses key [3,2,1,0][r-1]
+                    const decKeyOrder = [3, 2, 1, 0];
+                    const isUsed = mode === 'encrypt'
+                      ? activeRound === ki + 1
+                      : activeRound >= 1 && activeRound <= 4 && decKeyOrder[activeRound - 1] === ki;
                     const windowLabels = ['bits 15–8', 'bits 11–4', 'bits 7–0', 'bits 15–8 rotL2'];
                     return (
                       <div key={ki} className={`rounded-lg px-2 py-1.5 transition-colors ${isUsed ? 'bg-amber-900/30 ring-1 ring-amber-600/40' : 'bg-slate-800/30'}`}>
@@ -676,7 +779,7 @@ const FeistelApp: React.FC = () => {
               {/* Step Explanation Card */}
               {(() => {
                 const expIdx = currentStep === 0 ? 0 : activePhase + 1;
-                const exp = PHASE_EXPLANATIONS[expIdx];
+                const exp = activeExplanations[expIdx];
                 const isInitial = currentStep === 0;
                 const borderClass = isInitial         ? 'bg-amber-950/20 border-amber-900/40' :
                                     activePhase === 0 ? 'bg-slate-800/40 border-slate-700/40' :
@@ -713,20 +816,47 @@ const FeistelApp: React.FC = () => {
 
               {/* Summary box */}
               <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
-                <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Encryption Summary</div>
+                <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
+                  {mode === 'encrypt' ? 'Encryption Summary' : 'Decryption Summary'}
+                </div>
                 <div className="font-mono text-xs space-y-1.5">
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Plaintext:</span>
-                    <span className="text-amber-300">{toHex4(isNaN(ptVal) ? 0 : ptVal)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Key:</span>
-                    <span className="text-violet-300">{keyHex.padStart(4, '0').toUpperCase()}</span>
-                  </div>
-                  <div className="border-t border-slate-700 pt-1.5 flex justify-between">
-                    <span className="text-slate-500">Ciphertext:</span>
-                    <span className="text-cyan-300 font-bold">{toHex4(ciphertext)}</span>
-                  </div>
+                  {mode === 'encrypt' ? (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Plaintext:</span>
+                        <span className="text-amber-300">{toHex4(isNaN(ptVal) ? 0 : ptVal)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Key:</span>
+                        <span className="text-violet-300">{keyHex.padStart(4, '0').toUpperCase()}</span>
+                      </div>
+                      <div className="border-t border-slate-700 pt-1.5 flex justify-between">
+                        <span className="text-slate-500">Ciphertext:</span>
+                        <span className="text-cyan-300 font-bold">{toHex4(ciphertext)}</span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Ciphertext:</span>
+                        <span className="text-cyan-300">{toHex4(ciphertext)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Key:</span>
+                        <span className="text-violet-300">{keyHex.padStart(4, '0').toUpperCase()}</span>
+                      </div>
+                      <div className="border-t border-slate-700 pt-1.5 flex justify-between">
+                        <span className="text-slate-500">Recovered PT:</span>
+                        <span className="text-amber-300 font-bold">{toHex4(outputValue)}</span>
+                      </div>
+                      <div className="flex justify-between text-[10px]">
+                        <span className="text-slate-600">Matches original:</span>
+                        <span className={outputValue === (isNaN(ptVal) ? 0 : ptVal & 0xFFFF) ? 'text-green-400' : 'text-red-400'}>
+                          {outputValue === (isNaN(ptVal) ? 0 : ptVal & 0xFFFF) ? '✓ Yes' : '✗ No'}
+                        </span>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 

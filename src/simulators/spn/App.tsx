@@ -136,6 +136,107 @@ const STAGE_EXPLANATIONS: StageExplanation[] = [
   },
 ];
 
+// ── Inverse S-Box (SBOX_INV[SBOX[i]] = i) ──────────────────────────────────
+const SBOX_INV: number[] = (() => {
+  const inv = new Array(16).fill(0);
+  SBOX.forEach((v, i) => { inv[v] = i; });
+  return inv;
+})();
+
+function applyInvSubstitution(block: number): number {
+  let out = 0;
+  for (let i = 0; i < 4; i++) {
+    const nibble = (block >> (12 - i * 4)) & 0xF;
+    out |= SBOX_INV[nibble] << (12 - i * 4);
+  }
+  return out & 0xFFFF;
+}
+
+// Decryption: reverse order, use SBOX_INV, same permutation (P is an involution: P=P^-1)
+function computeDecryptStages(ct: number, key32: number): number[] {
+  const [k0, k1, k2, k3] = deriveSubkeys(key32);
+  const d0 = ct;
+  const d1 = d0 ^ k3;
+  const d2 = applyInvSubstitution(d1);
+  const d3 = d2 ^ k2;
+  const d4 = applyPermutation(d3);   // P is its own inverse for this SPN
+  const d5 = applyInvSubstitution(d4);
+  const d6 = d5 ^ k1;
+  const d7 = applyPermutation(d6);
+  const d8 = applyInvSubstitution(d7);
+  const d9 = d8 ^ k0;
+  return [d0, d1, d2, d3, d4, d5, d6, d7, d8, d9];
+}
+
+const DECRYPT_STAGE_INFO: StageInfo[] = [
+  { label: 'Ciphertext',         type: 'cipher', round: 0 },
+  { label: '⊕ K₃ (undo)',       type: 'xor',    round: 3 },
+  { label: 'Inv S-Box R3',       type: 'sub',    round: 3 },
+  { label: '⊕ K₂ (undo)',       type: 'xor',    round: 2 },
+  { label: 'Inv Perm R2',        type: 'perm',   round: 2 },
+  { label: 'Inv S-Box R2',       type: 'sub',    round: 2 },
+  { label: '⊕ K₁ (undo)',       type: 'xor',    round: 1 },
+  { label: 'Inv Perm R1',        type: 'perm',   round: 1 },
+  { label: 'Inv S-Box R1',       type: 'sub',    round: 1 },
+  { label: '⊕ K₀ → Plaintext',  type: 'plain',  round: 0 },
+];
+
+const DECRYPT_STAGE_EXPLANATIONS: StageExplanation[] = [
+  {
+    heading: 'Input: Ciphertext',
+    what: 'Decryption begins with the ciphertext — the fully scrambled 16-bit output of encryption. Every bit depends on every plaintext bit and every key bit. The goal is to reverse all encryption operations in exactly the reverse order.',
+    why: 'An SPN is reversible with the correct key because every operation (XOR, S-box, permutation) has a mathematically defined inverse. Applying the inverses in reverse order perfectly undoes the encryption.',
+  },
+  {
+    heading: 'Undo Final Whitening (⊕ K₃)',
+    what: 'The last thing encryption did was XOR with subkey K₃. We undo it first by XORing with K₃ again. Since XOR is its own inverse — (x ⊕ K) ⊕ K = x — this perfectly recovers the state before that XOR.',
+    why: 'Subkeys must be applied in reverse order. Using the right key in the wrong order produces garbage. This ordering requirement is part of what ties correct decryption to possession of the full master key.',
+    tip: 'K₃ in this SPN reuses bits 31–16 of the master key (same as K₀). Notice the key schedule is symmetric.',
+  },
+  {
+    heading: 'Inverse S-Box — Round 3',
+    what: 'Encryption looked up each nibble\'s value in the forward S-box table. Decryption uses the inverse S-box: the ciphertext nibble is the index, and the table entry is the original pre-substitution nibble. Every forward mapping A→B maps back as B→A in the inverse.',
+    why: 'The inverse S-box exists because the forward S-box is a bijection (one-to-one): every input maps to a unique output, so each output can be traced back to exactly one input. Cryptographers deliberately design S-boxes to be bijective AND non-linear.',
+  },
+  {
+    heading: 'Undo Key Mixing (⊕ K₂)',
+    what: 'XOR with K₂ recovers the state that existed after round 2\'s permutation — before round 3\'s key was mixed in. A second XOR with the same subkey perfectly cancels the first.',
+    why: 'Each XOR with a subkey is an independent reversible gate. Security comes not from any single XOR being hard to undo, but from the combination of many XOR, S-box, and permutation steps all derived from the same secret key.',
+  },
+  {
+    heading: 'Inverse Permutation — Round 2',
+    what: 'The permutation moved bits to new positions during encryption. The inverse permutation moves each bit back. For Heys\' SPN, the bit permutation is its own inverse: applying it twice returns the identity.',
+    why: 'Because P(P(x)) = x for this particular permutation, decryption uses exactly the same permutation hardware as encryption — no separate inverse circuit is needed. This elegant self-inverse property was chosen deliberately by Heys.',
+    tip: 'You can verify: for every bit position i in the PERM table, PERM[PERM[i]] = i. This halves the hardware needed for a physical chip implementation.',
+  },
+  {
+    heading: 'Inverse S-Box — Round 2',
+    what: 'Reversing the round 2 S-box substitution. Each of the four nibbles is independently looked up in the inverse S-box table, recovering the four nibbles that existed before round 2\'s substitution step.',
+    why: 'Three S-box applications during encryption are undone by three inverse S-box applications during decryption. The inverse table is pre-computed from the forward table and never changes for a given cipher design.',
+  },
+  {
+    heading: 'Undo Key Mixing (⊕ K₁)',
+    what: 'XOR with K₁ recovers the state that entered round 2 — the output of round 1\'s permutation. We are now three steps from the plaintext: one more inverse permutation, one more inverse S-box, and one final XOR.',
+    why: 'The key mixing steps are the only ones that change with the key. The S-box and permutation are fixed, public structures. This is why key secrecy matters — the XOR steps are what bind each unique ciphertext to a specific key.',
+  },
+  {
+    heading: 'Inverse Permutation — Round 1',
+    what: 'Undoes the round 1 permutation, recovering the state immediately after the round 1 S-box substitution. Bit positions are restored to their pre-permutation arrangement.',
+    why: 'Without reversing the permutation, each nibble\'s decryption would be independent of the others and the diffusion that spread changes across nibble boundaries could not be undone. This step restores the inter-nibble relationships that diffusion created.',
+  },
+  {
+    heading: 'Inverse S-Box — Round 1',
+    what: 'The first S-box applied during encryption is the last to be undone during decryption. The inverse lookup for each of the four nibbles recovers the state that existed after the initial key whitening (⊕ K₀).',
+    why: 'This is the final non-linear step in decryption. After it, only a linear XOR remains. The inverse S-box here recovers exactly the state that key whitening produced from the plaintext.',
+  },
+  {
+    heading: 'Undo Key Whitening (⊕ K₀) → Plaintext',
+    what: 'The very first encryption step was XOR with K₀. Applying K₀ one final time undoes it, recovering the original plaintext exactly. If all previous steps used the correct key in the correct order, this last XOR produces the exact original message.',
+    why: 'Any error — wrong key, wrong order, any corrupted bit anywhere in the chain — produces meaningless output at this final step. The cipher provides no partial credit: the correct key gives the exact plaintext; any other key gives noise.',
+    tip: 'Compare this recovered value with the original plaintext — they should be identical. Now try switching to Encrypt mode, change one bit of the key, and switch back to Decrypt: the recovered plaintext will be completely wrong.',
+  },
+];
+
 // ── Bit display helpers ───────────────────────────────────────────────────────
 function to16Bits(v: number): number[] {
   return Array.from({ length: 16 }, (_, i) => (v >> (15 - i)) & 1);
@@ -219,6 +320,7 @@ const SPNApp: React.FC = () => {
   const [ptError, setPtError] = useState('');
   const [keyError, setKeyError] = useState('');
 
+  const [mode, setMode] = useState<'encrypt' | 'decrypt'>('encrypt');
   const [currentStage, setCurrentStage] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(800);
@@ -231,9 +333,16 @@ const SPNApp: React.FC = () => {
   const validPt = /^[0-9A-Fa-f]{1,4}$/.test(ptHex);
   const validKey = /^[0-9A-Fa-f]{1,8}$/.test(keyHex);
 
-  const stages = (validPt && validKey)
+  const encStages = (validPt && validKey)
     ? computeAllStages(isNaN(ptVal) ? 0 : ptVal & 0xFFFF, isNaN(keyVal) ? 0 : keyVal & 0xFFFFFFFF)
     : Array(10).fill(0);
+  const ctVal = encStages[9]; // ciphertext = last encryption stage
+  const decStages = (validPt && validKey)
+    ? computeDecryptStages(ctVal, isNaN(keyVal) ? 0 : keyVal & 0xFFFFFFFF)
+    : Array(10).fill(0);
+  const stages = mode === 'encrypt' ? encStages : decStages;
+  const activeStageInfo = mode === 'encrypt' ? STAGE_INFO : DECRYPT_STAGE_INFO;
+  const activeExplanations = mode === 'encrypt' ? STAGE_EXPLANATIONS : DECRYPT_STAGE_EXPLANATIONS;
 
   const subkeys = validKey ? deriveSubkeys(isNaN(keyVal) ? 0 : keyVal & 0xFFFFFFFF) : [0, 0, 0, 0];
 
@@ -283,7 +392,7 @@ const SPNApp: React.FC = () => {
   // Reset stage on input change
   useEffect(() => { reset(); }, [ptHex, keyHex, reset]);
 
-  const activeType = STAGE_INFO[currentStage].type;
+  const activeType = activeStageInfo[currentStage].type;
 
   // S-box detail: show nibble substitutions for sub stages
   const isSubStage = activeType === 'sub';
@@ -360,6 +469,20 @@ const SPNApp: React.FC = () => {
             </div>
             {keyError && <span className="text-xs text-red-400">{keyError}</span>}
           </div>
+          {/* Mode toggle */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Mode</label>
+            <div className="flex items-center gap-1">
+              <button onClick={() => { setMode('encrypt'); setCurrentStage(0); setPlaying(false); }}
+                className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${mode === 'encrypt' ? 'bg-violet-900/50 text-violet-200 border border-violet-600/60' : 'bg-slate-800 text-slate-400 border border-slate-700 hover:text-white'}`}>
+                Encrypt
+              </button>
+              <button onClick={() => { setMode('decrypt'); setCurrentStage(0); setPlaying(false); }}
+                className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${mode === 'decrypt' ? 'bg-cyan-900/50 text-cyan-200 border border-cyan-600/60' : 'bg-slate-800 text-slate-400 border border-slate-700 hover:text-white'}`}>
+                Decrypt
+              </button>
+            </div>
+          </div>
           {/* Vertical divider */}
           <div className="h-10 w-px bg-slate-700/60 self-center" />
           {/* Playback controls */}
@@ -384,7 +507,7 @@ const SPNApp: React.FC = () => {
           {/* Stage counter */}
           <div className="flex flex-col gap-1 self-center">
             <span className="text-xs font-mono text-slate-400">Stage {currentStage + 1} / 10</span>
-            <span className="text-[10px] font-mono text-slate-500">{STAGE_INFO[currentStage].label}</span>
+            <span className="text-[10px] font-mono text-slate-500">{activeStageInfo[currentStage].label}</span>
           </div>
           {/* Speed selector */}
           <div className="flex flex-col gap-1.5 ml-auto">
@@ -407,11 +530,14 @@ const SPNApp: React.FC = () => {
         {/* Left: Pipeline */}
         <div className="bg-slate-900/60 border border-slate-800 rounded-xl overflow-y-auto p-5 space-y-1">
           <div className="flex items-center justify-between mb-4">
-            <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Encryption Pipeline</div>
+            <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+              {mode === 'encrypt' ? 'Encryption Pipeline' : 'Decryption Pipeline'}
+            </div>
             <div className="text-[10px] text-slate-600 italic">Click any row to jump to that stage</div>
           </div>
+          {mode === 'decrypt' && validPt && validKey && <div className="text-[10px] text-cyan-400 font-mono mb-2">Decrypting CT: {toHex4(ctVal)}</div>}
               {stages.map((val, idx) => {
-                const info = STAGE_INFO[idx];
+                const info = activeStageInfo[idx];
                 const isActive = idx === currentStage;
                 const isPast = idx < currentStage;
                 const opacity = idx > currentStage ? 'opacity-40' : 'opacity-100';
@@ -468,6 +594,7 @@ const SPNApp: React.FC = () => {
 
               {/* S-Box Detail */}
               {isSubStage && subInputStage !== null && subOutputStage !== null && (() => {
+                const activeSbox = mode === 'encrypt' ? SBOX : SBOX_INV;
                 const nibbles = [0, 1, 2, 3].map(n => ({
                   inNib:  (stages[subInputStage]  >> (12 - n * 4)) & 0xF,
                   outNib: (stages[subOutputStage] >> (12 - n * 4)) & 0xF,
@@ -486,11 +613,16 @@ const SPNApp: React.FC = () => {
 
                 return (
                   <div className="bg-slate-900/60 border border-green-900/40 rounded-xl p-5 space-y-5">
-                    <div className="text-xs font-bold text-green-400 uppercase tracking-wider">S-Box Lookup</div>
-                    <p className="text-[11px] text-slate-400 leading-relaxed -mt-2">
-                      The 16-bit state is cut into four 4-bit nibbles. Each nibble's value is used as an
-                      index (0–15) into the S-Box table — the entry at that position becomes the new nibble.
-                    </p>
+                    <div className="text-xs font-bold text-green-400 uppercase tracking-wider">
+                      {mode === 'encrypt' ? 'S-Box Lookup' : 'Inverse S-Box Lookup'}
+                    </div>
+                    {mode === 'decrypt'
+                      ? <p className="text-[11px] text-slate-400 leading-relaxed -mt-2">The inverse S-box maps each encrypted nibble back to its original value. SBOX_INV[SBOX[n]] = n for every nibble n.</p>
+                      : <p className="text-[11px] text-slate-400 leading-relaxed -mt-2">
+                          The 16-bit state is cut into four 4-bit nibbles. Each nibble's value is used as an
+                          index (0–15) into the S-Box table — the entry at that position becomes the new nibble.
+                        </p>
+                    }
 
                     {/* ── Full indexed lookup table ── */}
                     <div>
@@ -514,7 +646,7 @@ const SPNApp: React.FC = () => {
                       {/* Output value row */}
                       <div className="flex font-mono text-sm">
                         <div className="w-10 shrink-0 text-slate-600 text-right pr-1.5 self-center text-[10px]">out</div>
-                        {SBOX.map((v, i) => {
+                        {activeSbox.map((v, i) => {
                           const ni = nibbleAtIdx(i);
                           return (
                             <div key={i} className={`flex-1 text-center py-1.5 rounded font-bold transition-all ${
@@ -708,20 +840,20 @@ const SPNApp: React.FC = () => {
                   activeType === 'plain' ? 'text-amber-400' :
                                            'text-cyan-400'
                 }`}>
-                  {STAGE_EXPLANATIONS[currentStage].heading}
+                  {activeExplanations[currentStage].heading}
                 </div>
                 <div>
                   <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">What is happening</div>
-                  <p className="text-sm text-slate-300 leading-relaxed">{STAGE_EXPLANATIONS[currentStage].what}</p>
+                  <p className="text-sm text-slate-300 leading-relaxed">{activeExplanations[currentStage].what}</p>
                 </div>
                 <div>
                   <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Why we do this</div>
-                  <p className="text-sm text-slate-400 leading-relaxed">{STAGE_EXPLANATIONS[currentStage].why}</p>
+                  <p className="text-sm text-slate-400 leading-relaxed">{activeExplanations[currentStage].why}</p>
                 </div>
-                {STAGE_EXPLANATIONS[currentStage].tip && (
+                {activeExplanations[currentStage].tip && (
                   <div className="bg-slate-900/60 rounded-lg px-3 py-2 border border-slate-700/60">
                     <span className="text-[10px] font-bold text-amber-500 uppercase tracking-wider">Tip: </span>
-                    <span className="text-xs text-slate-400">{STAGE_EXPLANATIONS[currentStage].tip}</span>
+                    <span className="text-xs text-slate-400">{activeExplanations[currentStage].tip}</span>
                   </div>
                 )}
               </div>
@@ -743,7 +875,9 @@ const SPNApp: React.FC = () => {
                   </div>
                   {subkeys.map((sk, ki) => {
                     const ranges = ['bits 31–16', 'bits 23–8', 'bits 15–0', 'bits 31–16'];
-                    const isUsed = [1, 4, 7, 9].indexOf(currentStage) === ki;
+                    const isUsed = mode === 'encrypt'
+                      ? [1, 4, 7, 9].indexOf(currentStage) === ki
+                      : [9, 6, 3, 1].indexOf(currentStage) === ki; // decrypt uses k0,k1,k2,k3 at stages 9,6,3,1
                     return (
                       <div key={ki} className={`rounded-lg px-2 py-1.5 transition-colors ${isUsed ? 'bg-violet-900/30 ring-1 ring-violet-600/40' : 'bg-slate-800/30'}`}>
                         <div className="flex items-center gap-2 mb-1">
