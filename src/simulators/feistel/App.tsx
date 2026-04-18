@@ -70,6 +70,13 @@ function stepToRoundPhase(step: number): { round: number; phase: number } {
   return { round: r, phase: p };
 }
 
+// ── Popcount helper ───────────────────────────────────────────────────────────
+function popcount(n: number): number {
+  let count = 0; let v = n >>> 0;
+  while (v) { count += v & 1; v >>>= 1; }
+  return count;
+}
+
 // ── Utility ──────────────────────────────────────────────────────────────────
 function to8Bits(v: number): number[] {
   return Array.from({ length: 8 }, (_, i) => (v >> (7 - i)) & 1);
@@ -252,11 +259,13 @@ const FeistelApp: React.FC = () => {
   const [ptError, setPtError] = useState('');
   const [keyError, setKeyError] = useState('');
 
-  const [mode, setMode] = useState<'encrypt' | 'decrypt'>('encrypt');
+  const [mode, setMode] = useState<'encrypt' | 'decrypt' | 'avalanche'>('encrypt');
   const [currentStep, setCurrentStep] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(800);
   const [showInfo, setShowInfo] = useState(false);
+  const [flipTarget, setFlipTarget] = useState<'pt' | 'key'>('pt');
+  const [flipBit, setFlipBit]     = useState(0);
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -278,6 +287,25 @@ const FeistelApp: React.FC = () => {
 
   const rounds = mode === 'encrypt' ? encRounds : decRounds;
   const roundKeys = validKey ? deriveRoundKeys(isNaN(keyVal) ? 0 : keyVal & 0xFFFF) : [0, 0, 0, 0];
+
+  const safeBit    = Math.min(flipBit, flipTarget === 'pt' ? 15 : 15);
+  const modPtVal   = (flipTarget === 'pt'  ? (ptVal  ^ (1 << (15 - safeBit))) : ptVal)  & 0xFFFF;
+  const modKeyVal  = (flipTarget === 'key' ? (keyVal ^ (1 << (15 - safeBit))) : keyVal) & 0xFFFF;
+  const modEncRounds = (validPt && validKey)
+    ? computeRounds(modPtVal, modKeyVal)
+    : Array.from({ length: 4 }, () => ({ L_in: 0, R_in: 0, roundKey: 0, xored: 0, F_out: 0, L_out: 0, R_out: 0 }));
+  const modFinalL = modEncRounds[3]?.L_out ?? 0;
+  const modFinalR = modEncRounds[3]?.R_out ?? 0;
+  const modCiphertext = ((modFinalL << 8) | modFinalR) & 0xFFFF;
+
+  type RoundDiff = { L: number; R: number; F: number };
+  const roundDiffs: RoundDiff[] = encRounds.map((rnd, i) => ({
+    L: popcount((rnd.L_out ^ modEncRounds[i].L_out) & 0xFF),
+    R: popcount((rnd.R_out ^ modEncRounds[i].R_out) & 0xFF),
+    F: popcount((rnd.F_out ^ modEncRounds[i].F_out) & 0xFF),
+  }));
+  const initDiff = popcount(((isNaN(ptVal) ? 0 : ptVal) ^ modPtVal) & 0xFFFF);
+  const finalDiff = popcount((ciphertext ^ modCiphertext) & 0xFFFF);
 
   const { round: activeRound, phase: activePhase } = stepToRoundPhase(currentStep);
 
@@ -425,61 +453,263 @@ const FeistelApp: React.FC = () => {
                 className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${mode === 'decrypt' ? 'bg-cyan-900/50 text-cyan-200 border border-cyan-600/60' : 'bg-slate-800 text-slate-400 border border-slate-700 hover:text-white'}`}>
                 Decrypt
               </button>
+              <button onClick={() => { setMode('avalanche'); setCurrentStep(0); setPlaying(false); }}
+                className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${mode === 'avalanche' ? 'bg-orange-900/50 text-orange-200 border border-orange-600/60' : 'bg-slate-800 text-slate-400 border border-slate-700 hover:text-white'}`}>
+                Avalanche
+              </button>
             </div>
             {mode === 'decrypt' && validPt && validKey && (
               <div className="text-[10px] text-cyan-400 font-mono">CT: {toHex4(ciphertext)}</div>
             )}
           </div>
+          {mode === 'avalanche' && (
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Flip one bit</label>
+              <div className="flex items-center gap-2">
+                <button onClick={() => { setFlipTarget('pt'); setFlipBit(0); }}
+                  className={`px-2 py-1.5 rounded text-xs transition-colors ${flipTarget === 'pt' ? 'bg-orange-900/50 text-orange-200 border border-orange-600/50' : 'bg-slate-800 text-slate-400 border border-slate-700 hover:text-white'}`}>
+                  Plaintext
+                </button>
+                <button onClick={() => { setFlipTarget('key'); setFlipBit(0); }}
+                  className={`px-2 py-1.5 rounded text-xs transition-colors ${flipTarget === 'key' ? 'bg-orange-900/50 text-orange-200 border border-orange-600/50' : 'bg-slate-800 text-slate-400 border border-slate-700 hover:text-white'}`}>
+                  Key
+                </button>
+                <span className="text-slate-500 text-xs">bit</span>
+                <input type="number" min={0} max={15} value={flipBit}
+                  onChange={e => setFlipBit(Math.max(0, Math.min(15, parseInt(e.target.value) || 0)))}
+                  className="bg-slate-900/80 border border-slate-700 rounded-lg px-2 py-1.5 font-mono text-sm text-white w-14 focus:outline-none focus:border-orange-600/50" />
+                <span className="text-[10px] text-slate-500">of 0–15</span>
+              </div>
+            </div>
+          )}
           {/* Vertical divider */}
           <div className="h-10 w-px bg-slate-700/60 self-center" />
           {/* Playback controls */}
-          <div className="flex items-center gap-2">
-            <button onClick={stepBack} disabled={currentStep === 0}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white disabled:opacity-40 transition-colors text-sm">
-              <SkipBack size={14} /> Back
-            </button>
-            <button onClick={() => setPlaying(p => !p)} disabled={currentStep >= TOTAL_STEPS - 1 && !playing}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-amber-600/20 border border-amber-700/50 text-amber-300 hover:bg-amber-600/30 disabled:opacity-40 transition-colors text-sm font-medium">
-              {playing ? <><Pause size={14} /> Pause</> : <><Play size={14} /> Play</>}
-            </button>
-            <button onClick={stepForward} disabled={currentStep >= TOTAL_STEPS - 1}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white disabled:opacity-40 transition-colors text-sm">
-              <SkipForward size={14} /> Next
-            </button>
-            <button onClick={reset}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white transition-colors text-sm">
-              <RotateCcw size={14} /> Reset
-            </button>
-          </div>
-          {/* Step indicator */}
-          <div className="flex flex-col gap-1 self-center">
-            <div className="text-sm font-mono text-white">
-              Step {currentStep} / {TOTAL_STEPS - 1}
-              {activeRound >= 1 && activeRound <= 4 && (
-                <span className="ml-2 text-amber-400 text-xs">Round {activeRound} · {phaseLabels[activePhase]}</span>
-              )}
-            </div>
-            <div className="h-1.5 w-48 bg-slate-800 rounded-full overflow-hidden">
-              <div className="h-full bg-amber-500/70 rounded-full transition-all"
-                style={{ width: `${(currentStep / (TOTAL_STEPS - 1)) * 100}%` }} />
-            </div>
-          </div>
-          {/* Speed selector */}
-          <div className="flex flex-col gap-1.5 ml-auto">
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Speed</label>
-            <div className="flex items-center gap-2">
-              {([['Slow', 1200], ['Med', 700], ['Fast', 300]] as [string, number][]).map(([lbl, ms]) => (
-                <button key={lbl} onClick={() => setSpeed(ms)}
-                  className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${speed === ms ? 'bg-amber-900/50 text-amber-300 border border-amber-700/50' : 'bg-slate-800 text-slate-400 border border-slate-700 hover:text-white'}`}>
-                  {lbl}
+          {mode !== 'avalanche' && (
+            <>
+              <div className="flex items-center gap-2">
+                <button onClick={stepBack} disabled={currentStep === 0}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white disabled:opacity-40 transition-colors text-sm">
+                  <SkipBack size={14} /> Back
                 </button>
-              ))}
-            </div>
-          </div>
+                <button onClick={() => setPlaying(p => !p)} disabled={currentStep >= TOTAL_STEPS - 1 && !playing}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-amber-600/20 border border-amber-700/50 text-amber-300 hover:bg-amber-600/30 disabled:opacity-40 transition-colors text-sm font-medium">
+                  {playing ? <><Pause size={14} /> Pause</> : <><Play size={14} /> Play</>}
+                </button>
+                <button onClick={stepForward} disabled={currentStep >= TOTAL_STEPS - 1}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white disabled:opacity-40 transition-colors text-sm">
+                  <SkipForward size={14} /> Next
+                </button>
+                <button onClick={reset}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white transition-colors text-sm">
+                  <RotateCcw size={14} /> Reset
+                </button>
+              </div>
+              {/* Step indicator */}
+              <div className="flex flex-col gap-1 self-center">
+                <div className="text-sm font-mono text-white">
+                  Step {currentStep} / {TOTAL_STEPS - 1}
+                  {activeRound >= 1 && activeRound <= 4 && (
+                    <span className="ml-2 text-amber-400 text-xs">Round {activeRound} · {phaseLabels[activePhase]}</span>
+                  )}
+                </div>
+                <div className="h-1.5 w-48 bg-slate-800 rounded-full overflow-hidden">
+                  <div className="h-full bg-amber-500/70 rounded-full transition-all"
+                    style={{ width: `${(currentStep / (TOTAL_STEPS - 1)) * 100}%` }} />
+                </div>
+              </div>
+              {/* Speed selector */}
+              <div className="flex flex-col gap-1.5 ml-auto">
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Speed</label>
+                <div className="flex items-center gap-2">
+                  {([['Slow', 1200], ['Med', 700], ['Fast', 300]] as [string, number][]).map(([lbl, ms]) => (
+                    <button key={lbl} onClick={() => setSpeed(ms)}
+                      className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${speed === ms ? 'bg-amber-900/50 text-amber-300 border border-amber-700/50' : 'bg-slate-800 text-slate-400 border border-slate-700 hover:text-white'}`}>
+                      {lbl}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
+      {/* ── FEISTEL AVALANCHE BODY */}
+      {mode === 'avalanche' && (
+        <div className="flex-1 overflow-hidden grid grid-cols-[minmax(360px,1fr)_520px] gap-5 p-6">
+
+          {/* Left: round-by-round comparison */}
+          <div className="bg-slate-900/60 border border-orange-900/30 rounded-xl overflow-y-auto p-5 space-y-3">
+            <div className="text-xs font-bold text-orange-400 uppercase tracking-wider mb-1">Round-by-round comparison</div>
+            <div className="text-[10px] text-slate-500 mb-2">
+              Original vs. {flipTarget === 'pt' ? `plaintext bit ${safeBit} flipped` : `key bit ${safeBit} flipped`}
+            </div>
+
+            {/* Initial split */}
+            <div className="bg-slate-800/40 rounded-xl p-3">
+              <div className="text-[10px] font-bold text-slate-500 uppercase mb-2">Input</div>
+              <div className="grid grid-cols-2 gap-3">
+                {(['L₀', 'R₀'] as const).map((lbl, half) => {
+                  const origByte = half === 0 ? (encRounds[0]?.L_in ?? 0) : (encRounds[0]?.R_in ?? 0);
+                  const modByte  = half === 0 ? (modEncRounds[0]?.L_in ?? 0) : (modEncRounds[0]?.R_in ?? 0);
+                  const nDiff = popcount((origByte ^ modByte) & 0xFF);
+                  const origB = to8Bits(origByte);
+                  const modB  = to8Bits(modByte);
+                  return (
+                    <div key={half}>
+                      <div className={`text-[10px] font-bold mb-1 ${half === 0 ? 'text-amber-400' : 'text-cyan-400'}`}>{lbl}</div>
+                      <div className="flex gap-0.5 mb-1">
+                        {origB.map((b, i) => <div key={i} className={`w-5 h-5 flex items-center justify-center rounded text-[9px] font-mono font-bold border ${b ? 'bg-slate-700/60 border-slate-500 text-slate-200' : 'bg-slate-900 border-slate-800 text-slate-700'}`}>{b}</div>)}
+                      </div>
+                      <div className="flex gap-0.5">
+                        {modB.map((b, i) => {
+                          const d = origB[i] !== b;
+                          return <div key={i} className={`w-5 h-5 flex items-center justify-center rounded text-[9px] font-mono font-bold border ${d ? 'bg-orange-900/70 border-orange-500 text-orange-200' : b ? 'bg-slate-700/60 border-slate-500 text-slate-200' : 'bg-slate-900 border-slate-800 text-slate-700'}`}>{b}</div>;
+                        })}
+                      </div>
+                      {nDiff > 0 && <div className="text-[9px] text-orange-400 mt-0.5">{nDiff} bit{nDiff !== 1 ? 's' : ''} differ</div>}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Per-round rows */}
+            {encRounds.map((rnd, ri) => {
+              const modRnd = modEncRounds[ri];
+              const diff   = roundDiffs[ri];
+              const totalDiff = diff.L + diff.R;
+              return (
+                <div key={ri} className={`border rounded-xl p-3 transition-colors ${totalDiff > 0 ? 'border-orange-900/40 bg-orange-950/10' : 'border-slate-800 bg-slate-900/20'}`}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-sm font-bold text-slate-400">Round {ri + 1}</span>
+                    <span className="text-[10px] text-slate-600 font-mono">K{ri+1} = {toHex2(rnd.roundKey)}</span>
+                    {totalDiff > 0 && (
+                      <span className="ml-auto text-[10px] px-2 py-0.5 rounded bg-orange-900/40 text-orange-400 border border-orange-800/40">
+                        {totalDiff} bit{totalDiff !== 1 ? 's' : ''} differ
+                      </span>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-3 gap-3 text-[10px] font-mono">
+                    {/* F output */}
+                    <div>
+                      <div className="text-green-500 mb-1">F output</div>
+                      <div className="flex gap-0.5 mb-0.5">
+                        {to8Bits(rnd.F_out).map((b, i) => {
+                          const d = to8Bits(modRnd.F_out)[i] !== b;
+                          return <span key={i} className={d ? 'text-orange-400 font-bold' : b ? 'text-green-400' : 'text-slate-700'}>{b}</span>;
+                        })}
+                      </div>
+                      {diff.F > 0 && <div className="text-orange-400 text-[9px]">Δ={diff.F}</div>}
+                    </div>
+                    {/* L output */}
+                    <div>
+                      <div className="text-amber-500 mb-1">L out</div>
+                      <div className="flex gap-0.5 mb-0.5">
+                        {to8Bits(rnd.L_out).map((b, i) => {
+                          const d = to8Bits(modRnd.L_out)[i] !== b;
+                          return <span key={i} className={d ? 'text-orange-400 font-bold' : b ? 'text-amber-400' : 'text-slate-700'}>{b}</span>;
+                        })}
+                      </div>
+                      {diff.L > 0 && <div className="text-orange-400 text-[9px]">Δ={diff.L}</div>}
+                    </div>
+                    {/* R output */}
+                    <div>
+                      <div className="text-cyan-500 mb-1">R out</div>
+                      <div className="flex gap-0.5 mb-0.5">
+                        {to8Bits(rnd.R_out).map((b, i) => {
+                          const d = to8Bits(modRnd.R_out)[i] !== b;
+                          return <span key={i} className={d ? 'text-orange-400 font-bold' : b ? 'text-cyan-400' : 'text-slate-700'}>{b}</span>;
+                        })}
+                      </div>
+                      {diff.R > 0 && <div className="text-orange-400 text-[9px]">Δ={diff.R}</div>}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Final ciphertext comparison */}
+            <div className="bg-slate-800/40 rounded-xl p-3">
+              <div className="text-[10px] font-bold text-slate-500 uppercase mb-2">Final Output</div>
+              <div className="flex items-center gap-4 font-mono text-sm">
+                <div>
+                  <div className="text-[10px] text-slate-500 mb-1">Original CT</div>
+                  <div className="text-white font-bold">{toHex4(ciphertext)}</div>
+                </div>
+                <div className="text-slate-600">→</div>
+                <div>
+                  <div className="text-[10px] text-slate-500 mb-1">Modified CT</div>
+                  <div className="text-orange-300 font-bold">{toHex4(modCiphertext)}</div>
+                </div>
+                <div className={`ml-auto text-sm font-bold ${finalDiff >= 5 ? 'text-green-400' : 'text-yellow-400'}`}>
+                  {finalDiff}/16 bits differ
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right: diffusion chart + explanation */}
+          <div className="overflow-y-auto space-y-5 pr-1">
+
+            {/* Bar chart */}
+            <div className="bg-slate-900/60 border border-orange-900/30 rounded-xl p-5">
+              <div className="text-xs font-bold text-orange-400 uppercase tracking-wider mb-1">Bit Diffusion by Round</div>
+              <div className="text-[10px] text-slate-500 mb-4">Total bits changed in L+R after each round</div>
+              <div className="space-y-3">
+                {[{ label: 'Input', count: initDiff, max: 16 },
+                  ...roundDiffs.map((d, i) => ({ label: `Round ${i+1}`, count: d.L + d.R, max: 16 })),
+                  { label: 'Ciphertext', count: finalDiff, max: 16 },
+                ].map(({ label, count, max }) => {
+                  const pct = (count / max) * 100;
+                  const barColor = count === 0 ? 'bg-slate-700' : count <= 3 ? 'bg-yellow-500/70' : count <= 7 ? 'bg-orange-500/70' : 'bg-red-500/70';
+                  const numColor = count === 0 ? 'text-slate-600' : count <= 3 ? 'text-yellow-400' : count <= 7 ? 'text-orange-400' : 'text-red-400';
+                  return (
+                    <div key={label} className="flex items-center gap-3">
+                      <div className="w-24 text-[10px] text-slate-500 text-right shrink-0">{label}</div>
+                      <div className="flex-1 relative h-5 bg-slate-800 rounded-full overflow-hidden">
+                        <div className="absolute inset-y-0 left-1/2 w-px bg-slate-600/50" />
+                        <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${pct}%` }} />
+                      </div>
+                      <div className={`w-6 text-xs font-mono font-bold text-right ${numColor}`}>{count}</div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="mt-3 flex items-center gap-2 text-[10px] text-slate-500 border-t border-slate-800 pt-3">
+                <div className="w-3 h-px bg-slate-600" />
+                <span>50% line (target ≥ 8 bits)</span>
+                <span className={`ml-auto font-mono font-bold ${finalDiff >= 6 ? 'text-orange-400' : 'text-slate-500'}`}>
+                  Final: {finalDiff}/16
+                </span>
+              </div>
+            </div>
+
+            {/* Explanation */}
+            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5 space-y-3">
+              <div className="text-xs font-bold text-orange-400 uppercase tracking-wider">The Avalanche Effect</div>
+              <p className="text-sm text-slate-300 leading-relaxed">
+                A single-bit change should ripple through the entire cipher, flipping roughly <strong className="text-white">half of all output bits</strong>. This is the <em className="text-orange-300">strict avalanche criterion</em>.
+              </p>
+              <p className="text-sm text-slate-400 leading-relaxed">
+                In a Feistel network, one changed input bit enters the F-function in round 1. The S-box non-linearity expands it into several changed bits. These spread into both halves via the XOR-and-swap, and subsequent rounds amplify the cascade until the entire block is affected.
+              </p>
+              <p className="text-sm text-slate-400 leading-relaxed">
+                Notice how the L half is unchanged in round 1 (it just passes through), but R is already affected. By round 2 the changed R becomes the new L, and the cascade fully crosses both halves.
+              </p>
+              <div className="bg-slate-900/60 rounded-lg px-3 py-2 border border-slate-700/60">
+                <span className="text-[10px] font-bold text-amber-500 uppercase tracking-wider">Try: </span>
+                <span className="text-xs text-slate-400">Flip a key bit instead of a plaintext bit. Same plaintext, different key → completely different ciphertext. This is why even a one-bit key error produces unrecognisable output, making brute-force search extremely difficult.</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
       {/* ── MAIN BODY (fills remaining height, no outer scroll) */}
+      {mode !== 'avalanche' && (
       <div className="flex-1 overflow-hidden grid grid-cols-[minmax(360px,1fr)_580px] gap-5 p-6">
 
         {/* Left: Feistel Ladder */}
@@ -862,6 +1092,7 @@ const FeistelApp: React.FC = () => {
 
         </div>
       </div>
+      )}
     </div>
   );
 };

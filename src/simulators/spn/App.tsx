@@ -237,6 +237,13 @@ const DECRYPT_STAGE_EXPLANATIONS: StageExplanation[] = [
   },
 ];
 
+// ── Popcount helper ───────────────────────────────────────────────────────────
+function popcount(n: number): number {
+  let count = 0; let v = n >>> 0;
+  while (v) { count += v & 1; v >>>= 1; }
+  return count;
+}
+
 // ── Bit display helpers ───────────────────────────────────────────────────────
 function to16Bits(v: number): number[] {
   return Array.from({ length: 16 }, (_, i) => (v >> (15 - i)) & 1);
@@ -320,11 +327,13 @@ const SPNApp: React.FC = () => {
   const [ptError, setPtError] = useState('');
   const [keyError, setKeyError] = useState('');
 
-  const [mode, setMode] = useState<'encrypt' | 'decrypt'>('encrypt');
+  const [mode, setMode] = useState<'encrypt' | 'decrypt' | 'avalanche'>('encrypt');
   const [currentStage, setCurrentStage] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(800);
   const [showInfo, setShowInfo] = useState(false);
+  const [flipTarget, setFlipTarget] = useState<'pt' | 'key'>('pt');
+  const [flipBit, setFlipBit]     = useState(0);
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -343,6 +352,15 @@ const SPNApp: React.FC = () => {
   const stages = mode === 'encrypt' ? encStages : decStages;
   const activeStageInfo = mode === 'encrypt' ? STAGE_INFO : DECRYPT_STAGE_INFO;
   const activeExplanations = mode === 'encrypt' ? STAGE_EXPLANATIONS : DECRYPT_STAGE_EXPLANATIONS;
+
+  const maxFlipBit = flipTarget === 'pt' ? 15 : 31;
+  const safeBit = Math.min(flipBit, maxFlipBit);
+  const modPtVal  = (flipTarget === 'pt'  ? (ptVal  ^ (1 << (15 - safeBit))) : ptVal)  & 0xFFFF;
+  const modKeyVal = (flipTarget === 'key' ? (keyVal ^ (1 << (31 - safeBit))) : keyVal) & 0xFFFFFFFF;
+  const modStages = (validPt && validKey)
+    ? computeAllStages(modPtVal, modKeyVal)
+    : Array(10).fill(0);
+  const diffCounts = encStages.map((s, i) => popcount((s ^ modStages[i]) & 0xFFFF));
 
   const subkeys = validKey ? deriveSubkeys(isNaN(keyVal) ? 0 : keyVal & 0xFFFFFFFF) : [0, 0, 0, 0];
 
@@ -481,50 +499,221 @@ const SPNApp: React.FC = () => {
                 className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${mode === 'decrypt' ? 'bg-cyan-900/50 text-cyan-200 border border-cyan-600/60' : 'bg-slate-800 text-slate-400 border border-slate-700 hover:text-white'}`}>
                 Decrypt
               </button>
+              <button onClick={() => { setMode('avalanche'); setCurrentStage(0); setPlaying(false); }}
+                className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${mode === 'avalanche' ? 'bg-orange-900/50 text-orange-200 border border-orange-600/60' : 'bg-slate-800 text-slate-400 border border-slate-700 hover:text-white'}`}>
+                Avalanche
+              </button>
             </div>
           </div>
+          {mode === 'avalanche' && (
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Flip one bit</label>
+              <div className="flex items-center gap-2">
+                <button onClick={() => { setFlipTarget('pt'); setFlipBit(0); }}
+                  className={`px-2 py-1.5 rounded text-xs transition-colors ${flipTarget === 'pt' ? 'bg-orange-900/50 text-orange-200 border border-orange-600/50' : 'bg-slate-800 text-slate-400 border border-slate-700 hover:text-white'}`}>
+                  Plaintext
+                </button>
+                <button onClick={() => { setFlipTarget('key'); setFlipBit(0); }}
+                  className={`px-2 py-1.5 rounded text-xs transition-colors ${flipTarget === 'key' ? 'bg-orange-900/50 text-orange-200 border border-orange-600/50' : 'bg-slate-800 text-slate-400 border border-slate-700 hover:text-white'}`}>
+                  Key
+                </button>
+                <span className="text-slate-500 text-xs">bit</span>
+                <input type="number" min={0} max={flipTarget === 'pt' ? 15 : 31} value={flipBit}
+                  onChange={e => setFlipBit(Math.max(0, Math.min(flipTarget === 'pt' ? 15 : 31, parseInt(e.target.value) || 0)))}
+                  className="bg-slate-900/80 border border-slate-700 rounded-lg px-2 py-1.5 font-mono text-sm text-white w-14 focus:outline-none focus:border-orange-600/50" />
+                <span className="text-[10px] text-slate-500">of {flipTarget === 'pt' ? '0–15' : '0–31'}</span>
+              </div>
+            </div>
+          )}
           {/* Vertical divider */}
           <div className="h-10 w-px bg-slate-700/60 self-center" />
           {/* Playback controls */}
-          <div className="flex items-center gap-2">
-            <button onClick={stepBack} disabled={currentStage === 0}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white disabled:opacity-40 transition-colors text-sm">
-              <SkipBack size={14} /> Back
-            </button>
-            <button onClick={() => setPlaying(p => !p)} disabled={currentStage >= 9 && !playing}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-violet-600/20 border border-violet-700/50 text-violet-300 hover:bg-violet-600/30 disabled:opacity-40 transition-colors text-sm font-medium">
-              {playing ? <><Pause size={14} /> Pause</> : <><Play size={14} /> Play</>}
-            </button>
-            <button onClick={stepForward} disabled={currentStage >= 9}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white disabled:opacity-40 transition-colors text-sm">
-              <SkipForward size={14} /> Next
-            </button>
-            <button onClick={reset}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white transition-colors text-sm">
-              <RotateCcw size={14} /> Reset
-            </button>
-          </div>
-          {/* Stage counter */}
-          <div className="flex flex-col gap-1 self-center">
-            <span className="text-xs font-mono text-slate-400">Stage {currentStage + 1} / 10</span>
-            <span className="text-[10px] font-mono text-slate-500">{activeStageInfo[currentStage].label}</span>
-          </div>
-          {/* Speed selector */}
-          <div className="flex flex-col gap-1.5 ml-auto">
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Speed</label>
-            <div className="flex items-center gap-2">
-              {([['Slow', 1200], ['Med', 700], ['Fast', 300]] as [string, number][]).map(([lbl, ms]) => (
-                <button key={lbl} onClick={() => setSpeed(ms)}
-                  className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${speed === ms ? 'bg-violet-900/50 text-violet-300 border border-violet-700/50' : 'bg-slate-800 text-slate-400 border border-slate-700 hover:text-white'}`}>
-                  {lbl}
+          {mode !== 'avalanche' && (
+            <>
+              <div className="flex items-center gap-2">
+                <button onClick={stepBack} disabled={currentStage === 0}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white disabled:opacity-40 transition-colors text-sm">
+                  <SkipBack size={14} /> Back
                 </button>
-              ))}
-            </div>
-          </div>
+                <button onClick={() => setPlaying(p => !p)} disabled={currentStage >= 9 && !playing}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-violet-600/20 border border-violet-700/50 text-violet-300 hover:bg-violet-600/30 disabled:opacity-40 transition-colors text-sm font-medium">
+                  {playing ? <><Pause size={14} /> Pause</> : <><Play size={14} /> Play</>}
+                </button>
+                <button onClick={stepForward} disabled={currentStage >= 9}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white disabled:opacity-40 transition-colors text-sm">
+                  <SkipForward size={14} /> Next
+                </button>
+                <button onClick={reset}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white transition-colors text-sm">
+                  <RotateCcw size={14} /> Reset
+                </button>
+              </div>
+              {/* Stage counter */}
+              <div className="flex flex-col gap-1 self-center">
+                <span className="text-xs font-mono text-slate-400">Stage {currentStage + 1} / 10</span>
+                <span className="text-[10px] font-mono text-slate-500">{activeStageInfo[currentStage].label}</span>
+              </div>
+              {/* Speed selector */}
+              <div className="flex flex-col gap-1.5 ml-auto">
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Speed</label>
+                <div className="flex items-center gap-2">
+                  {([['Slow', 1200], ['Med', 700], ['Fast', 300]] as [string, number][]).map(([lbl, ms]) => (
+                    <button key={lbl} onClick={() => setSpeed(ms)}
+                      className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${speed === ms ? 'bg-violet-900/50 text-violet-300 border border-violet-700/50' : 'bg-slate-800 text-slate-400 border border-slate-700 hover:text-white'}`}>
+                      {lbl}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
+      {/* ── AVALANCHE BODY */}
+      {mode === 'avalanche' && (
+        <div className="flex-1 overflow-hidden grid grid-cols-[minmax(360px,1fr)_520px] gap-5 p-6">
+
+          {/* Left: Comparison pipeline */}
+          <div className="bg-slate-900/60 border border-orange-900/30 rounded-xl overflow-y-auto p-5">
+            <div className="text-xs font-bold text-orange-400 uppercase tracking-wider mb-1">Bit-by-bit comparison</div>
+            <div className="text-[10px] text-slate-500 mb-4">
+              Original vs. {flipTarget === 'pt' ? `plaintext bit ${safeBit} flipped` : `key bit ${safeBit} flipped`} · orange = differs
+            </div>
+
+            {/* Column headers */}
+            <div className="grid grid-cols-[112px_1fr_52px_1fr_44px] gap-x-2 text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-2 px-1">
+              <div>Stage</div>
+              <div>Original</div>
+              <div className="text-center">Δ</div>
+              <div>Modified</div>
+              <div className="text-right">hex</div>
+            </div>
+
+            <div className="space-y-1">
+              {encStages.map((origVal, idx) => {
+                const modVal = modStages[idx];
+                const nDiff = diffCounts[idx];
+                const origBits = to16Bits(origVal);
+                const modBits  = to16Bits(modVal);
+                const info = STAGE_INFO[idx];
+                const diffColor = nDiff === 0 ? 'text-slate-600 bg-slate-800/60' :
+                                  nDiff <= 3  ? 'text-yellow-400 bg-yellow-900/30 border border-yellow-800/40' :
+                                  nDiff <= 7  ? 'text-orange-400 bg-orange-900/30 border border-orange-800/40' :
+                                                'text-red-400 bg-red-900/30 border border-red-800/40';
+                return (
+                  <div key={idx} className="grid grid-cols-[112px_1fr_52px_1fr_44px] gap-x-2 items-center py-1.5 px-1 rounded-lg hover:bg-slate-800/20 transition-colors">
+                    {/* Stage label */}
+                    <div>
+                      <div className="text-[10px] font-semibold text-slate-400 leading-tight">{info.label}</div>
+                      <span className={`text-[8px] px-1 py-0.5 rounded font-bold uppercase ${typeBadgeClass(info.type)}`}>{info.type}</span>
+                    </div>
+                    {/* Original bits — 4 nibble groups */}
+                    <div className="flex gap-1">
+                      {[0,1,2,3].map(n => (
+                        <div key={n} className="flex gap-0.5">
+                          {origBits.slice(n*4, n*4+4).map((b, bi) => (
+                            <div key={bi} className={`w-4 h-4 flex items-center justify-center rounded text-[9px] font-mono font-bold border ${
+                              b ? 'bg-slate-700/60 border-slate-500 text-slate-200' : 'bg-slate-900 border-slate-800 text-slate-700'
+                            }`}>{b}</div>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                    {/* Diff badge */}
+                    <div className={`text-center py-0.5 rounded text-[10px] font-bold ${diffColor}`}>
+                      {nDiff}
+                    </div>
+                    {/* Modified bits */}
+                    <div className="flex gap-1">
+                      {[0,1,2,3].map(n => (
+                        <div key={n} className="flex gap-0.5">
+                          {modBits.slice(n*4, n*4+4).map((b, bi) => {
+                            const differs = origBits[n*4+bi] !== b;
+                            return (
+                              <div key={bi} className={`w-4 h-4 flex items-center justify-center rounded text-[9px] font-mono font-bold border ${
+                                differs ? 'bg-orange-900/70 border-orange-500 text-orange-200 ring-1 ring-orange-500/50' :
+                                b ? 'bg-slate-700/60 border-slate-500 text-slate-200' : 'bg-slate-900 border-slate-800 text-slate-700'
+                              }`}>{b}</div>
+                            );
+                          })}
+                        </div>
+                      ))}
+                    </div>
+                    {/* Hex diff */}
+                    <div className="text-right font-mono text-[10px] text-orange-400">
+                      {nDiff > 0 ? toHex4(modVal) : <span className="text-slate-700">—</span>}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Right: diffusion chart + explanation */}
+          <div className="overflow-y-auto space-y-5 pr-1">
+
+            {/* Diffusion chart */}
+            <div className="bg-slate-900/60 border border-orange-900/30 rounded-xl p-5">
+              <div className="text-xs font-bold text-orange-400 uppercase tracking-wider mb-1">Bit Diffusion</div>
+              <div className="text-[10px] text-slate-500 mb-4">Bits changed at each stage (of 16 total)</div>
+              <div className="space-y-2">
+                {diffCounts.map((count, idx) => {
+                  const info = STAGE_INFO[idx];
+                  const pct  = (count / 16) * 100;
+                  const barColor = count === 0  ? 'bg-slate-700' :
+                                   count <= 3   ? 'bg-yellow-500/70' :
+                                   count <= 7   ? 'bg-orange-500/70' : 'bg-red-500/70';
+                  const numColor = count === 0  ? 'text-slate-600' :
+                                   count <= 3   ? 'text-yellow-400' :
+                                   count <= 7   ? 'text-orange-400' : 'text-red-400';
+                  return (
+                    <div key={idx} className="flex items-center gap-3">
+                      <div className="w-28 text-[10px] text-slate-500 text-right shrink-0 leading-tight">{info.label}</div>
+                      <div className="flex-1 relative h-5 bg-slate-800 rounded-full overflow-hidden">
+                        {/* 50% marker */}
+                        <div className="absolute inset-y-0 left-1/2 w-px bg-slate-600/50" />
+                        <div className={`h-full rounded-full transition-all duration-300 ${barColor}`}
+                          style={{ width: `${pct}%` }} />
+                      </div>
+                      <div className={`w-6 text-xs font-mono font-bold text-right ${numColor}`}>{count}</div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="mt-4 flex items-center gap-2 text-[10px] text-slate-500 border-t border-slate-800 pt-3">
+                <div className="w-3 h-px bg-slate-600" />
+                <span>50% line (ideal target = 8 bits)</span>
+                <span className={`ml-auto font-mono font-bold ${diffCounts[9] >= 6 ? 'text-orange-400' : 'text-slate-500'}`}>
+                  Final: {diffCounts[9]}/16 bits
+                </span>
+              </div>
+            </div>
+
+            {/* Text explanation */}
+            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5 space-y-3">
+              <div className="text-xs font-bold text-orange-400 uppercase tracking-wider">The Avalanche Effect</div>
+              <p className="text-sm text-slate-300 leading-relaxed">
+                A single-bit change in the plaintext or key should cause approximately <strong className="text-white">half of all ciphertext bits</strong> to change. This is the <em className="text-orange-300">strict avalanche criterion</em> — a cornerstone of modern cipher design.
+              </p>
+              <p className="text-sm text-slate-400 leading-relaxed">
+                Watch the diffusion bar chart as rounds progress. The S-Box provides <strong className="text-white">confusion</strong> — one changed input nibble produces a very different output nibble. The Permutation provides <strong className="text-white">diffusion</strong> — it scatters those changed bits across all four nibbles, so the next S-Box application amplifies the cascade further.
+              </p>
+              <p className="text-sm text-slate-400 leading-relaxed">
+                By round 3, the single flipped bit has propagated through every nibble in both the original and modified pipelines, and the ciphertext outputs diverge by roughly 8 bits — exactly what a strong block cipher requires.
+              </p>
+              <div className="bg-slate-900/60 rounded-lg px-3 py-2 border border-slate-700/60">
+                <span className="text-[10px] font-bold text-amber-500 uppercase tracking-wider">Try: </span>
+                <span className="text-xs text-slate-400">Flip bits at different positions — bit 0 vs bit 7 vs bit 15. Notice that by the final stage, all positions produce roughly the same number of changed ciphertext bits. No single bit is "special" or "more dangerous" — that uniform sensitivity is the goal.</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
       {/* ── MAIN BODY (fills remaining height, no outer scroll) */}
+      {mode !== 'avalanche' && (
       <div className="flex-1 overflow-hidden grid grid-cols-[minmax(360px,1fr)_580px] gap-5 p-6">
 
         {/* Left: Pipeline */}
@@ -898,6 +1087,7 @@ const SPNApp: React.FC = () => {
 
         </div>
       </div>
+      )}
     </div>
   );
 };
