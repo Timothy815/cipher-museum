@@ -402,11 +402,14 @@ const SPNApp: React.FC = () => {
       </div>
 
       {/* ── MAIN BODY (fills remaining height, no outer scroll) */}
-      <div className="flex-1 overflow-hidden grid grid-cols-[1fr_460px] gap-5 p-6">
+      <div className="flex-1 overflow-hidden grid grid-cols-[minmax(360px,1fr)_580px] gap-5 p-6">
 
         {/* Left: Pipeline */}
         <div className="bg-slate-900/60 border border-slate-800 rounded-xl overflow-y-auto p-5 space-y-1">
-          <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Encryption Pipeline</div>
+          <div className="flex items-center justify-between mb-4">
+            <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Encryption Pipeline</div>
+            <div className="text-[10px] text-slate-600 italic">Click any row to jump to that stage</div>
+          </div>
               {stages.map((val, idx) => {
                 const info = STAGE_INFO[idx];
                 const isActive = idx === currentStage;
@@ -422,7 +425,7 @@ const SPNApp: React.FC = () => {
                       style={{ cursor: 'pointer' }}
                     >
                       {/* Stage label */}
-                      <div className="w-36 flex-shrink-0">
+                      <div className="w-28 flex-shrink-0">
                         <div className={`text-xs font-semibold ${isActive ? 'text-white' : 'text-slate-400'}`}>{info.label}</div>
                         <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider ${typeBadgeClass(info.type)}`}>
                           {info.type}
@@ -430,7 +433,7 @@ const SPNApp: React.FC = () => {
                       </div>
 
                       {/* Bit boxes in nibble groups */}
-                      <div className="flex gap-1.5 flex-1 justify-center">
+                      <div className="flex gap-1 flex-1 justify-center">
                         {[0, 1, 2, 3].map(nibble => (
                           <div key={nibble} className="flex gap-0.5">
                             {bits.slice(nibble * 4, nibble * 4 + 4).map((bit, bi) => (
@@ -461,7 +464,7 @@ const SPNApp: React.FC = () => {
         </div>
 
         {/* Right: Detail Panel */}
-        <div className="overflow-y-auto space-y-4 pr-1">
+        <div className="overflow-y-auto space-y-5 pr-1">
 
               {/* S-Box Detail */}
               {isSubStage && subInputStage !== null && subOutputStage !== null && (

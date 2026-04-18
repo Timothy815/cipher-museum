@@ -393,14 +393,20 @@ const FeistelApp: React.FC = () => {
       </div>
 
       {/* ── MAIN BODY (fills remaining height, no outer scroll) */}
-      <div className="flex-1 overflow-hidden grid grid-cols-[1fr_460px] gap-5 p-6">
+      <div className="flex-1 overflow-hidden grid grid-cols-[minmax(360px,1fr)_580px] gap-5 p-6">
 
         {/* Left: Feistel Ladder */}
         <div className="bg-slate-900/60 border border-slate-800 rounded-xl overflow-y-auto p-5 space-y-2">
-          <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Feistel Ladder</div>
+          <div className="flex items-center justify-between mb-4">
+            <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Feistel Ladder</div>
+            <div className="text-[10px] text-slate-600 italic">Click any row to jump to that step</div>
+          </div>
 
               {/* Initial L/R */}
-              <div className={`flex gap-4 items-start p-3 rounded-lg transition-all ${currentStep === 0 ? 'bg-slate-800/60 ring-2 ring-white/20' : ''}`}>
+              <div
+                className={`flex gap-4 items-start p-3 rounded-lg transition-all cursor-pointer hover:bg-slate-800/40 ${currentStep === 0 ? 'bg-slate-800/60 ring-2 ring-white/20' : ''}`}
+                onClick={() => setCurrentStep(0)}
+              >
                 <div className="flex-1">
                   <div className="text-xs font-bold text-amber-400 mb-1">L₀ (plaintext high byte)</div>
                   <div className="flex items-center gap-2">
@@ -428,8 +434,8 @@ const FeistelApp: React.FC = () => {
 
                 return (
                   <div key={ri} className={`border rounded-xl p-4 transition-all ${opacity} ${isActive ? 'border-amber-700/50 bg-amber-950/10 ring-1 ring-amber-600/20' : isPast ? 'border-slate-800 bg-slate-900/20' : 'border-slate-800/60'}`}>
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className={`text-sm font-bold ${isActive ? 'text-amber-300' : 'text-slate-500'}`}>Round {rNum}</span>
+                    <div className="flex items-center gap-2 mb-3 cursor-pointer group" onClick={() => setCurrentStep(ri * 5 + 1)}>
+                      <span className={`text-sm font-bold group-hover:text-amber-300 transition-colors ${isActive ? 'text-amber-300' : 'text-slate-500'}`}>Round {rNum}</span>
                       {isActive && (
                         <span className="text-xs px-2 py-0.5 rounded bg-amber-900/40 border border-amber-700/40 text-amber-400 font-mono">
                           {phaseLabels[activePhase]}
@@ -439,7 +445,8 @@ const FeistelApp: React.FC = () => {
                     </div>
 
                     {/* L_in / R_in row */}
-                    <div className={`flex gap-4 items-start mb-2 p-2 rounded-lg transition-colors ${phaseActive === 0 ? 'bg-slate-800/60' : ''}`}>
+                    <div className={`flex gap-4 items-start mb-2 p-2 rounded-lg transition-colors cursor-pointer hover:bg-slate-800/30 ${phaseActive === 0 ? 'bg-slate-800/60' : ''}`}
+                      onClick={() => setCurrentStep(ri * 5 + 1)}>
                       <div className="flex-1">
                         <div className="text-[10px] text-amber-600 mb-1">L{ri} in</div>
                         <div className="flex items-center gap-1.5">
@@ -459,7 +466,8 @@ const FeistelApp: React.FC = () => {
 
                     {/* F function summary */}
                     <div className={`ml-4 pl-3 border-l-2 border-cyan-800/40 space-y-1.5 text-xs font-mono`}>
-                      <div className={`flex items-center gap-2 p-1.5 rounded transition-colors ${phaseActive === 1 ? 'bg-cyan-950/40 ring-1 ring-cyan-700/30' : ''}`}>
+                      <div className={`flex items-center gap-2 p-1.5 rounded transition-colors cursor-pointer hover:bg-slate-800/30 ${phaseActive === 1 ? 'bg-cyan-950/40 ring-1 ring-cyan-700/30' : ''}`}
+                        onClick={() => setCurrentStep(ri * 5 + 2)}>
                         <span className="text-slate-500 w-20">R ⊕ K{rNum}</span>
                         <span className="text-cyan-400">{toHex2(rnd.R_in)}</span>
                         <span className="text-slate-600">⊕</span>
@@ -472,7 +480,8 @@ const FeistelApp: React.FC = () => {
                           ))}
                         </div>
                       </div>
-                      <div className={`flex items-center gap-2 p-1.5 rounded transition-colors ${phaseActive === 2 ? 'bg-green-950/40 ring-1 ring-green-700/30' : ''}`}>
+                      <div className={`flex items-center gap-2 p-1.5 rounded transition-colors cursor-pointer hover:bg-slate-800/30 ${phaseActive === 2 ? 'bg-green-950/40 ring-1 ring-green-700/30' : ''}`}
+                        onClick={() => setCurrentStep(ri * 5 + 3)}>
                         <span className="text-slate-500 w-20">SBox({toHex2(rnd.xored)})</span>
                         <span className="text-slate-600">=</span>
                         <span className="text-green-300 font-bold">{toHex2(rnd.F_out)}</span>
@@ -482,7 +491,8 @@ const FeistelApp: React.FC = () => {
                           ))}
                         </div>
                       </div>
-                      <div className={`flex items-center gap-2 p-1.5 rounded transition-colors ${phaseActive === 3 ? 'bg-amber-950/40 ring-1 ring-amber-700/30' : ''}`}>
+                      <div className={`flex items-center gap-2 p-1.5 rounded transition-colors cursor-pointer hover:bg-slate-800/30 ${phaseActive === 3 ? 'bg-amber-950/40 ring-1 ring-amber-700/30' : ''}`}
+                        onClick={() => setCurrentStep(ri * 5 + 4)}>
                         <span className="text-slate-500 w-20">L ⊕ F</span>
                         <span className="text-amber-400">{toHex2(rnd.L_in)}</span>
                         <span className="text-slate-600">⊕</span>
@@ -493,7 +503,8 @@ const FeistelApp: React.FC = () => {
                     </div>
 
                     {/* Swap output row */}
-                    <div className={`flex gap-4 items-start mt-2 p-2 rounded-lg transition-colors ${phaseActive === 4 ? 'bg-slate-800/60 ring-1 ring-white/10' : ''}`}>
+                    <div className={`flex gap-4 items-start mt-2 p-2 rounded-lg transition-colors cursor-pointer hover:bg-slate-800/30 ${phaseActive === 4 ? 'bg-slate-800/60 ring-1 ring-white/10' : ''}`}
+                      onClick={() => setCurrentStep(ri * 5 + 5)}>
                       <div className="flex-1">
                         <div className="text-[10px] text-amber-600 mb-1">L{ri + 1} out (= R{ri})</div>
                         <div className="flex items-center gap-1.5">
@@ -515,7 +526,8 @@ const FeistelApp: React.FC = () => {
               })}
 
               {/* Final ciphertext */}
-              <div className={`flex gap-4 items-start p-3 rounded-lg transition-all ${currentStep >= TOTAL_STEPS - 1 ? 'bg-slate-800/60 ring-2 ring-cyan-600/20' : 'opacity-40'}`}>
+              <div className={`flex gap-4 items-start p-3 rounded-lg transition-all cursor-pointer hover:bg-slate-800/40 ${currentStep >= TOTAL_STEPS - 1 ? 'bg-slate-800/60 ring-2 ring-cyan-600/20' : 'opacity-40'}`}
+                onClick={() => setCurrentStep(TOTAL_STEPS - 1)}>
                 <div className="flex-1">
                   <div className="text-xs font-bold text-amber-400 mb-1">Ciphertext high byte</div>
                   <div className="flex items-center gap-2">
@@ -540,7 +552,7 @@ const FeistelApp: React.FC = () => {
         </div>
 
         {/* Right: Detail Panel */}
-        <div className="overflow-y-auto space-y-4 pr-1">
+        <div className="overflow-y-auto space-y-5 pr-1">
 
               {/* F-function detail */}
               {showFDetail && detailRoundIdx >= 0 && detailRoundIdx < 4 && (
