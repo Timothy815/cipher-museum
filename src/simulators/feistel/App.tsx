@@ -140,6 +140,54 @@ function RoundSVG({ active }: { active: boolean }) {
   );
 }
 
+// ── Phase explanations ────────────────────────────────────────────────────────
+// Index 0 = initial plaintext split; indices 1–5 = phases 0–4 within each round
+interface PhaseExplanation {
+  heading: string;
+  what: string;
+  why: string;
+  tip?: string;
+}
+
+const PHASE_EXPLANATIONS: PhaseExplanation[] = [
+  {
+    heading: 'Plaintext Split — L₀ and R₀',
+    what: 'The 16-bit plaintext is divided down the middle: the high 8 bits become the Left half (L₀) and the low 8 bits become the Right half (R₀). These two halves will travel through the network separately, interacting at every round.',
+    why: 'Splitting the block into two halves is the defining idea of a Feistel network. It means that each half acts as both data and a "temporary key" for the other half. This symmetric structure was invented by Horst Feistel at IBM in the 1970s and underlies DES, Blowfish, Twofish, and many others.',
+    tip: 'Try swapping L₀ and R₀ (reverse the plaintext nibbles) and see whether the ciphertext is a simple mirror. It will not be — the asymmetric F-function and key schedule break any such symmetry.',
+  },
+  {
+    heading: 'Round Inputs: L and R enter the round',
+    what: 'At the start of each round, the current L and R halves are passed in. L will flow straight through without change this round — it only gets modified by the XOR with F(R,K) at the end. R enters the F-function.',
+    why: 'The L half sitting idle is not wasted — it stores the "memory" of what the data looked like before the F-function was applied. This is what makes Feistel networks reversible: even if F itself is a one-way function, you can always undo the round by XORing L with F(R,K) again, because R is unchanged.',
+    tip: 'Notice that at the start of every round the current R is identical to the L from the previous round after the swap. The data "leapfrogs" across the two halves — each side processes the other in alternating steps.',
+  },
+  {
+    heading: 'F-Function Step 1: XOR with Round Key',
+    what: 'The right half R is XORed (⊕) with the round key K. XOR flips every bit where the key bit is 1 and leaves it unchanged where the key bit is 0. This key-dependent mixing is the first step inside the F-function.',
+    why: 'Mixing the data with the key at this point ties the output of every subsequent operation to the secret. Even if an attacker knows R, they cannot predict the XOR output without knowing K. The key schedule ensures each round uses a different subkey, so equal R values in different rounds produce different F outputs.',
+    tip: 'XOR is its own inverse: (R ⊕ K) ⊕ K = R. This is why the Feistel construction is reversible during decryption — you simply apply the same subkeys in reverse order and XOR cancels itself out.',
+  },
+  {
+    heading: 'F-Function Step 2: S-Box Substitution',
+    what: 'The XOR result is split into two 4-bit nibbles. Each nibble is independently looked up in the S-box table to produce a different 4-bit value. The table is deliberately non-linear — small changes in the input cause large, unpredictable changes in the output.',
+    why: 'This non-linearity provides confusion — hiding the relationship between the round key and the round output. Without it, the entire cipher could be broken with linear algebra (a technique called linear cryptanalysis). The S-box is where the cipher\'s security is concentrated. This is the same S-box used in the SPN visualizer, illustrating how both cipher families share fundamental building blocks.',
+    tip: 'A single bit flip in the nibble input often flips 2–3 bits in the output. Good S-boxes are designed to satisfy the Strict Avalanche Criterion: flipping any one input bit changes each output bit with exactly 50% probability.',
+  },
+  {
+    heading: 'XOR with L: Computing the New Right Half',
+    what: 'The output of F(R, K) is XORed with the current left half L to produce the new right half R_out. In other words: new R = L ⊕ F(R, K). The new left half L_out will simply be the old R (the swap happens next).',
+    why: 'This XOR is the heart of the Feistel security argument. Because R stays unchanged going into the next step, anyone who wants to reverse the round can compute F(R, K) again and XOR it away. The cipher does not need F to be mathematically invertible — it only needs XOR\'s self-inverse property.',
+    tip: 'Try changing the plaintext by a single bit and note how many bits of the final R differ. After four rounds of S-box mixing and this XOR, even a one-bit change should cascade into roughly half of all output bits changing — the avalanche effect.',
+  },
+  {
+    heading: 'Swap: L_out = old R, R_out = L ⊕ F(R, K)',
+    what: 'After the XOR, the two halves swap roles: the unchanged old R becomes the new L, and the freshly computed XOR result becomes the new R. This swap feeds the round\'s output directly into the next round\'s input, and ensures every bit eventually passes through the F-function from both sides.',
+    why: 'The swap is what makes the two halves alternate: in odd rounds L goes through F, in even rounds R does — or equivalently each round\'s R becomes the next round\'s L. After enough rounds, every output bit depends on every input bit and every key bit. Note: the very last round of real ciphers like DES omits the swap to keep encryption and decryption structurally identical.',
+    tip: 'After all 4 rounds, assemble the ciphertext by concatenating the final L and R. Decryption uses the same circuit but applies the round keys in reverse order — no separate "inverse" circuit is needed, which is why Feistel networks are so practical to implement in hardware.',
+  },
+];
+
 // ── Main Component ────────────────────────────────────────────────────────────
 const FeistelApp: React.FC = () => {
   const [ptHex, setPtHex] = useState('ABCD');
@@ -611,6 +659,44 @@ const FeistelApp: React.FC = () => {
                   })}
                 </div>
               </div>
+
+              {/* Step Explanation Card */}
+              {(() => {
+                const expIdx = currentStep === 0 ? 0 : activePhase + 1;
+                const exp = PHASE_EXPLANATIONS[expIdx];
+                const isInitial = currentStep === 0;
+                const borderClass = isInitial         ? 'bg-amber-950/20 border-amber-900/40' :
+                                    activePhase === 0 ? 'bg-slate-800/40 border-slate-700/40' :
+                                    activePhase === 1 ? 'bg-violet-950/20 border-violet-900/40' :
+                                    activePhase === 2 ? 'bg-green-950/20 border-green-900/40' :
+                                    activePhase === 3 ? 'bg-amber-950/20 border-amber-900/40' :
+                                                        'bg-cyan-950/20 border-cyan-900/40';
+                const headClass = isInitial         ? 'text-amber-400' :
+                                   activePhase === 0 ? 'text-slate-400' :
+                                   activePhase === 1 ? 'text-violet-400' :
+                                   activePhase === 2 ? 'text-green-400' :
+                                   activePhase === 3 ? 'text-amber-400' :
+                                                       'text-cyan-400';
+                return (
+                  <div className={`rounded-xl border p-5 space-y-3 ${borderClass}`}>
+                    <div className={`text-xs font-bold uppercase tracking-wider ${headClass}`}>{exp.heading}</div>
+                    <div>
+                      <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">What is happening</div>
+                      <p className="text-sm text-slate-300 leading-relaxed">{exp.what}</p>
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Why we do this</div>
+                      <p className="text-sm text-slate-400 leading-relaxed">{exp.why}</p>
+                    </div>
+                    {exp.tip && (
+                      <div className="bg-slate-900/60 rounded-lg px-3 py-2 border border-slate-700/60">
+                        <span className="text-[10px] font-bold text-amber-500 uppercase tracking-wider">Tip: </span>
+                        <span className="text-xs text-slate-400">{exp.tip}</span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
 
               {/* Summary box */}
               <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5">

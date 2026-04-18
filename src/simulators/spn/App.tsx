@@ -70,6 +70,72 @@ const STAGE_INFO: StageInfo[] = [
   { label: 'XOR Key K₃ (CT)', type: 'cipher', round: 3 },
 ];
 
+interface StageExplanation {
+  heading: string;
+  what: string;
+  why: string;
+  tip?: string;
+}
+
+const STAGE_EXPLANATIONS: StageExplanation[] = [
+  {
+    heading: 'Input Plaintext',
+    what: 'This is your original, unencrypted message — 16 bits of raw data. Every 0 and 1 is fully readable. The cipher is about to scramble it beyond recognition through a series of mathematical operations.',
+    why: 'Block ciphers work on fixed-size chunks of data called blocks. Our educational cipher uses 16-bit blocks. The real-world AES cipher uses 128-bit blocks — but the same SPN structure applies at any size.',
+    tip: 'Try changing one bit of the plaintext and step all the way through. Notice how many ciphertext bits change — this is the avalanche effect.',
+  },
+  {
+    heading: 'Key Whitening (⊕ K₀)',
+    what: 'Every bit of the plaintext is XORed (⊕) with the matching bit of subkey K₀. XOR is simple: two identical bits give 0, two different bits give 1. Each bit is individually flipped or kept according to the key.',
+    why: 'This is called "whitening" because it makes the data look statistically random before any round begins. Without it, an attacker who worked backwards from the ciphertext could peel away the last round and study a weaker version of the cipher. Whitening at both ends closes that gap — even knowing the full cipher design gives no advantage without the key.',
+    tip: 'The term whitening comes from signal processing: the operation makes any structured input look like white noise (random). XOR with a random key is a perfectly secure one-time pad — the rounds that follow add the additional security of key reuse.',
+  },
+  {
+    heading: 'S-Box Substitution — Round 1',
+    what: 'The 16-bit state is cut into four 4-bit nibbles. Each nibble is independently looked up in a substitution table (the S-box): the nibble value is the row index, the table entry is its replacement. The table is deliberately non-linear — no formula can predict the output from the input.',
+    why: 'This provides confusion — hiding the relationship between the key and the ciphertext. Without non-linearity, an attacker could use linear algebra to solve for the key from just a few plaintext/ciphertext pairs. The S-box breaks that algebraic structure. This principle comes directly from Claude Shannon\'s 1949 paper "Communication Theory of Secrecy Systems".',
+    tip: 'Four S-boxes work in parallel on the four nibbles. Notice that the bit pattern changes drastically even for inputs that differ by only one bit — this is the strict avalanche criterion that good S-boxes are designed to satisfy.',
+  },
+  {
+    heading: 'Bit Permutation — Round 1',
+    what: 'The 16 bits are rearranged to new positions according to a fixed pattern: bit 0 stays, bit 1 moves to position 4, bit 2 to position 8, and so on. The pattern deliberately crosses nibble boundaries, so each nibble\'s output bits are scattered across all four groups.',
+    why: 'This provides diffusion — spreading each input bit\'s influence across many output positions. After permutation, a change in one bit of the previous stage affects multiple S-boxes in the next round. After two full rounds, changing a single plaintext bit changes approximately half of all ciphertext bits. This "avalanche effect" makes statistical attacks on individual bits useless.',
+    tip: 'Without the permutation, each S-box would process the same four bits round after round — you could break the cipher one nibble at a time. Permutation forces the S-boxes to interact, multiplying the effective key search space.',
+  },
+  {
+    heading: 'Round Key Mixing (⊕ K₁)',
+    what: 'The state is XORed with subkey K₁, a different 16-bit slice of the master key. K₁ is taken from bits 8–23 of the 32-bit key — overlapping with both K₀ and K₂.',
+    why: 'Every round must inject fresh key material. Without it, the cipher would be a fixed, key-independent permutation — an attacker could study it offline without ever needing the key. The overlapping key windows mean every bit of the master key appears in at least two subkeys, creating inter-dependency that makes partial key recovery much harder.',
+  },
+  {
+    heading: 'S-Box Substitution — Round 2',
+    what: 'The same S-box lookup, applied again. But crucially, each 4-bit nibble now contains bits that originally came from different S-box groups — the permutation mixed them in Round 1.',
+    why: 'By this point, each output bit depends on multiple input bits from the previous round\'s S-box layer, not just the four bits in the same nibble. Each application of the S-box multiplies that dependence exponentially. After Round 2, no single input bit controls any single output bit — partial information about the plaintext reveals nothing about the ciphertext.',
+  },
+  {
+    heading: 'Bit Permutation — Round 2',
+    what: 'The same bit rearrangement pattern is applied again. After two rounds of substitution and permutation, every output bit depends on every input bit.',
+    why: 'This is called full diffusion — achieved in just two SPN rounds thanks to the carefully designed permutation pattern. It means an attacker cannot look at a subset of ciphertext bits and learn anything useful about the corresponding plaintext bits. Real-world AES achieves full diffusion in two rounds for the same reason.',
+    tip: 'The permutation pattern is designed so that the output bits of each S-box in round 1 become the input bits of all four S-boxes in round 2. This guarantees full diffusion in the minimum number of rounds.',
+  },
+  {
+    heading: 'Round Key Mixing (⊕ K₂)',
+    what: 'XOR with subkey K₂, taken from the lowest 16 bits of the master key. This is the third injection of key material.',
+    why: 'Each subkey covers a different slice of the master key using a sliding window (bits 31–16, then 23–8, then 15–0). This simple key schedule ensures every master key bit contributes to at least two subkeys — changing a single master key bit changes the cipher\'s behaviour in at least two places.',
+  },
+  {
+    heading: 'S-Box Substitution — Round 3',
+    what: 'The final non-linear layer. Notice that there is no permutation step after this S-box. The final round of most SPNs deliberately omits the permutation.',
+    why: 'The final permutation would add no security: the key XOR that follows it provides the same mixing. Omitting it saves computation without weakening the cipher. AES does exactly the same — the final round has SubBytes and AddRoundKey but no MixColumns (the permutation equivalent). This is a conscious design economy, not an oversight.',
+  },
+  {
+    heading: 'Final Key Whitening → Ciphertext',
+    what: 'The last XOR with K₃ completes the encryption. The output — the ciphertext — is 16 bits that are statistically indistinguishable from random noise. K₃ is the same value as K₀ in this cipher.',
+    why: 'Without final whitening, an attacker could observe the last round\'s S-box outputs directly from the ciphertext and use them to deduce the last round key — stripping one round and attacking a weaker cipher. The final XOR closes that door. Decryption simply runs the same steps in reverse, applying subkeys in the order K₃, K₂, K₁, K₀.',
+    tip: 'You have now traced a complete block cipher encryption. The same structure — key XOR, S-box, permutation, repeat — scaled to 128-bit blocks with ten rounds and a more complex key schedule is AES, the cipher protecting most of the world\'s encrypted traffic today.',
+  },
+];
+
 // ── Bit display helpers ───────────────────────────────────────────────────────
 function to16Bits(v: number): number[] {
   return Array.from({ length: 16 }, (_, i) => (v >> (15 - i)) & 1);
@@ -496,6 +562,39 @@ const SPNApp: React.FC = () => {
                   })()}
                 </div>
               )}
+
+              {/* Step Explanation Card */}
+              <div className={`rounded-xl border p-5 space-y-3 ${
+                activeType === 'xor'    ? 'bg-violet-950/20 border-violet-900/40' :
+                activeType === 'sub'    ? 'bg-green-950/20 border-green-900/40' :
+                activeType === 'perm'   ? 'bg-blue-950/20 border-blue-900/40' :
+                activeType === 'plain'  ? 'bg-amber-950/20 border-amber-900/40' :
+                                          'bg-cyan-950/20 border-cyan-900/40'
+              }`}>
+                <div className={`text-xs font-bold uppercase tracking-wider ${
+                  activeType === 'xor'   ? 'text-violet-400' :
+                  activeType === 'sub'   ? 'text-green-400' :
+                  activeType === 'perm'  ? 'text-blue-400' :
+                  activeType === 'plain' ? 'text-amber-400' :
+                                           'text-cyan-400'
+                }`}>
+                  {STAGE_EXPLANATIONS[currentStage].heading}
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">What is happening</div>
+                  <p className="text-sm text-slate-300 leading-relaxed">{STAGE_EXPLANATIONS[currentStage].what}</p>
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Why we do this</div>
+                  <p className="text-sm text-slate-400 leading-relaxed">{STAGE_EXPLANATIONS[currentStage].why}</p>
+                </div>
+                {STAGE_EXPLANATIONS[currentStage].tip && (
+                  <div className="bg-slate-900/60 rounded-lg px-3 py-2 border border-slate-700/60">
+                    <span className="text-[10px] font-bold text-amber-500 uppercase tracking-wider">Tip: </span>
+                    <span className="text-xs text-slate-400">{STAGE_EXPLANATIONS[currentStage].tip}</span>
+                  </div>
+                )}
+              </div>
 
               {/* Key Schedule */}
               <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
