@@ -467,50 +467,167 @@ const SPNApp: React.FC = () => {
         <div className="overflow-y-auto space-y-5 pr-1">
 
               {/* S-Box Detail */}
-              {isSubStage && subInputStage !== null && subOutputStage !== null && (
-                <div className="bg-slate-900/60 border border-green-900/40 rounded-xl p-5">
-                  <div className="text-xs font-bold text-green-400 uppercase tracking-wider mb-3">S-Box Substitution</div>
-                  <div className="space-y-2">
-                    {[0, 1, 2, 3].map(n => {
-                      const inNibble = (stages[subInputStage] >> (12 - n * 4)) & 0xF;
-                      const outNibble = (stages[subOutputStage] >> (12 - n * 4)) & 0xF;
-                      const inBits = Array.from({ length: 4 }, (_, i) => (inNibble >> (3 - i)) & 1);
-                      const outBits = Array.from({ length: 4 }, (_, i) => (outNibble >> (3 - i)) & 1);
-                      return (
-                        <div key={n} className="bg-slate-800/50 rounded-lg p-2.5 font-mono text-xs">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className={`text-[10px] font-bold ${NIBBLE_COLORS[n]}`}>N{n}</span>
-                            <div className="flex gap-0.5">
-                              {inBits.map((b, i) => <span key={i} className={b ? 'text-green-400' : 'text-slate-600'}>{b}</span>)}
+              {isSubStage && subInputStage !== null && subOutputStage !== null && (() => {
+                const nibbles = [0, 1, 2, 3].map(n => ({
+                  inNib:  (stages[subInputStage]  >> (12 - n * 4)) & 0xF,
+                  outNib: (stages[subOutputStage] >> (12 - n * 4)) & 0xF,
+                }));
+                // which nibble index uses each table position (first match wins for display)
+                const nibbleAtIdx = (idx: number) => nibbles.findIndex(({ inNib }) => inNib === idx);
+
+                const NIBBLE_BG = [
+                  'bg-amber-900/60 text-amber-200 ring-1 ring-amber-500/60',
+                  'bg-emerald-900/60 text-emerald-200 ring-1 ring-emerald-500/60',
+                  'bg-sky-900/60 text-sky-200 ring-1 ring-sky-500/60',
+                  'bg-pink-900/60 text-pink-200 ring-1 ring-pink-500/60',
+                ];
+                const NIBBLE_TEXT = ['text-amber-400', 'text-emerald-400', 'text-sky-400', 'text-pink-400'];
+                const NIBBLE_LABEL = ['text-amber-300', 'text-emerald-300', 'text-sky-300', 'text-pink-300'];
+
+                return (
+                  <div className="bg-slate-900/60 border border-green-900/40 rounded-xl p-5 space-y-5">
+                    <div className="text-xs font-bold text-green-400 uppercase tracking-wider">S-Box Lookup</div>
+                    <p className="text-[11px] text-slate-400 leading-relaxed -mt-2">
+                      The 16-bit state is cut into four 4-bit nibbles. Each nibble's value is used as an
+                      index (0–15) into the S-Box table — the entry at that position becomes the new nibble.
+                    </p>
+
+                    {/* ── Full indexed lookup table ── */}
+                    <div>
+                      <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">
+                        Lookup table — index the row to find the output
+                      </div>
+
+                      {/* Index header row */}
+                      <div className="flex font-mono text-[10px] mb-0.5">
+                        <div className="w-10 shrink-0 text-slate-600 text-right pr-1.5 self-end pb-0.5">idx</div>
+                        {Array.from({ length: 16 }, (_, i) => {
+                          const ni = nibbleAtIdx(i);
+                          return (
+                            <div key={i} className={`flex-1 text-center font-bold ${ni >= 0 ? NIBBLE_TEXT[ni] : 'text-slate-600'}`}>
+                              {i.toString(16).toUpperCase()}
                             </div>
-                            <span className="text-slate-500">{inNibble.toString(16).toUpperCase()}</span>
-                            <span className="text-slate-500">→</span>
-                            <span className="text-green-400 font-bold">SBOX[{inNibble.toString(16).toUpperCase()}]</span>
-                            <span className="text-slate-500">=</span>
-                            <span className="text-white font-bold">{outNibble.toString(16).toUpperCase()}</span>
-                            <div className="flex gap-0.5">
-                              {outBits.map((b, i) => <span key={i} className={b ? 'text-green-300' : 'text-slate-600'}>{b}</span>)}
+                          );
+                        })}
+                      </div>
+
+                      {/* Output value row */}
+                      <div className="flex font-mono text-sm">
+                        <div className="w-10 shrink-0 text-slate-600 text-right pr-1.5 self-center text-[10px]">out</div>
+                        {SBOX.map((v, i) => {
+                          const ni = nibbleAtIdx(i);
+                          return (
+                            <div key={i} className={`flex-1 text-center py-1.5 rounded font-bold transition-all ${
+                              ni >= 0 ? NIBBLE_BG[ni] : 'bg-slate-800/50 text-slate-500'
+                            }`}>
+                              {v.toString(16).toUpperCase()}
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Pointer arrows row */}
+                      <div className="flex font-mono text-[9px] mt-0.5">
+                        <div className="w-10 shrink-0" />
+                        {Array.from({ length: 16 }, (_, i) => {
+                          const ni = nibbleAtIdx(i);
+                          return (
+                            <div key={i} className={`flex-1 text-center ${ni >= 0 ? NIBBLE_TEXT[ni] : 'text-transparent'}`}>
+                              ▲
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <div className="flex font-mono text-[9px]">
+                        <div className="w-10 shrink-0" />
+                        {Array.from({ length: 16 }, (_, i) => {
+                          const ni = nibbleAtIdx(i);
+                          return (
+                            <div key={i} className={`flex-1 text-center ${ni >= 0 ? NIBBLE_TEXT[ni] : 'text-transparent'}`}>
+                              N{ni >= 0 ? ni : ''}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* ── Per-nibble breakdown ── */}
+                    <div className="space-y-2">
+                      <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Per-nibble detail</div>
+                      {nibbles.map(({ inNib, outNib }, n) => {
+                        const inBits  = Array.from({ length: 4 }, (_, i) => (inNib  >> (3 - i)) & 1);
+                        const outBits = Array.from({ length: 4 }, (_, i) => (outNib >> (3 - i)) & 1);
+                        return (
+                          <div key={n} className="bg-slate-800/50 rounded-lg p-3 font-mono text-xs">
+                            {/* Label row */}
+                            <div className={`text-[10px] font-bold mb-2 ${NIBBLE_LABEL[n]}`}>Nibble {n}</div>
+
+                            {/* Input → index → output pipeline */}
+                            <div className="flex items-center gap-2 flex-wrap">
+                              {/* Input bits */}
+                              <div className="flex flex-col items-center gap-0.5">
+                                <div className="text-[9px] text-slate-500">input bits</div>
+                                <div className="flex gap-0.5">
+                                  {inBits.map((b, i) => (
+                                    <div key={i} className={`w-5 h-5 flex items-center justify-center rounded text-[10px] border font-bold ${
+                                      b ? 'bg-green-900/70 border-green-600 text-green-200' : 'bg-slate-900 border-slate-700 text-slate-600'
+                                    }`}>{b}</div>
+                                  ))}
+                                </div>
+                              </div>
+
+                              {/* Input hex */}
+                              <div className="flex flex-col items-center gap-0.5">
+                                <div className="text-[9px] text-slate-500">= index</div>
+                                <div className={`text-sm font-bold px-2 py-0.5 rounded ${NIBBLE_BG[n]}`}>
+                                  {inNib.toString(16).toUpperCase()}
+                                </div>
+                              </div>
+
+                              {/* Arrow */}
+                              <div className="flex flex-col items-center">
+                                <div className="text-[9px] text-slate-600">SBOX</div>
+                                <div className="text-slate-500 text-base">→</div>
+                              </div>
+
+                              {/* Output hex */}
+                              <div className="flex flex-col items-center gap-0.5">
+                                <div className="text-[9px] text-slate-500">output</div>
+                                <div className="text-sm font-bold text-green-300 px-2 py-0.5 rounded bg-green-900/30 border border-green-700/40">
+                                  {outNib.toString(16).toUpperCase()}
+                                </div>
+                              </div>
+
+                              {/* Output bits */}
+                              <div className="flex flex-col items-center gap-0.5">
+                                <div className="text-[9px] text-slate-500">output bits</div>
+                                <div className="flex gap-0.5">
+                                  {outBits.map((b, i) => (
+                                    <div key={i} className={`w-5 h-5 flex items-center justify-center rounded text-[10px] border font-bold ${
+                                      b ? 'bg-green-900/70 border-green-600 text-green-200' : 'bg-slate-900 border-slate-700 text-slate-600'
+                                    }`}>{b}</div>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Change summary */}
+                            <div className="mt-2 text-[10px] text-slate-500">
+                              <span className={NIBBLE_TEXT[n]}>{inNib.toString(2).padStart(4,'0').split('').join(' ')}</span>
+                              {' '}({inNib.toString(16).toUpperCase()}){'  '}→{'  '}
+                              <span className="text-green-400">{outNib.toString(2).padStart(4,'0').split('').join(' ')}</span>
+                              {' '}({outNib.toString(16).toUpperCase()})
+                              {'  ·  '}{
+                                [0,1,2,3].filter(i => ((inNib >> (3-i)) & 1) !== ((outNib >> (3-i)) & 1)).length
+                              } bit{[0,1,2,3].filter(i => ((inNib >> (3-i)) & 1) !== ((outNib >> (3-i)) & 1)).length !== 1 ? 's' : ''} flipped
                             </div>
                           </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <div className="mt-3">
-                    <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">S-Box table</div>
-                    <div className="grid grid-cols-8 gap-0.5 font-mono text-[9px]">
-                      {SBOX.map((v, i) => (
-                        <div key={i} className={`text-center py-0.5 rounded ${
-                          isSubStage && subInputStage !== null && [0,1,2,3].some(n => ((stages[subInputStage] >> (12 - n * 4)) & 0xF) === i)
-                            ? 'bg-green-700/40 text-green-300' : 'bg-slate-800/60 text-slate-500'
-                        }`}>
-                          {v.toString(16).toUpperCase()}
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
               {/* Permutation Detail */}
               {isPermStage && (
