@@ -294,90 +294,119 @@ const SPNApp: React.FC = () => {
   const subOutputStage = isSubStage ? currentStage : null;
 
   return (
-    <div className="flex-1 bg-[#1a1814] flex flex-col">
-      <div className="bg-[#1a1814] text-stone-200 flex flex-col items-center px-4 py-8 sm:px-8 md:px-12">
-        <div className="w-full max-w-6xl space-y-6">
+    <div className="flex-1 bg-[#1a1814] flex flex-col overflow-hidden">
 
-          {/* Header */}
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-xl bg-violet-900/30 border border-violet-700/40">
-                <Network size={28} className="text-violet-400" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-violet-300 tracking-wide">SPN VISUALIZER</h1>
-                <p className="text-sm text-slate-400 mt-0.5">Substitution-Permutation Network · Heys' Tutorial Cipher</p>
-              </div>
+      {/* ── TOP STRIP (always visible, no scroll) ─────────── */}
+      <div className="bg-[#1a1814] border-b border-slate-800/60 px-8 pt-5 pb-4 flex-shrink-0">
+
+        {/* Header row */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-violet-900/30 border border-violet-700/40">
+              <Network size={28} className="text-violet-400" />
             </div>
-            <button onClick={() => setShowInfo(v => !v)}
-              className="p-2 rounded-lg bg-slate-900/60 border border-slate-800 hover:border-violet-700/50 transition-colors flex-shrink-0">
-              {showInfo ? <X size={20} className="text-violet-400" /> : <Info size={20} className="text-violet-400" />}
+            <div>
+              <h1 className="text-2xl font-bold text-violet-300 tracking-wide">SPN VISUALIZER</h1>
+              <p className="text-sm text-slate-400 mt-0.5">Substitution-Permutation Network · Heys' Tutorial Cipher</p>
+            </div>
+          </div>
+          <button onClick={() => setShowInfo(v => !v)}
+            className="p-2 rounded-lg bg-slate-900/60 border border-slate-800 hover:border-violet-700/50 transition-colors flex-shrink-0">
+            {showInfo ? <X size={20} className="text-violet-400" /> : <Info size={20} className="text-violet-400" />}
+          </button>
+        </div>
+
+        {/* Collapsible info panel */}
+        {showInfo && (
+          <div className="bg-violet-950/20 border border-violet-900/40 rounded-xl p-6 space-y-3 text-sm text-slate-300 leading-relaxed mb-4">
+            <h2 className="text-base font-bold text-violet-300">Substitution-Permutation Network (SPN)</h2>
+            <p>An SPN is a series of linked mathematical operations used in block ciphers. Each round applies three transformations: a <strong className="text-white">key XOR</strong> (whitening), a <strong className="text-white">substitution</strong> (S-box lookup, providing confusion), and a <strong className="text-white">permutation</strong> (bit rearrangement, providing diffusion).</p>
+            <p>This visualizer implements Howard Heys' tutorial SPN: a 16-bit block cipher with a 4-bit S-box, a 16-bit permutation, and a 32-bit key split into four 16-bit subkeys via a sliding window. It uses 3 full rounds with an additional final key XOR.</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2">
+              {(['xor', 'sub', 'perm', 'cipher'] as StageType[]).map(t => (
+                <div key={t} className={`px-3 py-2 rounded-lg text-xs font-mono text-center ${typeBadgeClass(t)}`}>
+                  {t === 'xor' ? 'Key XOR' : t === 'sub' ? 'S-Box' : t === 'perm' ? 'Permutation' : 'Ciphertext'}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Combined inputs + controls row */}
+        <div className="flex flex-wrap items-end gap-6">
+          <div className="flex flex-col gap-1.5 min-w-0">
+            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Plaintext (4 hex)</label>
+            <div className="flex items-center gap-2">
+              <input value={ptHex} onChange={e => handlePtChange(e.target.value)}
+                className={`bg-slate-900/80 border rounded-lg px-3 py-2 font-mono text-sm text-white focus:outline-none w-28 ${ptError ? 'border-red-600' : 'border-slate-700 focus:border-violet-700/50'}`}
+                placeholder="2D39" maxLength={4} />
+              <button onClick={() => handlePtChange(randomHex(4))}
+                className="p-2 rounded-lg bg-slate-800 border border-slate-700 hover:border-violet-600/50 transition-colors" title="Randomize">
+                <Shuffle size={14} className="text-slate-400" />
+              </button>
+            </div>
+            {ptError && <span className="text-xs text-red-400">{ptError}</span>}
+          </div>
+          <div className="flex flex-col gap-1.5 min-w-0">
+            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Key (8 hex)</label>
+            <div className="flex items-center gap-2">
+              <input value={keyHex} onChange={e => handleKeyChange(e.target.value)}
+                className={`bg-slate-900/80 border rounded-lg px-3 py-2 font-mono text-sm text-white focus:outline-none w-36 ${keyError ? 'border-red-600' : 'border-slate-700 focus:border-violet-700/50'}`}
+                placeholder="5A9F3C2E" maxLength={8} />
+              <button onClick={() => handleKeyChange(randomHex(8))}
+                className="p-2 rounded-lg bg-slate-800 border border-slate-700 hover:border-violet-600/50 transition-colors" title="Randomize">
+                <Shuffle size={14} className="text-slate-400" />
+              </button>
+            </div>
+            {keyError && <span className="text-xs text-red-400">{keyError}</span>}
+          </div>
+          {/* Vertical divider */}
+          <div className="h-10 w-px bg-slate-700/60 self-center" />
+          {/* Playback controls */}
+          <div className="flex items-center gap-2">
+            <button onClick={stepBack} disabled={currentStage === 0}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white disabled:opacity-40 transition-colors text-sm">
+              <SkipBack size={14} /> Back
+            </button>
+            <button onClick={() => setPlaying(p => !p)} disabled={currentStage >= 9 && !playing}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-violet-600/20 border border-violet-700/50 text-violet-300 hover:bg-violet-600/30 disabled:opacity-40 transition-colors text-sm font-medium">
+              {playing ? <><Pause size={14} /> Pause</> : <><Play size={14} /> Play</>}
+            </button>
+            <button onClick={stepForward} disabled={currentStage >= 9}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white disabled:opacity-40 transition-colors text-sm">
+              <SkipForward size={14} /> Next
+            </button>
+            <button onClick={reset}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white transition-colors text-sm">
+              <RotateCcw size={14} /> Reset
             </button>
           </div>
-
-          {/* Info Panel */}
-          {showInfo && (
-            <div className="bg-violet-950/20 border border-violet-900/40 rounded-xl p-6 space-y-3 text-sm text-slate-300 leading-relaxed">
-              <h2 className="text-base font-bold text-violet-300">Substitution-Permutation Network (SPN)</h2>
-              <p>An SPN is a series of linked mathematical operations used in block ciphers. Each round applies three transformations: a <strong className="text-white">key XOR</strong> (whitening), a <strong className="text-white">substitution</strong> (S-box lookup, providing confusion), and a <strong className="text-white">permutation</strong> (bit rearrangement, providing diffusion).</p>
-              <p>This visualizer implements Howard Heys' tutorial SPN: a 16-bit block cipher with a 4-bit S-box, a 16-bit permutation, and a 32-bit key split into four 16-bit subkeys via a sliding window. It uses 3 full rounds with an additional final key XOR.</p>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2">
-                {(['xor', 'sub', 'perm', 'cipher'] as StageType[]).map(t => (
-                  <div key={t} className={`px-3 py-2 rounded-lg text-xs font-mono text-center ${typeBadgeClass(t)}`}>
-                    {t === 'xor' ? 'Key XOR' : t === 'sub' ? 'S-Box' : t === 'perm' ? 'Permutation' : 'Ciphertext'}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Input controls */}
-          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5 flex flex-wrap items-end gap-6">
-            <div className="flex flex-col gap-1.5 min-w-0">
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Plaintext (4 hex)</label>
-              <div className="flex items-center gap-2">
-                <input value={ptHex} onChange={e => handlePtChange(e.target.value)}
-                  className={`bg-slate-900/80 border rounded-lg px-3 py-2 font-mono text-sm text-white focus:outline-none w-28 ${ptError ? 'border-red-600' : 'border-slate-700 focus:border-violet-700/50'}`}
-                  placeholder="2D39" maxLength={4} />
-                <button onClick={() => handlePtChange(randomHex(4))}
-                  className="p-2 rounded-lg bg-slate-800 border border-slate-700 hover:border-violet-600/50 transition-colors" title="Randomize">
-                  <Shuffle size={14} className="text-slate-400" />
+          {/* Stage counter */}
+          <div className="flex flex-col gap-1 self-center">
+            <span className="text-xs font-mono text-slate-400">Stage {currentStage + 1} / 10</span>
+            <span className="text-[10px] font-mono text-slate-500">{STAGE_INFO[currentStage].label}</span>
+          </div>
+          {/* Speed selector */}
+          <div className="flex flex-col gap-1.5 ml-auto">
+            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Speed</label>
+            <div className="flex items-center gap-2">
+              {([['Slow', 1200], ['Med', 700], ['Fast', 300]] as [string, number][]).map(([lbl, ms]) => (
+                <button key={lbl} onClick={() => setSpeed(ms)}
+                  className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${speed === ms ? 'bg-violet-900/50 text-violet-300 border border-violet-700/50' : 'bg-slate-800 text-slate-400 border border-slate-700 hover:text-white'}`}>
+                  {lbl}
                 </button>
-              </div>
-              {ptError && <span className="text-xs text-red-400">{ptError}</span>}
-            </div>
-            <div className="flex flex-col gap-1.5 min-w-0">
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Key (8 hex)</label>
-              <div className="flex items-center gap-2">
-                <input value={keyHex} onChange={e => handleKeyChange(e.target.value)}
-                  className={`bg-slate-900/80 border rounded-lg px-3 py-2 font-mono text-sm text-white focus:outline-none w-36 ${keyError ? 'border-red-600' : 'border-slate-700 focus:border-violet-700/50'}`}
-                  placeholder="5A9F3C2E" maxLength={8} />
-                <button onClick={() => handleKeyChange(randomHex(8))}
-                  className="p-2 rounded-lg bg-slate-800 border border-slate-700 hover:border-violet-600/50 transition-colors" title="Randomize">
-                  <Shuffle size={14} className="text-slate-400" />
-                </button>
-              </div>
-              {keyError && <span className="text-xs text-red-400">{keyError}</span>}
-            </div>
-            <div className="flex flex-col gap-1.5 ml-auto">
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Speed</label>
-              <div className="flex items-center gap-2">
-                {([['Slow', 1200], ['Med', 700], ['Fast', 300]] as [string, number][]).map(([lbl, ms]) => (
-                  <button key={lbl} onClick={() => setSpeed(ms)}
-                    className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${speed === ms ? 'bg-violet-900/50 text-violet-300 border border-violet-700/50' : 'bg-slate-800 text-slate-400 border border-slate-700 hover:text-white'}`}>
-                    {lbl}
-                  </button>
-                ))}
-              </div>
+              ))}
             </div>
           </div>
+        </div>
+      </div>
 
-          {/* Main two-column layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
+      {/* ── MAIN BODY (fills remaining height, no outer scroll) */}
+      <div className="flex-1 overflow-hidden grid grid-cols-[1fr_460px] gap-5 p-6">
 
-            {/* Left: Pipeline */}
-            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5 space-y-1">
-              <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Encryption Pipeline</div>
+        {/* Left: Pipeline */}
+        <div className="bg-slate-900/60 border border-slate-800 rounded-xl overflow-y-auto p-5 space-y-1">
+          <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Encryption Pipeline</div>
               {stages.map((val, idx) => {
                 const info = STAGE_INFO[idx];
                 const isActive = idx === currentStage;
@@ -429,29 +458,10 @@ const SPNApp: React.FC = () => {
                 );
               })}
 
-              {/* Controls */}
-              <div className="flex items-center gap-2 pt-5 justify-center">
-                <button onClick={stepBack} disabled={currentStage === 0}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white disabled:opacity-40 transition-colors text-sm">
-                  <SkipBack size={14} /> Back
-                </button>
-                <button onClick={() => setPlaying(p => !p)} disabled={currentStage >= 9 && !playing}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-violet-600/20 border border-violet-700/50 text-violet-300 hover:bg-violet-600/30 disabled:opacity-40 transition-colors text-sm font-medium">
-                  {playing ? <><Pause size={14} /> Pause</> : <><Play size={14} /> Play</>}
-                </button>
-                <button onClick={stepForward} disabled={currentStage >= 9}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white disabled:opacity-40 transition-colors text-sm">
-                  <SkipForward size={14} /> Next
-                </button>
-                <button onClick={reset}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white transition-colors text-sm">
-                  <RotateCcw size={14} /> Reset
-                </button>
-              </div>
-            </div>
+        </div>
 
-            {/* Right: Detail Panel */}
-            <div className="space-y-4">
+        {/* Right: Detail Panel */}
+        <div className="overflow-y-auto space-y-4 pr-1">
 
               {/* S-Box Detail */}
               {isSubStage && subInputStage !== null && subOutputStage !== null && (
@@ -632,8 +642,6 @@ const SPNApp: React.FC = () => {
                 </div>
               </div>
 
-            </div>
-          </div>
         </div>
       </div>
     </div>

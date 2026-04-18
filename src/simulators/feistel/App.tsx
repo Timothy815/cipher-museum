@@ -270,114 +270,134 @@ const FeistelApp: React.FC = () => {
   const detailRoundIdx = activeRound - 1;
 
   return (
-    <div className="flex-1 bg-[#1a1814] flex flex-col">
-      <div className="bg-[#1a1814] text-stone-200 flex flex-col items-center px-4 py-8 sm:px-8 md:px-12">
-        <div className="w-full max-w-6xl space-y-6">
+    <div className="flex-1 bg-[#1a1814] flex flex-col overflow-hidden">
 
-          {/* Header */}
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-xl bg-amber-900/30 border border-amber-700/40">
-                <Layers size={28} className="text-amber-400" />
+      {/* ── TOP STRIP (always visible, no scroll) ─────────── */}
+      <div className="bg-[#1a1814] border-b border-slate-800/60 px-8 pt-5 pb-4 flex-shrink-0">
+
+        {/* Header row */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-amber-900/30 border border-amber-700/40">
+              <Layers size={28} className="text-amber-400" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-amber-300 tracking-wide">FEISTEL NETWORK</h1>
+              <p className="text-sm text-slate-400 mt-0.5">4-Round Feistel Cipher · 16-bit block · Interactive Step-through</p>
+            </div>
+          </div>
+          <button onClick={() => setShowInfo(v => !v)}
+            className="p-2 rounded-lg bg-slate-900/60 border border-slate-800 hover:border-amber-700/50 transition-colors flex-shrink-0">
+            {showInfo ? <X size={20} className="text-amber-400" /> : <Info size={20} className="text-amber-400" />}
+          </button>
+        </div>
+
+        {/* Collapsible info panel */}
+        {showInfo && (
+          <div className="bg-amber-950/20 border border-amber-900/40 rounded-xl p-6 space-y-3 text-sm text-slate-300 leading-relaxed mb-4">
+            <h2 className="text-base font-bold text-amber-300">Feistel Network</h2>
+            <p>A Feistel network splits a block into two halves (L and R). Each round applies a keyed function F to one half and XORs the result with the other half, then swaps them. After all rounds, the halves are concatenated to produce the ciphertext.</p>
+            <p>The key insight: <strong className="text-white">F does not need to be invertible</strong> — decryption uses the same structure with round keys in reverse order. This design was used in <strong className="text-white">DES</strong>, Blowfish, and many other historic ciphers.</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 font-mono text-xs">
+              <div className="bg-amber-900/20 border border-amber-800/40 rounded-lg p-3">
+                <div className="text-amber-400 font-bold mb-1">L half</div>
+                <div className="text-slate-400">Passes through or becomes R_in of next round</div>
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-amber-300 tracking-wide">FEISTEL NETWORK</h1>
-                <p className="text-sm text-slate-400 mt-0.5">4-Round Feistel Cipher · 16-bit block · Interactive Step-through</p>
+              <div className="bg-cyan-900/20 border border-cyan-800/40 rounded-lg p-3">
+                <div className="text-cyan-400 font-bold mb-1">R half</div>
+                <div className="text-slate-400">Fed into F(R, K), output XORs with L</div>
+              </div>
+              <div className="bg-green-900/20 border border-green-800/40 rounded-lg p-3">
+                <div className="text-green-400 font-bold mb-1">F function</div>
+                <div className="text-slate-400">XOR with round key → S-box substitution</div>
               </div>
             </div>
-            <button onClick={() => setShowInfo(v => !v)}
-              className="p-2 rounded-lg bg-slate-900/60 border border-slate-800 hover:border-amber-700/50 transition-colors flex-shrink-0">
-              {showInfo ? <X size={20} className="text-amber-400" /> : <Info size={20} className="text-amber-400" />}
+          </div>
+        )}
+
+        {/* Combined inputs + controls row */}
+        <div className="flex flex-wrap items-end gap-6">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Plaintext (4 hex)</label>
+            <div className="flex items-center gap-2">
+              <input value={ptHex} onChange={e => handlePtChange(e.target.value)}
+                className={`bg-slate-900/80 border rounded-lg px-3 py-2 font-mono text-sm text-white focus:outline-none w-28 ${ptError ? 'border-red-600' : 'border-slate-700 focus:border-amber-700/50'}`}
+                placeholder="ABCD" maxLength={4} />
+              <button onClick={() => handlePtChange(randomHex(4))}
+                className="p-2 rounded-lg bg-slate-800 border border-slate-700 hover:border-amber-600/50 transition-colors">
+                <Shuffle size={14} className="text-slate-400" />
+              </button>
+            </div>
+            {ptError && <span className="text-xs text-red-400">{ptError}</span>}
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Key (4 hex)</label>
+            <div className="flex items-center gap-2">
+              <input value={keyHex} onChange={e => handleKeyChange(e.target.value)}
+                className={`bg-slate-900/80 border rounded-lg px-3 py-2 font-mono text-sm text-white focus:outline-none w-28 ${keyError ? 'border-red-600' : 'border-slate-700 focus:border-amber-700/50'}`}
+                placeholder="1234" maxLength={4} />
+              <button onClick={() => handleKeyChange(randomHex(4))}
+                className="p-2 rounded-lg bg-slate-800 border border-slate-700 hover:border-amber-600/50 transition-colors">
+                <Shuffle size={14} className="text-slate-400" />
+              </button>
+            </div>
+            {keyError && <span className="text-xs text-red-400">{keyError}</span>}
+          </div>
+          {/* Vertical divider */}
+          <div className="h-10 w-px bg-slate-700/60 self-center" />
+          {/* Playback controls */}
+          <div className="flex items-center gap-2">
+            <button onClick={stepBack} disabled={currentStep === 0}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white disabled:opacity-40 transition-colors text-sm">
+              <SkipBack size={14} /> Back
+            </button>
+            <button onClick={() => setPlaying(p => !p)} disabled={currentStep >= TOTAL_STEPS - 1 && !playing}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-amber-600/20 border border-amber-700/50 text-amber-300 hover:bg-amber-600/30 disabled:opacity-40 transition-colors text-sm font-medium">
+              {playing ? <><Pause size={14} /> Pause</> : <><Play size={14} /> Play</>}
+            </button>
+            <button onClick={stepForward} disabled={currentStep >= TOTAL_STEPS - 1}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white disabled:opacity-40 transition-colors text-sm">
+              <SkipForward size={14} /> Next
+            </button>
+            <button onClick={reset}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white transition-colors text-sm">
+              <RotateCcw size={14} /> Reset
             </button>
           </div>
-
-          {/* Info Panel */}
-          {showInfo && (
-            <div className="bg-amber-950/20 border border-amber-900/40 rounded-xl p-6 space-y-3 text-sm text-slate-300 leading-relaxed">
-              <h2 className="text-base font-bold text-amber-300">Feistel Network</h2>
-              <p>A Feistel network splits a block into two halves (L and R). Each round applies a keyed function F to one half and XORs the result with the other half, then swaps them. After all rounds, the halves are concatenated to produce the ciphertext.</p>
-              <p>The key insight: <strong className="text-white">F does not need to be invertible</strong> — decryption uses the same structure with round keys in reverse order. This design was used in <strong className="text-white">DES</strong>, Blowfish, and many other historic ciphers.</p>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 font-mono text-xs">
-                <div className="bg-amber-900/20 border border-amber-800/40 rounded-lg p-3">
-                  <div className="text-amber-400 font-bold mb-1">L half</div>
-                  <div className="text-slate-400">Passes through or becomes R_in of next round</div>
-                </div>
-                <div className="bg-cyan-900/20 border border-cyan-800/40 rounded-lg p-3">
-                  <div className="text-cyan-400 font-bold mb-1">R half</div>
-                  <div className="text-slate-400">Fed into F(R, K), output XORs with L</div>
-                </div>
-                <div className="bg-green-900/20 border border-green-800/40 rounded-lg p-3">
-                  <div className="text-green-400 font-bold mb-1">F function</div>
-                  <div className="text-slate-400">XOR with round key → S-box substitution</div>
-                </div>
-              </div>
+          {/* Step indicator */}
+          <div className="flex flex-col gap-1 self-center">
+            <div className="text-sm font-mono text-white">
+              Step {currentStep} / {TOTAL_STEPS - 1}
+              {activeRound >= 1 && activeRound <= 4 && (
+                <span className="ml-2 text-amber-400 text-xs">Round {activeRound} · {phaseLabels[activePhase]}</span>
+              )}
             </div>
-          )}
-
-          {/* Inputs */}
-          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5 flex flex-wrap items-end gap-6">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Plaintext (4 hex)</label>
-              <div className="flex items-center gap-2">
-                <input value={ptHex} onChange={e => handlePtChange(e.target.value)}
-                  className={`bg-slate-900/80 border rounded-lg px-3 py-2 font-mono text-sm text-white focus:outline-none w-28 ${ptError ? 'border-red-600' : 'border-slate-700 focus:border-amber-700/50'}`}
-                  placeholder="ABCD" maxLength={4} />
-                <button onClick={() => handlePtChange(randomHex(4))}
-                  className="p-2 rounded-lg bg-slate-800 border border-slate-700 hover:border-amber-600/50 transition-colors">
-                  <Shuffle size={14} className="text-slate-400" />
-                </button>
-              </div>
-              {ptError && <span className="text-xs text-red-400">{ptError}</span>}
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Key (4 hex)</label>
-              <div className="flex items-center gap-2">
-                <input value={keyHex} onChange={e => handleKeyChange(e.target.value)}
-                  className={`bg-slate-900/80 border rounded-lg px-3 py-2 font-mono text-sm text-white focus:outline-none w-28 ${keyError ? 'border-red-600' : 'border-slate-700 focus:border-amber-700/50'}`}
-                  placeholder="1234" maxLength={4} />
-                <button onClick={() => handleKeyChange(randomHex(4))}
-                  className="p-2 rounded-lg bg-slate-800 border border-slate-700 hover:border-amber-600/50 transition-colors">
-                  <Shuffle size={14} className="text-slate-400" />
-                </button>
-              </div>
-              {keyError && <span className="text-xs text-red-400">{keyError}</span>}
-            </div>
-
-            {/* Step indicator */}
-            <div className="flex flex-col gap-1.5 ml-auto">
-              <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Progress</div>
-              <div className="text-sm font-mono text-white">
-                Step {currentStep} / {TOTAL_STEPS - 1}
-                {activeRound >= 1 && activeRound <= 4 && (
-                  <span className="ml-2 text-amber-400 text-xs">Round {activeRound} · {phaseLabels[activePhase]}</span>
-                )}
-              </div>
-              <div className="h-1.5 w-48 bg-slate-800 rounded-full overflow-hidden">
-                <div className="h-full bg-amber-500/70 rounded-full transition-all"
-                  style={{ width: `${(currentStep / (TOTAL_STEPS - 1)) * 100}%` }} />
-              </div>
-            </div>
-
-            {/* Speed */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Speed</label>
-              <div className="flex items-center gap-2">
-                {([['Slow', 1200], ['Med', 700], ['Fast', 300]] as [string, number][]).map(([lbl, ms]) => (
-                  <button key={lbl} onClick={() => setSpeed(ms)}
-                    className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${speed === ms ? 'bg-amber-900/50 text-amber-300 border border-amber-700/50' : 'bg-slate-800 text-slate-400 border border-slate-700 hover:text-white'}`}>
-                    {lbl}
-                  </button>
-                ))}
-              </div>
+            <div className="h-1.5 w-48 bg-slate-800 rounded-full overflow-hidden">
+              <div className="h-full bg-amber-500/70 rounded-full transition-all"
+                style={{ width: `${(currentStep / (TOTAL_STEPS - 1)) * 100}%` }} />
             </div>
           </div>
+          {/* Speed selector */}
+          <div className="flex flex-col gap-1.5 ml-auto">
+            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Speed</label>
+            <div className="flex items-center gap-2">
+              {([['Slow', 1200], ['Med', 700], ['Fast', 300]] as [string, number][]).map(([lbl, ms]) => (
+                <button key={lbl} onClick={() => setSpeed(ms)}
+                  className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${speed === ms ? 'bg-amber-900/50 text-amber-300 border border-amber-700/50' : 'bg-slate-800 text-slate-400 border border-slate-700 hover:text-white'}`}>
+                  {lbl}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
 
-          {/* Main two-column layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6">
+      {/* ── MAIN BODY (fills remaining height, no outer scroll) */}
+      <div className="flex-1 overflow-hidden grid grid-cols-[1fr_460px] gap-5 p-6">
 
-            {/* Left: Feistel Ladder */}
-            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5 space-y-2">
-              <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Feistel Ladder</div>
+        {/* Left: Feistel Ladder */}
+        <div className="bg-slate-900/60 border border-slate-800 rounded-xl overflow-y-auto p-5 space-y-2">
+          <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Feistel Ladder</div>
 
               {/* Initial L/R */}
               <div className={`flex gap-4 items-start p-3 rounded-lg transition-all ${currentStep === 0 ? 'bg-slate-800/60 ring-2 ring-white/20' : ''}`}>
@@ -517,29 +537,10 @@ const FeistelApp: React.FC = () => {
                 </div>
               </div>
 
-              {/* Controls */}
-              <div className="flex items-center gap-2 pt-4 justify-center">
-                <button onClick={stepBack} disabled={currentStep === 0}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white disabled:opacity-40 transition-colors text-sm">
-                  <SkipBack size={14} /> Back
-                </button>
-                <button onClick={() => setPlaying(p => !p)} disabled={currentStep >= TOTAL_STEPS - 1 && !playing}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-amber-600/20 border border-amber-700/50 text-amber-300 hover:bg-amber-600/30 disabled:opacity-40 transition-colors text-sm font-medium">
-                  {playing ? <><Pause size={14} /> Pause</> : <><Play size={14} /> Play</>}
-                </button>
-                <button onClick={stepForward} disabled={currentStep >= TOTAL_STEPS - 1}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white disabled:opacity-40 transition-colors text-sm">
-                  <SkipForward size={14} /> Next
-                </button>
-                <button onClick={reset}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white transition-colors text-sm">
-                  <RotateCcw size={14} /> Reset
-                </button>
-              </div>
-            </div>
+        </div>
 
-            {/* Right: Detail Panel */}
-            <div className="space-y-4">
+        {/* Right: Detail Panel */}
+        <div className="overflow-y-auto space-y-4 pr-1">
 
               {/* F-function detail */}
               {showFDetail && detailRoundIdx >= 0 && detailRoundIdx < 4 && (
@@ -717,8 +718,6 @@ const FeistelApp: React.FC = () => {
                 </div>
               </div>
 
-            </div>
-          </div>
         </div>
       </div>
     </div>
