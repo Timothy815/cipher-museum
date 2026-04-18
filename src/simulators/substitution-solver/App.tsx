@@ -207,6 +207,97 @@ const PUZZLES: Puzzle[] = [
     source: 'National Security Act, President Truman\'s Memorandum, October 1952',
     text: 'The signals intelligence mission of the United States shall be coordinated under a single agency. That agency is charged with collecting, processing, and disseminating signals intelligence information for the national foreign intelligence and counterintelligence purposes of the United States government. Its existence and methods shall remain classified at the highest level.',
   },
+  // ── new batch ──
+  {
+    id: 39, difficulty: 'easy', title: 'The Wright Brothers',
+    source: 'Orville Wright, diary entry, December 17, 1903',
+    text: 'At about twelve o\'clock we prepared for our fourth and last flight of the day. The wind was blowing from the north and the machine rose from the track at a speed of about ten miles an hour. The machine flew for fifty-nine seconds over a distance of eight hundred and fifty-two feet, making a free flight under its own power.',
+  },
+  {
+    id: 40, difficulty: 'easy', title: 'Thomas Edison on Genius',
+    source: 'Thomas Edison, Harper\'s Monthly, September 1932',
+    text: 'Genius is one percent inspiration and ninety-nine percent perspiration. I have not failed ten thousand times. I have successfully found ten thousand ways that will not work. Our greatest weakness lies in giving up. The most certain way to succeed is always to try just one more time.',
+  },
+  {
+    id: 41, difficulty: 'easy', title: 'Helen Keller on Courage',
+    source: 'Helen Keller, The Open Door, 1957',
+    text: 'Security is mostly a superstition. It does not exist in nature, nor do the children of men as a whole experience it. Avoiding danger is no safer in the long run than outright exposure. Life is either a daring adventure or nothing at all. To keep our faces toward change and behave like free spirits in the presence of fate is strength undefeatable.',
+  },
+  {
+    id: 42, difficulty: 'medium', title: 'Plato on Justice',
+    source: 'Plato, The Republic, ca. 380 BCE',
+    text: 'Justice in the life and conduct of the state is possible only as first it resides in the hearts and souls of the citizens. The measure of a man is what he does with power. Wise men speak because they have something to say; fools because they have to say something. The price good men pay for indifference to public affairs is to be ruled by evil men.',
+  },
+  {
+    id: 43, difficulty: 'medium', title: 'Voltaire on Superstition',
+    source: 'Voltaire, Philosophical Dictionary, 1764',
+    text: 'Superstition is to religion what astrology is to astronomy: the mad daughter of a wise mother. Those long established daughters have too long dominated the earth. We owe respect to the living; to the dead we owe only truth. Every man is guilty of all the good he did not do. Think for yourselves and let others enjoy the privilege to do so too.',
+  },
+  {
+    id: 44, difficulty: 'medium', title: 'Marie Curie on Science',
+    source: 'Marie Curie, Pierre Curie with Autobiographical Notes, 1923',
+    text: 'Nothing in life is to be feared, it is only to be understood. Now is the time to understand more, so that we may fear less. I was taught that the way of progress was neither swift nor easy. Be less curious about people and more curious about ideas. One never notices what has been done; one can only see what remains to be done.',
+  },
+  {
+    id: 45, difficulty: 'medium', title: 'Aristotle on Excellence',
+    source: 'Aristotle, Nicomachean Ethics, ca. 340 BCE',
+    text: 'We are what we repeatedly do. Excellence then is not an act but a habit. The roots of education are bitter but the fruit is sweet. It is the mark of an educated mind to be able to entertain a thought without accepting it. Those who educate children well are more to be honored than those who produce them; for these only gave them life, those the art of living well.',
+  },
+  {
+    id: 46, difficulty: 'medium', title: 'Lincoln\'s Second Inaugural',
+    source: 'Abraham Lincoln, Second Inaugural Address, March 4, 1865',
+    text: 'With malice toward none, with charity for all, with firmness in the right as God gives us to see the right, let us strive on to finish the work we are in, to bind up the nation\'s wounds, to care for him who shall have borne the battle and for his widow and his orphan, to do all which may achieve and cherish a just and lasting peace among ourselves and with all nations.',
+  },
+  {
+    id: 47, difficulty: 'medium', title: 'Pericles\' Funeral Oration',
+    source: 'Thucydides, History of the Peloponnesian War, ca. 431 BCE',
+    text: 'Our constitution is called a democracy because power is in the hands not of a minority but of the whole people. Our laws secure equal justice for all in their private disputes. We are free and tolerant in our private lives but in public affairs we keep strictly to the law. We are lovers of beauty yet simple in our tastes, and we cultivate the mind without loss of manliness.',
+  },
+  {
+    id: 48, difficulty: 'medium', title: 'Freud on Dreams',
+    source: 'Sigmund Freud, The Interpretation of Dreams, 1899',
+    text: 'The interpretation of dreams is the royal road to a knowledge of the unconscious activities of the mind. Dreams are the royal road to the unconscious. Unexpressed emotions will never die; they are buried alive and will come forth later in uglier ways. The ego is not master in its own house. Where id was, there ego shall be.',
+  },
+  {
+    id: 49, difficulty: 'hard', title: 'The Federalist Papers',
+    source: 'James Madison, Federalist No. 51, 1788',
+    text: 'If men were angels, no government would be necessary. If angels were to govern men, neither external nor internal controls on government would be necessary. In framing a government which is to be administered by men over men, the great difficulty lies in this: you must first enable the government to control the governed; and in the next place oblige it to control itself.',
+  },
+  {
+    id: 50, difficulty: 'hard', title: 'Oppenheimer on the Bomb',
+    source: 'J. Robert Oppenheimer, television broadcast, 1965',
+    text: 'We knew the world would not be the same. A few people laughed, a few people cried, most people were silent. I remembered the line from the Hindu scripture, the Bhagavad Gita: now I am become death, the destroyer of worlds. I suppose we all thought that, one way or another. There was a choice to be made and we made it. The physicists have known sin; and this is a knowledge which they cannot lose.',
+  },
+  {
+    id: 51, difficulty: 'hard', title: 'The Manhattan Project',
+    source: 'Richard Feynman, Surely You\'re Joking Mr. Feynman, 1985',
+    text: 'The first time I was in the bomb project I tried to figure out what the blast would do to Princeton. I went over to the library and got out a map of Princeton. I put a little dot where Princeton is and I drew a circle and I worked out all the physics of the bomb and I realized that if the bomb went off anywhere within a few miles of Princeton it would be virtually destroyed. I was very scared. I worked out all the physics and I told the people about it and they decided not to drop it near Princeton.',
+  },
+  {
+    id: 52, difficulty: 'hard', title: 'Cold War Intelligence',
+    source: 'Allen Dulles, The Craft of Intelligence, 1963',
+    text: 'The intelligence services of the great powers are the secret armies of the cold war. They fight battles that are never reported, win victories that are never celebrated, suffer defeats that are never admitted. A spy must be a gifted liar, a patient observer, a quick thinker and a brave man. He must be prepared to betray his friends and to maintain the loyalty of his agents under conditions where exposure means death.',
+  },
+  {
+    id: 53, difficulty: 'hard', title: 'Stephen Hawking on Black Holes',
+    source: 'Stephen Hawking, A Brief History of Time, 1988',
+    text: 'A black hole is a region of space from which nothing, not even light, can escape. Around a black hole there is a mathematically defined surface called an event horizon that marks the point of no return. It is called black because it absorbs all the light that hits the horizon, reflecting nothing. Black holes are not really black at all; they glow like a hot body, and the smaller they are the more they glow. This thermal radiation is now called Hawking radiation.',
+  },
+  {
+    id: 54, difficulty: 'hard', title: 'The Art of Deception',
+    source: 'Kevin Mitnick, The Art of Deception, 2002',
+    text: 'The human element is truly the weakest link in security. Social engineering bypasses all technologies, including firewalls. The hacker does not need to attack the machine; he attacks the person sitting at the machine. Information is the most valuable commodity in the world. The best lock is the one that cannot be picked. The most unbreakable cipher is one whose key no one can steal because no one knows it exists.',
+  },
+  {
+    id: 55, difficulty: 'hard', title: 'The Galileo Affair',
+    source: 'Giorgio de Santillana, The Crime of Galileo, 1955',
+    text: 'Galileo was condemned not for his science but for his impudence in claiming that the Book of Nature was written in the language of mathematics and that those who could not read it were unqualified to discuss it. He was condemned for usurping the authority of theologians to interpret the natural world. His telescope had shown him truths that contradicted a thousand years of received wisdom and he lacked the prudence to keep his discoveries to himself.',
+  },
+  {
+    id: 56, difficulty: 'hard', title: 'Karl Marx on History',
+    source: 'Karl Marx, The Eighteenth Brumaire of Louis Bonaparte, 1852',
+    text: 'Men make their own history but they do not make it as they please; they do not make it under self-selected circumstances, but under circumstances existing already, given and transmitted from the past. The tradition of all dead generations weighs like a nightmare on the brains of the living. History repeats itself, first as tragedy, then as farce. The philosophers have only interpreted the world in various ways; the point, however, is to change it.',
+  },
 ];
 
 
