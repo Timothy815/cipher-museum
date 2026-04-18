@@ -131,6 +131,10 @@ const machines: MachineEntry[] = [
   // ── Educational & DIY ──
   { path: '/pringles-enigma', name: 'Pringles Can Enigma', subtitle: 'Printable Paper Enigma', country: 'Educational', era: 'DIY', icon: <Scissors size={32} />, color: 'amber', category: 'educational',
     description: 'Generate printable paper strips that wrap around a Pringles can to create a working Enigma machine. PDF export.' },
+  { path: '/spn', name: 'SPN Visualizer', subtitle: 'Substitution-Permutation Network', country: 'Educational', era: 'Modern', icon: <Boxes size={32} />, color: 'green', category: 'educational',
+    description: 'Step through every stage of a 16-bit SPN cipher — XOR with subkey, S-box substitution, and bit permutation — watching each bit change value in real time. Based on Heys\' tutorial SPN, the blueprint for AES.' },
+  { path: '/feistel', name: 'Feistel Visualizer', subtitle: 'Feistel Network Round-by-Round', country: 'Educational', era: 'Modern', icon: <GitBranch size={32} />, color: 'cyan', category: 'educational',
+    description: 'Watch a 16-bit Feistel network split, cross, and recombine its halves across four rounds. Trace the L and R paths, the F function, and key scheduling step by step. The structure behind DES, Blowfish, and Twofish.' },
 ];
 
 const cryptanalysisTools = [

@@ -76,6 +76,8 @@ const HmacApp             = lazy(() => import('./simulators/hmac/App'));
 const BlockModesApp       = lazy(() => import('./simulators/block-modes/App'));
 const DigitalSignatureApp = lazy(() => import('./simulators/digital-signature/App'));
 const PasswordHashingApp  = lazy(() => import('./simulators/password-hashing/App'));
+const SpnApp              = lazy(() => import('./simulators/spn/App'));
+const FeistelApp          = lazy(() => import('./simulators/feistel/App'));
 
 
 const root = document.getElementById('root')!;
@@ -156,6 +158,8 @@ ReactDOM.createRoot(root).render(
             <Route path="/block-modes" element={<BlockModesApp />} />
             <Route path="/digital-signature" element={<DigitalSignatureApp />} />
             <Route path="/password-hashing" element={<PasswordHashingApp />} />
+            <Route path="/spn" element={<SpnApp />} />
+            <Route path="/feistel" element={<FeistelApp />} />
         </Route>
       </Routes>
     </HashRouter>
