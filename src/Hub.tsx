@@ -179,6 +179,10 @@ const modernCrypto = [
     description: 'Why slow is safe. Salts defeat rainbow tables, work factors defeat brute force, memory-hardness defeats GPUs. Includes live brute-force time estimator.' },
   { path: '/block-modes', name: 'Block Cipher Modes', subtitle: 'ECB / CBC / CTR / GCM', country: 'International', era: '1981–2004', icon: <Blocks size={32} />, color: 'amber',
     description: 'See why mode matters more than the cipher. ECB leaks patterns, CBC chains blocks, CTR creates a stream cipher, and GCM adds authentication.' },
+  { path: '/aes-round', name: 'AES Round Visualizer', subtitle: 'AES-128 Internal Pipeline', country: 'Educational', era: 'Modern', icon: <Layers size={32} />, color: 'green',
+    description: 'Step through all 41 stages of AES-128 encryption — SubBytes, ShiftRows, MixColumns, and AddRoundKey — watching every byte transform across 10 rounds. The production-scale successor to the SPN Visualizer.' },
+  { path: '/sha256-round', name: 'SHA-256 Round Visualizer', subtitle: 'Merkle-Damgård Compression', country: 'Educational', era: 'Modern', icon: <Hash size={32} />, color: 'cyan',
+    description: 'Step through all 64 compression rounds of SHA-256 — Σ₀, Σ₁, Ch, Maj, T₁, T₂ — watching the 8 working variables evolve. Includes Davies-Meyer feed-forward, message schedule, and avalanche comparison.' },
 ];
 
 const publicKeyCrypto = [
