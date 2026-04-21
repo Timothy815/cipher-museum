@@ -183,6 +183,8 @@ const modernCrypto = [
     description: 'Step through all 41 stages of AES-128 encryption — SubBytes, ShiftRows, MixColumns, and AddRoundKey — watching every byte transform across 10 rounds. The production-scale successor to the SPN Visualizer.' },
   { path: '/sha256-round', name: 'SHA-256 Round Visualizer', subtitle: 'Merkle-Damgård Compression', country: 'Educational', era: 'Modern', icon: <Hash size={32} />, color: 'cyan',
     description: 'Step through all 64 compression rounds of SHA-256 — Σ₀, Σ₁, Ch, Maj, T₁, T₂ — watching the 8 working variables evolve. Includes Davies-Meyer feed-forward, message schedule, and avalanche comparison.' },
+  { path: '/sbox', name: 'S-Box Visualizer', subtitle: 'Substitution Lookup Table', country: 'Educational', era: 'Modern', icon: <Table2 size={32} />, color: 'cyan',
+    description: 'Explore 4-bit, 6-bit, and 8-bit (AES) S-boxes interactively. Click any cell to trace the high/low-bit split, highlight the row and column, and see the full lookup flow with a bit-level breakdown.' },
 ];
 
 const publicKeyCrypto = [

@@ -80,6 +80,7 @@ const SpnApp              = lazy(() => import('./simulators/spn/App'));
 const FeistelApp          = lazy(() => import('./simulators/feistel/App'));
 const AesRoundApp         = lazy(() => import('./simulators/aes-round/App'));
 const Sha256RoundApp      = lazy(() => import('./simulators/sha256-round/App'));
+const SBoxApp             = lazy(() => import('./simulators/sbox/App'));
 
 
 const root = document.getElementById('root')!;
@@ -164,6 +165,7 @@ ReactDOM.createRoot(root).render(
             <Route path="/feistel" element={<FeistelApp />} />
             <Route path="/aes-round" element={<AesRoundApp />} />
             <Route path="/sha256-round" element={<Sha256RoundApp />} />
+            <Route path="/sbox" element={<SBoxApp />} />
         </Route>
       </Routes>
     </HashRouter>

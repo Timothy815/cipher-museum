@@ -77,6 +77,7 @@ const MODERN_CRYPTO = [
   { path: '/password-hashing', label: 'Password Hashing', country: 'Modern Crypto', icon: <LockKeyhole size={14} /> },
   { path: '/aes-round', label: 'AES Round Visualizer', country: 'Modern Crypto', icon: <Layers size={14} /> },
   { path: '/sha256-round', label: 'SHA-256 Round Visualizer', country: 'Modern Crypto', icon: <Hash size={14} /> },
+  { path: '/sbox',        label: 'S-Box Visualizer',         country: 'Modern Crypto', icon: <Table2 size={14} /> },
 ];
 
 const PUBLIC_KEY = [
