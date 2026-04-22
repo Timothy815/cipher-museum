@@ -79,6 +79,8 @@ const MODERN_CRYPTO = [
   { path: '/sha256-round', label: 'SHA-256 Round Visualizer', country: 'Modern Crypto', icon: <Hash size={14} /> },
   { path: '/sbox',        label: 'S-Box Visualizer',         country: 'Modern Crypto', icon: <Table2 size={14} /> },
   { path: '/gf28',        label: 'GF(2⁸) Arithmetic',        country: 'Modern Crypto', icon: <Binary size={14} /> },
+  { path: '/pbox',        label: 'P-Box Explorer',            country: 'Modern Crypto', icon: <Shuffle size={14} /> },
+  { path: '/ecb-penguin', label: 'ECB Penguin',               country: 'Modern Crypto', icon: <Grid3x3Icon size={14} /> },
 ];
 
 const PUBLIC_KEY = [

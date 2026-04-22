@@ -187,6 +187,10 @@ const modernCrypto = [
     description: 'Explore 4-bit, 6-bit, and 8-bit (AES) S-boxes interactively. Click any cell to trace the high/low-bit split, highlight the row and column, and see the full lookup flow with a bit-level breakdown.' },
   { path: '/gf28', name: 'GF(2⁸) Arithmetic', subtitle: 'Galois Field Multiplication Explorer', country: 'Educational', era: 'Modern', icon: <Binary size={32} />, color: 'violet',
     description: 'Explore arithmetic in GF(2⁸) — the finite field underlying AES MixColumns. Step through Russian Peasant multiplication, probe the full 256×256 field table, and visualize the generator 0x03 cycling all 255 non-zero elements.' },
+  { path: '/pbox', name: 'P-Box Explorer', subtitle: 'Permutation Box Wire Tracer', country: 'Educational', era: 'Modern', icon: <Shuffle size={32} />, color: 'amber',
+    description: 'Trace the wiring of DES and AES permutation boxes. Visualize DES-P (32-bit), DES-E expansion (32→48), DES Initial Permutation (64-bit), and AES ShiftRows as colour-coded wire diagrams. Enter a hex value to watch bits flow through.' },
+  { path: '/ecb-penguin', name: 'ECB Penguin', subtitle: 'Block Cipher Mode Visualizer', country: 'Educational', era: 'Modern', icon: <Grid3x3Icon size={32} />, color: 'red',
+    description: 'The canonical demonstration of why ECB mode is broken. Encrypt Tux the penguin with ECB and CBC side by side — ECB\'s identical-block flaw makes the silhouette clearly visible, while CBC looks like random noise. Upload your own image to try it.' },
 ];
 
 const publicKeyCrypto = [
