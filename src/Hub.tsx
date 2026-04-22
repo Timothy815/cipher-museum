@@ -185,6 +185,8 @@ const modernCrypto = [
     description: 'Step through all 64 compression rounds of SHA-256 — Σ₀, Σ₁, Ch, Maj, T₁, T₂ — watching the 8 working variables evolve. Includes Davies-Meyer feed-forward, message schedule, and avalanche comparison.' },
   { path: '/sbox', name: 'S-Box Visualizer', subtitle: 'Substitution Lookup Table', country: 'Educational', era: 'Modern', icon: <Table2 size={32} />, color: 'cyan',
     description: 'Explore 4-bit, 6-bit, and 8-bit (AES) S-boxes interactively. Click any cell to trace the high/low-bit split, highlight the row and column, and see the full lookup flow with a bit-level breakdown.' },
+  { path: '/gf28', name: 'GF(2⁸) Arithmetic', subtitle: 'Galois Field Multiplication Explorer', country: 'Educational', era: 'Modern', icon: <Binary size={32} />, color: 'violet',
+    description: 'Explore arithmetic in GF(2⁸) — the finite field underlying AES MixColumns. Step through Russian Peasant multiplication, probe the full 256×256 field table, and visualize the generator 0x03 cycling all 255 non-zero elements.' },
 ];
 
 const publicKeyCrypto = [
