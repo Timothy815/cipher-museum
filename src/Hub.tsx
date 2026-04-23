@@ -485,14 +485,15 @@ const Hub: React.FC = () => {
         <div className="w-full max-w-6xl mb-10">
           <div className="flex flex-wrap justify-center gap-2">
             {[
-              { id: 'machines',  label: 'Cipher Machines',        count: machines.length,                    color: 'amber' },
-              { id: 'classical', label: 'Classical Cryptanalysis', count: classicalCryptanalysis.length,     color: 'red' },
-              { id: 'attacks',   label: 'Attack Toolbox',          count: attackToolbox.length,              color: 'red' },
-              { id: 'stats',     label: 'Statistical Lab',         count: statisticalLab.length,             color: 'red' },
-              { id: 'modern',    label: 'Modern Crypto',           count: modernCrypto.length,               color: 'cyan' },
-              { id: 'publickey', label: 'Public Key',              count: publicKeyCrypto.length,            color: 'violet' },
+              { id: 'machines',  label: 'Cipher Machines',        count: machines.length,               color: 'amber' },
+              { id: 'classical', label: 'Classical Cryptanalysis', count: classicalCryptanalysis.length, color: 'red' },
+              { id: 'attacks',   label: 'Attack Toolbox',          count: attackToolbox.length,          color: 'red' },
+              { id: 'stats',     label: 'Statistical Lab',         count: statisticalLab.length,         color: 'red' },
+              { id: 'modern',    label: 'Modern Crypto',           count: modernCrypto.length,           color: 'cyan' },
+              { id: 'publickey', label: 'Public Key',              count: publicKeyCrypto.length,        color: 'violet' },
             ].map(({ id, label, count, color }) => (
-              <a key={id} href={`#section-${id}`}
+              <button key={id}
+                onClick={() => document.getElementById(`section-${id}`)?.scrollIntoView({ behavior: 'smooth' })}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors bg-slate-900/60
                   ${color === 'amber'  ? 'border-amber-800/50 text-amber-400 hover:bg-amber-950/30' :
                     color === 'red'    ? 'border-red-800/50 text-red-400 hover:bg-red-950/30' :
@@ -501,7 +502,7 @@ const Hub: React.FC = () => {
               >
                 {label}
                 <span className="text-[9px] opacity-60 font-mono">{count}</span>
-              </a>
+              </button>
             ))}
           </div>
         </div>
