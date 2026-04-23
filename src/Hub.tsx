@@ -613,6 +613,12 @@ const Hub: React.FC = () => {
       {/* Cipher Machines */}
       {groupedMachines.length > 0 && (
         <div id="section-machines" className="w-full max-w-6xl scroll-mt-20">
+          <div className="flex justify-end mb-2">
+            <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              className="text-[10px] text-slate-600 hover:text-slate-400 transition-colors font-mono flex items-center gap-1">
+              ↑ jump nav
+            </button>
+          </div>
           {groupedMachines.map(({ category, items }) => (
             <div key={category} className="mb-12">
               {(activeCategory === 'all' || isSearching) && (
@@ -642,7 +648,11 @@ const Hub: React.FC = () => {
                 The historical techniques — from Al-Kindi's frequency analysis in 850 AD to Turing's Bombe in 1940.
               </p>
             </div>
-            <span className="text-xs text-slate-600 font-mono">{filteredClassical.length} tools</span>
+            <div className="flex flex-col items-end gap-1.5">
+              <span className="text-xs text-slate-600 font-mono">{filteredClassical.length} tools</span>
+              <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                className="text-[10px] text-slate-600 hover:text-slate-400 transition-colors font-mono flex items-center gap-1">↑ jump nav</button>
+            </div>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {filteredClassical.map(m => <Card key={m.path} item={m} hoverColor="text-red-300" cta="LAUNCH TOOL" />)}
@@ -663,7 +673,11 @@ const Hub: React.FC = () => {
                 Automated solvers and practical attack tools — paste a ciphertext, get the key.
               </p>
             </div>
-            <span className="text-xs text-slate-600 font-mono">{filteredAttack.length} tools</span>
+            <div className="flex flex-col items-end gap-1.5">
+              <span className="text-xs text-slate-600 font-mono">{filteredAttack.length} tools</span>
+              <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                className="text-[10px] text-slate-600 hover:text-slate-400 transition-colors font-mono flex items-center gap-1">↑ jump nav</button>
+            </div>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {filteredAttack.map(m => <Card key={m.path} item={m} hoverColor="text-red-300" cta="LAUNCH TOOL" />)}
@@ -684,7 +698,11 @@ const Hub: React.FC = () => {
                 Understand what random looks like — and how to tell when something isn't.
               </p>
             </div>
-            <span className="text-xs text-slate-600 font-mono">{filteredStats.length} tools</span>
+            <div className="flex flex-col items-end gap-1.5">
+              <span className="text-xs text-slate-600 font-mono">{filteredStats.length} tools</span>
+              <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                className="text-[10px] text-slate-600 hover:text-slate-400 transition-colors font-mono flex items-center gap-1">↑ jump nav</button>
+            </div>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {filteredStats.map(m => <Card key={m.path} item={m} hoverColor="text-red-300" cta="LAUNCH TOOL" />)}
@@ -704,7 +722,11 @@ const Hub: React.FC = () => {
                 Step inside the algorithms protecting your browser right now — from shift registers to AES and ChaCha20.
               </p>
             </div>
-            <span className="text-xs text-slate-600 font-mono">{filteredModern.length} tools</span>
+            <div className="flex flex-col items-end gap-1.5">
+              <span className="text-xs text-slate-600 font-mono">{filteredModern.length} tools</span>
+              <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                className="text-[10px] text-slate-600 hover:text-slate-400 transition-colors font-mono flex items-center gap-1">↑ jump nav</button>
+            </div>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {filteredModern.map(m => <Card key={m.path} item={m} hoverColor="text-cyan-300" cta="LAUNCH VISUALIZER" />)}
@@ -724,7 +746,11 @@ const Hub: React.FC = () => {
                 The mathematics of trust — key exchange, digital signatures, and the asymmetric algorithms that secure every connection.
               </p>
             </div>
-            <span className="text-xs text-slate-600 font-mono">{filteredPublicKey.length} tools</span>
+            <div className="flex flex-col items-end gap-1.5">
+              <span className="text-xs text-slate-600 font-mono">{filteredPublicKey.length} tools</span>
+              <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                className="text-[10px] text-slate-600 hover:text-slate-400 transition-colors font-mono flex items-center gap-1">↑ jump nav</button>
+            </div>
           </div>
           <div className="grid gap-6 md:grid-cols-2">
             {filteredPublicKey.map(m => <Card key={m.path} item={m} hoverColor="text-violet-300" cta="LAUNCH VISUALIZER" />)}
