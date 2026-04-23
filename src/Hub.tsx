@@ -137,41 +137,57 @@ const machines: MachineEntry[] = [
     description: 'Watch a 16-bit Feistel network split, cross, and recombine its halves across four rounds. Trace the L and R paths, the F function, and key scheduling step by step. The structure behind DES, Blowfish, and Twofish.' },
 ];
 
-const cryptanalysisTools = [
-  { path: '/frequency-analysis', name: 'Frequency Analysis', subtitle: 'Statistical Codebreaking', country: 'Arabia', era: '~850 AD', icon: <BarChart3 size={32} />, color: 'crimson',
+const classicalCryptanalysis = [
+  { path: '/frequency-analysis',  name: 'Frequency Analysis',     subtitle: 'Statistical Codebreaking',         country: 'Arabia', era: '~850 AD', icon: <BarChart3 size={32} />,      color: 'crimson',
     description: 'The first known cryptanalysis technique. Letter frequency, bigrams, trigrams. Pioneered by Al-Kindi.' },
-  { path: '/vigenere-breaker', name: 'Vigenère Breaker', subtitle: 'Kasiski + Index of Coincidence', country: 'Britain / Prussia', era: '1863', icon: <KeySquare size={32} />, color: 'crimson',
+  { path: '/vigenere-breaker',    name: 'Vigenère Breaker',       subtitle: 'Kasiski + Index of Coincidence',   country: 'Britain / Prussia', era: '1863', icon: <KeySquare size={32} />, color: 'crimson',
     description: 'Break the "unbreakable cipher" step by step. Kasiski examination finds key length, then frequency analysis recovers each key letter.' },
-  { path: '/bombe', name: 'Bombe', subtitle: 'Turing\'s Enigma Breaker', country: 'Britain', era: '1940', icon: <CircuitBoard size={32} />, color: 'crimson',
-    description: 'Alan Turing\'s electromechanical machine that broke Enigma by testing rotor positions against known-plaintext cribs.' },
-  { path: '/colossus', name: 'Colossus', subtitle: 'First Electronic Computer', country: 'Britain', era: '1944', icon: <Binary size={32} />, color: 'crimson',
-    description: 'Tommy Flowers\' electronic marvel that broke the Lorenz cipher. The world\'s first programmable electronic computer.' },
-  { path: '/vigenere-workshop', name: 'Vigenère Workshop', subtitle: 'Hands-On Codebreaking', country: 'Interactive', era: '1863', icon: <SlidersHorizontal size={32} />, color: 'crimson',
+  { path: '/vigenere-workshop',   name: 'Vigenère Workshop',      subtitle: 'Hands-On Codebreaking',            country: 'Interactive', era: '1863', icon: <SlidersHorizontal size={32} />, color: 'crimson',
     description: 'Crack the Vigenère cipher yourself. Kasiski examination, frequency sliding, and key letter recovery.' },
-  { path: '/substitution-solver', name: 'Substitution Solver', subtitle: 'Interactive Frequency Attack', country: 'Interactive', era: '~850 AD', icon: <SearchCode size={32} />, color: 'crimson',
+  { path: '/bombe',               name: 'Bombe',                  subtitle: "Turing's Enigma Breaker",          country: 'Britain', era: '1940', icon: <CircuitBoard size={32} />,   color: 'crimson',
+    description: "Alan Turing's electromechanical machine that broke Enigma by testing rotor positions against known-plaintext cribs." },
+  { path: '/colossus',            name: 'Colossus',               subtitle: 'First Electronic Computer',        country: 'Britain', era: '1944', icon: <Binary size={32} />,          color: 'crimson',
+    description: "Tommy Flowers' electronic marvel that broke the Lorenz cipher. The world's first programmable electronic computer." },
+  { path: '/substitution-solver', name: 'Substitution Solver',   subtitle: 'Interactive Frequency Attack',     country: 'Interactive', era: '~850 AD', icon: <SearchCode size={32} />, color: 'crimson',
     description: 'Break a random substitution cipher by hand. Live frequency bars, bigram hints, click-to-assign mappings.' },
-  { path: '/ioc', name: 'Index of Coincidence', subtitle: 'Friedman\'s Key Length Estimator', country: 'Cryptanalysis', era: '1922', icon: <Equal size={32} />, color: 'rose',
-    description: 'Friedman\'s statistical method for estimating polyalphabetic cipher key lengths via stream splitting.' },
-  { path: '/substitution-auto', name: 'Auto Substitution Solver', subtitle: 'Simulated Annealing + Bigram Scoring', country: 'Cryptanalysis', era: 'Modern', icon: <ZapIcon size={32} />, color: 'crimson',
+  { path: '/ioc',                 name: 'Index of Coincidence',  subtitle: "Friedman's Key Length Estimator",  country: 'Cryptanalysis', era: '1922', icon: <Equal size={32} />,       color: 'rose',
+    description: "Friedman's statistical method for estimating polyalphabetic cipher key lengths via stream splitting." },
+];
+
+const attackToolbox = [
+  { path: '/substitution-auto', name: 'Auto Substitution Solver',      subtitle: 'Simulated Annealing + Bigram Scoring',        country: 'Cryptanalysis', era: 'Modern', icon: <ZapIcon size={32} />,         color: 'crimson',
     description: 'Paste any monoalphabetic substitution ciphertext and watch simulated annealing + bigram fitness scoring automatically recover the key. Four independent restarts; manual key-swap correction when needed.' },
-  { path: '/xor-analyzer', name: 'Repeating XOR Analyzer', subtitle: 'Hamming Distance + Frequency Attack', country: 'Cryptanalysis', era: 'Modern', icon: <Binary size={32} />, color: 'crimson',
+  { path: '/xor-analyzer',      name: 'Repeating XOR Analyzer',        subtitle: 'Hamming Distance + Frequency Attack',         country: 'Cryptanalysis', era: 'Modern', icon: <Binary size={32} />,           color: 'crimson',
     description: 'Input hex, base64, or ASCII ciphertext. Hamming-distance analysis identifies the key length; per-column chi-squared attacks recover each key byte. The standard technique for CTF XOR challenges.' },
-  { path: '/crib-drag', name: 'Crib Drag', subtitle: 'Known-Plaintext Sliding Attack', country: 'Cryptanalysis', era: 'Modern', icon: <SlidersHorizontal size={32} />, color: 'crimson',
-    description: 'Slide a known-plaintext word or phrase across XOR ciphertext to find where it matches. Dual mode reveals OTP reuse: when two messages share a key, dragging a crib over their XOR directly exposes the plaintext.' },
-  { path: '/entropy', name: 'Entropy Analyzer', subtitle: 'Shannon Entropy + Type Classifier', country: 'Cryptanalysis', era: 'Modern', icon: <BarChart3 size={32} />, color: 'crimson',
-    description: 'Measure Shannon entropy, IoC, chi-squared, byte distribution, and printable fraction of any input. Automatically classifies as English plaintext, classical cipher, high-entropy encryption, compressed data, or binary.' },
-  { path: '/columnar-solver', name: 'Columnar Transposition Solver', subtitle: 'Brute-Force + Hill-Climb Solver', country: 'Cryptanalysis', era: 'Modern', icon: <Columns3 size={32} />, color: 'crimson',
-    description: 'Select a key length and solve columnar transposition ciphers automatically. Exhaustive for ≤8 columns (up to 40,320 permutations), hill-climbing for 9–15. Ranks all candidates by bigram fitness score.' },
-  { path: '/hash-id', name: 'Hash Identifier', subtitle: 'Fingerprint & Classify Hash Strings', country: 'Cryptanalysis', era: 'Modern', icon: <Hash size={32} />, color: 'crimson',
-    description: 'Paste any hash, token, or encoded string and instantly identify it. Recognizes MD5, SHA-1/256/512, bcrypt, Argon2, NTLM, JWT, and 20+ other formats. Shows hashcat/john mode, crackability notes, and JWT payload decode.' },
-  { path: '/shift-solver', name: 'Caesar & Affine Brute-Forcer', subtitle: 'All 25 / 312 Keys Ranked by χ²', country: 'Cryptanalysis', era: 'Modern', icon: <KeyRound size={32} />, color: 'crimson',
-    description: 'Try all 25 Caesar shifts or all 312 Affine (a,b) key pairs and rank them by chi-squared frequency fitness. Instantly finds the correct key without guessing. Includes frequency bar chart and letter distribution comparison.' },
-  { path: '/kasiski', name: 'Kasiski Examination', subtitle: 'Repeated Sequences + Factor Analysis', country: 'Cryptanalysis', era: 'Modern', icon: <BarChart3 size={32} />, color: 'crimson',
-    description: 'The classic technique for finding the Vigenère key length. Locates all repeated n-grams, extracts their spacings, and factor-analyzes the GCDs to identify the most likely key length. Also plots IoC at each stride.' },
-  { path: '/decoder', name: 'Multi-Encoding Decoder', subtitle: 'Base64 · Hex · URL · Morse · ROT · Atbash', country: 'Cryptanalysis', era: 'Modern', icon: <ArrowRightLeft size={32} />, color: 'crimson',
-    description: 'Auto-detects and strips layered encodings one step at a time. Supports Base64, hex, URL, HTML entities, binary, Morse, char codes, ROT13/47/18, Atbash, and more. Build a decoding pipeline to peel any CTF encoding chain.' },
-  { path: '/playfair-solver', name: 'Playfair Auto-Solver', subtitle: 'Simulated Annealing on the 5×5 Square', country: 'Cryptanalysis', era: 'Modern', icon: <Grid3X3 size={32} />, color: 'crimson',
-    description: 'Automatically recover Playfair keys using simulated annealing scored by bigram log-likelihood. Multiple independent restarts for better coverage. Manual key entry for refinement. Best with 80+ ciphertext letters.' },
+  { path: '/crib-drag',         name: 'Crib Drag',                     subtitle: 'Known-Plaintext Sliding Attack',              country: 'Cryptanalysis', era: 'Modern', icon: <SlidersHorizontal size={32} />, color: 'crimson',
+    description: 'Slide a known-plaintext word across XOR ciphertext to find where it matches. Dual mode reveals OTP reuse: when two messages share a key, dragging a crib over their XOR directly exposes the plaintext.' },
+  { path: '/kasiski',           name: 'Kasiski Examination',           subtitle: 'Repeated Sequences + Factor Analysis',        country: 'Cryptanalysis', era: 'Modern', icon: <BarChart3 size={32} />,         color: 'crimson',
+    description: 'Locates all repeated n-grams, extracts spacings, and factor-analyzes GCDs to identify the most likely Vigenère key length. Also plots IoC at each stride for confirmation.' },
+  { path: '/shift-solver',      name: 'Caesar & Affine Brute-Forcer', subtitle: 'All 25 / 312 Keys Ranked by χ²',              country: 'Cryptanalysis', era: 'Modern', icon: <KeyRound size={32} />,          color: 'crimson',
+    description: 'Try all 25 Caesar shifts or all 312 Affine (a,b) key pairs and rank them by chi-squared frequency fitness. Instantly finds the correct key without guessing.' },
+  { path: '/columnar-solver',   name: 'Columnar Transposition Solver',subtitle: 'Brute-Force + Hill-Climb Solver',             country: 'Cryptanalysis', era: 'Modern', icon: <Columns3 size={32} />,          color: 'crimson',
+    description: 'Exhaustive for ≤8 columns (40,320 permutations), hill-climbing for 9–15. Ranks all candidates by bigram fitness score.' },
+  { path: '/playfair-solver',   name: 'Playfair Auto-Solver',         subtitle: 'Simulated Annealing on the 5×5 Square',       country: 'Cryptanalysis', era: 'Modern', icon: <Grid3X3 size={32} />,           color: 'crimson',
+    description: 'Automatically recover Playfair keys using simulated annealing scored by bigram log-likelihood. Multiple restarts for better coverage. Manual key entry for refinement.' },
+  { path: '/hash-id',           name: 'Hash Identifier',              subtitle: 'Fingerprint & Classify Hash Strings',         country: 'Cryptanalysis', era: 'Modern', icon: <Hash size={32} />,              color: 'crimson',
+    description: 'Paste any hash, token, or encoded string and instantly identify it. Recognizes MD5, SHA-1/256/512, bcrypt, Argon2, NTLM, JWT, and 20+ formats.' },
+  { path: '/decoder',           name: 'Multi-Encoding Decoder',       subtitle: 'Base64 · Hex · URL · Morse · ROT · Atbash',  country: 'Cryptanalysis', era: 'Modern', icon: <ArrowRightLeft size={32} />,    color: 'crimson',
+    description: 'Auto-detects and strips layered encodings one step at a time. Build a pipeline to peel any CTF encoding chain.' },
+];
+
+const statisticalLab = [
+  { path: '/entropy',         name: 'Entropy Analyzer',         subtitle: 'Shannon Entropy + Type Classifier',     country: 'Statistics', era: 'Modern', icon: <BarChart3 size={32} />,  color: 'crimson',
+    description: 'Measure Shannon entropy, IoC, chi-squared, byte distribution, and printable fraction. Automatically classifies as English, classical cipher, high-entropy encryption, or binary.' },
+  { path: '/bigram-map',      name: 'Byte Bigram Heatmap',      subtitle: 'Sequential Pair Frequency Map',         country: 'Statistics', era: 'Modern', icon: <Grid3X3 size={32} />,    color: 'crimson',
+    description: 'A 256×256 heatmap where pixel (x,y) shows how often byte x is followed by byte y. Natural language clusters visibly. Random data is flat gray. Encrypted data should be indistinguishable from random.' },
+  { path: '/autocorrelation', name: 'Autocorrelation Explorer', subtitle: 'Periodicity Detection via R(lag)',      country: 'Statistics', era: 'Modern', icon: <Activity size={32} />,   color: 'crimson',
+    description: 'R(lag) spikes wherever a repeating structure aligns with itself. A Vigenère key of length n creates spikes at lags n, 2n, 3n… Random data is flat. The continuous cousin of Kasiski.' },
+  { path: '/bit-tests',       name: 'Bit Distribution Tests',   subtitle: 'NIST-Inspired Randomness Battery',      country: 'Statistics', era: 'Modern', icon: <Binary size={32} />,     color: 'crimson',
+    description: 'Five statistical tests on raw bits: monobit frequency, bit-position balance, runs, 2-bit serial, and byte uniformity. Visual pass/fail with expected vs. observed charts.' },
+  { path: '/prng-scatter',    name: 'PRNG Scatter Plot',        subtitle: 'x[i] vs x[i+1] Structural Analysis',   country: 'Statistics', era: 'Modern', icon: <Dice6 size={32} />,      color: 'crimson',
+    description: 'Plot consecutive output pairs for LCG, Xorshift, RC4, and ChaCha20. The LCG reveals a perfect diagonal lattice — Marsaglia\'s theorem made visible. ChaCha20 is an undifferentiated cloud.' },
+  { path: '/avalanche',       name: 'Avalanche Visualizer',     subtitle: 'Flip 1 Bit → Watch 128 Change',        country: 'Statistics', era: 'Modern', icon: <ZapIcon size={32} />,    color: 'crimson',
+    description: 'Flip a single input bit for SHA-256 or AES-128 and watch ~50% of output bits change. Compare side-by-side with a XOR stream cipher that changes exactly 1 bit. Demonstrates diffusion in good cryptography.' },
 ];
 
 const modernCrypto = [
@@ -383,7 +399,7 @@ const Card: React.FC<{ item: { path: string; name: string; subtitle: string; cou
 
 const ALL_CATEGORIES: Category[] = ['wwii-rotor', 'cold-war', 'classical', 'transposition', 'wiring', 'educational'];
 
-const totalCount = machines.length + cryptanalysisTools.length + modernCrypto.length + publicKeyCrypto.length;
+const totalCount = machines.length + classicalCryptanalysis.length + attackToolbox.length + statisticalLab.length + modernCrypto.length + publicKeyCrypto.length;
 
 const Hub: React.FC = () => {
   const [search, setSearch] = useState('');
@@ -413,14 +429,16 @@ const Hub: React.FC = () => {
     return groups;
   }, [filteredMachines]);
 
-  const filteredCryptanalysis = useMemo(() => cryptanalysisTools.filter(matchesSearch), [search]);
-  const filteredModern = useMemo(() => modernCrypto.filter(matchesSearch), [search]);
-  const filteredPublicKey = useMemo(() => publicKeyCrypto.filter(matchesSearch), [search]);
+  const filteredClassical    = useMemo(() => classicalCryptanalysis.filter(matchesSearch), [search]);
+  const filteredAttack       = useMemo(() => attackToolbox.filter(matchesSearch), [search]);
+  const filteredStats        = useMemo(() => statisticalLab.filter(matchesSearch), [search]);
+  const filteredModern       = useMemo(() => modernCrypto.filter(matchesSearch), [search]);
+  const filteredPublicKey    = useMemo(() => publicKeyCrypto.filter(matchesSearch), [search]);
 
   const [expandedPath, setExpandedPath] = useState<string | null>(null);
 
   const isSearching = search.length > 0;
-  const totalResults = filteredMachines.length + filteredCryptanalysis.length + filteredModern.length + filteredPublicKey.length;
+  const totalResults = filteredMachines.length + filteredClassical.length + filteredAttack.length + filteredStats.length + filteredModern.length + filteredPublicKey.length;
 
   return (
     <div className="w-full flex-1 flex flex-col items-center px-6 sm:px-16 pt-20 pb-20">
@@ -461,6 +479,33 @@ const Hub: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Jump Navigation */}
+      {!isSearching && (
+        <div className="w-full max-w-6xl mb-10">
+          <div className="flex flex-wrap justify-center gap-2">
+            {[
+              { id: 'machines',  label: 'Cipher Machines',        count: machines.length,                    color: 'amber' },
+              { id: 'classical', label: 'Classical Cryptanalysis', count: classicalCryptanalysis.length,     color: 'red' },
+              { id: 'attacks',   label: 'Attack Toolbox',          count: attackToolbox.length,              color: 'red' },
+              { id: 'stats',     label: 'Statistical Lab',         count: statisticalLab.length,             color: 'red' },
+              { id: 'modern',    label: 'Modern Crypto',           count: modernCrypto.length,               color: 'cyan' },
+              { id: 'publickey', label: 'Public Key',              count: publicKeyCrypto.length,            color: 'violet' },
+            ].map(({ id, label, count, color }) => (
+              <a key={id} href={`#section-${id}`}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors bg-slate-900/60
+                  ${color === 'amber'  ? 'border-amber-800/50 text-amber-400 hover:bg-amber-950/30' :
+                    color === 'red'    ? 'border-red-800/50 text-red-400 hover:bg-red-950/30' :
+                    color === 'cyan'   ? 'border-cyan-800/50 text-cyan-400 hover:bg-cyan-950/30' :
+                                        'border-violet-800/50 text-violet-400 hover:bg-violet-950/30'}`}
+              >
+                {label}
+                <span className="text-[9px] opacity-60 font-mono">{count}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Learning Paths */}
       {!isSearching && (
@@ -564,11 +609,11 @@ const Hub: React.FC = () => {
       )}
 
       {/* Machine Cards — grouped by category */}
+      {/* Cipher Machines */}
       {groupedMachines.length > 0 && (
-        <div className="w-full max-w-6xl">
+        <div id="section-machines" className="w-full max-w-6xl scroll-mt-20">
           {groupedMachines.map(({ category, items }) => (
             <div key={category} className="mb-12">
-              {/* Category header (hidden when only one category selected and not searching) */}
               {(activeCategory === 'all' || isSearching) && (
                 <div className="mb-6">
                   <h2 className="text-xl font-bold text-white">{CATEGORY_META[category].label}</h2>
@@ -583,33 +628,82 @@ const Hub: React.FC = () => {
         </div>
       )}
 
-      {/* Cryptanalysis Section */}
-      {filteredCryptanalysis.length > 0 && (
-        <div className="w-full max-w-6xl mt-20">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-white mb-3">
-              CRYPTANALYSIS <span className="text-red-500">TOOLS</span>
-            </h2>
-            <p className="text-sm text-slate-400 max-w-xl mx-auto">
-              The codebreaker's workbench — statistical analysis, automated attacks, and the legendary machines that cracked the "unbreakable."
-            </p>
+      {/* Classical Cryptanalysis */}
+      {filteredClassical.length > 0 && (
+        <div id="section-classical" className="w-full max-w-6xl mt-20 scroll-mt-20">
+          <div className="flex items-end justify-between mb-8">
+            <div>
+              <div className="text-[10px] font-bold text-red-400 uppercase tracking-widest mb-1">Cryptanalysis</div>
+              <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-white">
+                CLASSICAL <span className="text-red-500">CRYPTANALYSIS</span>
+              </h2>
+              <p className="text-sm text-slate-400 mt-2 max-w-xl">
+                The historical techniques — from Al-Kindi's frequency analysis in 850 AD to Turing's Bombe in 1940.
+              </p>
+            </div>
+            <span className="text-xs text-slate-600 font-mono">{filteredClassical.length} tools</span>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {filteredCryptanalysis.map(m => <Card key={m.path} item={m} hoverColor="text-red-300" cta="LAUNCH TOOL" />)}
+            {filteredClassical.map(m => <Card key={m.path} item={m} hoverColor="text-red-300" cta="LAUNCH TOOL" />)}
           </div>
         </div>
       )}
 
-      {/* Modern Cryptography Section */}
+      {/* Attack Toolbox */}
+      {filteredAttack.length > 0 && (
+        <div id="section-attacks" className="w-full max-w-6xl mt-20 scroll-mt-20">
+          <div className="flex items-end justify-between mb-8">
+            <div>
+              <div className="text-[10px] font-bold text-red-400 uppercase tracking-widest mb-1">Cryptanalysis</div>
+              <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-white">
+                ATTACK <span className="text-red-500">TOOLBOX</span>
+              </h2>
+              <p className="text-sm text-slate-400 mt-2 max-w-xl">
+                Automated solvers and practical attack tools — paste a ciphertext, get the key.
+              </p>
+            </div>
+            <span className="text-xs text-slate-600 font-mono">{filteredAttack.length} tools</span>
+          </div>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {filteredAttack.map(m => <Card key={m.path} item={m} hoverColor="text-red-300" cta="LAUNCH TOOL" />)}
+          </div>
+        </div>
+      )}
+
+      {/* Statistical Lab */}
+      {filteredStats.length > 0 && (
+        <div id="section-stats" className="w-full max-w-6xl mt-20 scroll-mt-20">
+          <div className="flex items-end justify-between mb-8">
+            <div>
+              <div className="text-[10px] font-bold text-red-400 uppercase tracking-widest mb-1">Cryptanalysis</div>
+              <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-white">
+                STATISTICAL <span className="text-red-500">LAB</span>
+              </h2>
+              <p className="text-sm text-slate-400 mt-2 max-w-xl">
+                Understand what random looks like — and how to tell when something isn't.
+              </p>
+            </div>
+            <span className="text-xs text-slate-600 font-mono">{filteredStats.length} tools</span>
+          </div>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {filteredStats.map(m => <Card key={m.path} item={m} hoverColor="text-red-300" cta="LAUNCH TOOL" />)}
+          </div>
+        </div>
+      )}
+
+      {/* Modern Cryptography */}
       {filteredModern.length > 0 && (
-        <div className="w-full max-w-6xl mt-20">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-white mb-3">
-              MODERN <span className="text-cyan-500">CRYPTOGRAPHY</span>
-            </h2>
-            <p className="text-sm text-slate-400 max-w-xl mx-auto">
-              Step inside the algorithms that protect the modern internet — from shift registers to the ciphers in your browser right now.
-            </p>
+        <div id="section-modern" className="w-full max-w-6xl mt-20 scroll-mt-20">
+          <div className="flex items-end justify-between mb-8">
+            <div>
+              <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-white">
+                MODERN <span className="text-cyan-500">CRYPTOGRAPHY</span>
+              </h2>
+              <p className="text-sm text-slate-400 mt-2 max-w-xl">
+                Step inside the algorithms protecting your browser right now — from shift registers to AES and ChaCha20.
+              </p>
+            </div>
+            <span className="text-xs text-slate-600 font-mono">{filteredModern.length} tools</span>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {filteredModern.map(m => <Card key={m.path} item={m} hoverColor="text-cyan-300" cta="LAUNCH VISUALIZER" />)}
@@ -617,16 +711,19 @@ const Hub: React.FC = () => {
         </div>
       )}
 
-      {/* Public Key Section */}
+      {/* Public Key */}
       {filteredPublicKey.length > 0 && (
-        <div className="w-full max-w-6xl mt-20">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-white mb-3">
-              PUBLIC KEY <span className="text-violet-500">CRYPTOGRAPHY</span>
-            </h2>
-            <p className="text-sm text-slate-400 max-w-xl mx-auto">
-              The mathematics of trust — key exchange, digital signatures, and the asymmetric algorithms that secure every connection.
-            </p>
+        <div id="section-publickey" className="w-full max-w-6xl mt-20 scroll-mt-20">
+          <div className="flex items-end justify-between mb-8">
+            <div>
+              <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-white">
+                PUBLIC KEY <span className="text-violet-500">CRYPTOGRAPHY</span>
+              </h2>
+              <p className="text-sm text-slate-400 mt-2 max-w-xl">
+                The mathematics of trust — key exchange, digital signatures, and the asymmetric algorithms that secure every connection.
+              </p>
+            </div>
+            <span className="text-xs text-slate-600 font-mono">{filteredPublicKey.length} tools</span>
           </div>
           <div className="grid gap-6 md:grid-cols-2">
             {filteredPublicKey.map(m => <Card key={m.path} item={m} hoverColor="text-violet-300" cta="LAUNCH VISUALIZER" />)}

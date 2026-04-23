@@ -51,25 +51,39 @@ const SIMULATORS = [
   { path: '/trifid', label: 'Trifid Cipher', country: 'France', icon: <Boxes size={14} /> },
 ];
 
-const CRYPTANALYSIS = [
-  { path: '/frequency-analysis', label: 'Frequency Analysis', country: 'Cryptanalysis', icon: <BarChart3 size={14} /> },
-  { path: '/vigenere-breaker', label: 'Vigenère Breaker', country: 'Cryptanalysis', icon: <KeySquare size={14} /> },
-  { path: '/bombe', label: 'Bombe', country: 'Cryptanalysis', icon: <CircuitBoard size={14} /> },
-  { path: '/colossus', label: 'Colossus', country: 'Cryptanalysis', icon: <Binary size={14} /> },
-  { path: '/vigenere-workshop', label: 'Vigenère Workshop', country: 'Cryptanalysis', icon: <SlidersHorizontal size={14} /> },
-  { path: '/substitution-solver', label: 'Substitution Solver', country: 'Cryptanalysis', icon: <SearchCode size={14} /> },
-  { path: '/ioc', label: 'Index of Coincidence', country: 'Cryptanalysis', icon: <Equal size={14} /> },
-  { path: '/substitution-auto', label: 'Auto Substitution Solver', country: 'Cryptanalysis', icon: <Zap size={14} /> },
-  { path: '/xor-analyzer', label: 'Repeating XOR Analyzer', country: 'Cryptanalysis', icon: <Binary size={14} /> },
-  { path: '/crib-drag', label: 'Crib Drag', country: 'Cryptanalysis', icon: <SlidersHorizontal size={14} /> },
-  { path: '/entropy', label: 'Entropy Analyzer', country: 'Cryptanalysis', icon: <BarChart3 size={14} /> },
-  { path: '/columnar-solver', label: 'Columnar Transposition Solver', country: 'Cryptanalysis', icon: <Columns3 size={14} /> },
-  { path: '/hash-id',         label: 'Hash Identifier',               country: 'Cryptanalysis', icon: <Hash size={14} /> },
-  { path: '/shift-solver',    label: 'Caesar & Affine Brute-Forcer',  country: 'Cryptanalysis', icon: <KeyRound size={14} /> },
-  { path: '/kasiski',         label: 'Kasiski Examination',           country: 'Cryptanalysis', icon: <BarChart3 size={14} /> },
-  { path: '/decoder',         label: 'Multi-Encoding Decoder',        country: 'Cryptanalysis', icon: <ArrowRightLeft size={14} /> },
-  { path: '/playfair-solver', label: 'Playfair Auto-Solver',          country: 'Cryptanalysis', icon: <Grid3X3 size={14} /> },
+const CLASSICAL_ANALYSIS = [
+  { path: '/frequency-analysis', label: 'Frequency Analysis',      country: 'Classical', icon: <BarChart3 size={14} /> },
+  { path: '/vigenere-breaker',   label: 'Vigenère Breaker',        country: 'Classical', icon: <KeySquare size={14} /> },
+  { path: '/vigenere-workshop',  label: 'Vigenère Workshop',       country: 'Classical', icon: <SlidersHorizontal size={14} /> },
+  { path: '/bombe',              label: 'Bombe',                   country: 'Classical', icon: <CircuitBoard size={14} /> },
+  { path: '/colossus',           label: 'Colossus',                country: 'Classical', icon: <Binary size={14} /> },
+  { path: '/substitution-solver',label: 'Substitution Solver',     country: 'Classical', icon: <SearchCode size={14} /> },
+  { path: '/ioc',                label: 'Index of Coincidence',    country: 'Classical', icon: <Equal size={14} /> },
 ];
+
+const ATTACK_TOOLBOX = [
+  { path: '/substitution-auto',  label: 'Auto Substitution Solver',       country: 'Attack Tools', icon: <Zap size={14} /> },
+  { path: '/xor-analyzer',       label: 'Repeating XOR Analyzer',         country: 'Attack Tools', icon: <Binary size={14} /> },
+  { path: '/crib-drag',          label: 'Crib Drag',                      country: 'Attack Tools', icon: <SlidersHorizontal size={14} /> },
+  { path: '/kasiski',            label: 'Kasiski Examination',            country: 'Attack Tools', icon: <BarChart3 size={14} /> },
+  { path: '/shift-solver',       label: 'Caesar & Affine Brute-Forcer',   country: 'Attack Tools', icon: <KeyRound size={14} /> },
+  { path: '/columnar-solver',    label: 'Columnar Transposition Solver',  country: 'Attack Tools', icon: <Columns3 size={14} /> },
+  { path: '/playfair-solver',    label: 'Playfair Auto-Solver',           country: 'Attack Tools', icon: <Grid3X3 size={14} /> },
+  { path: '/hash-id',            label: 'Hash Identifier',                country: 'Attack Tools', icon: <Hash size={14} /> },
+  { path: '/decoder',            label: 'Multi-Encoding Decoder',         country: 'Attack Tools', icon: <ArrowRightLeft size={14} /> },
+];
+
+const STATS_LAB = [
+  { path: '/entropy',         label: 'Entropy Analyzer',        country: 'Stats Lab', icon: <BarChart3 size={14} /> },
+  { path: '/bigram-map',      label: 'Byte Bigram Heatmap',     country: 'Stats Lab', icon: <Grid3X3 size={14} /> },
+  { path: '/autocorrelation', label: 'Autocorrelation Explorer',country: 'Stats Lab', icon: <Activity size={14} /> },
+  { path: '/bit-tests',       label: 'Bit Distribution Tests',  country: 'Stats Lab', icon: <Binary size={14} /> },
+  { path: '/prng-scatter',    label: 'PRNG Scatter Plot',       country: 'Stats Lab', icon: <Dice6 size={14} /> },
+  { path: '/avalanche',       label: 'Avalanche Visualizer',    country: 'Stats Lab', icon: <Zap size={14} /> },
+];
+
+// Combined for breadcrumb lookup and navigation
+const CRYPTANALYSIS = [...CLASSICAL_ANALYSIS, ...ATTACK_TOOLBOX, ...STATS_LAB];
 
 const MODERN_CRYPTO = [
   { path: '/lfsr', label: 'LFSR', country: 'Modern Crypto', icon: <Waves size={14} /> },
@@ -176,23 +190,25 @@ const Layout: React.FC = () => {
                       </div>
                     </Link>
                   ))}
-                  <div className="px-4 py-2 text-[10px] font-bold text-red-400 uppercase tracking-wider border-b border-t border-slate-800">Cryptanalysis Tools</div>
-                  {CRYPTANALYSIS.map(s => (
-                    <Link
-                      key={s.path}
-                      to={s.path}
-                      className={`flex items-center gap-3 px-4 py-3 text-sm transition-colors ${
-                        s.path === location.pathname
-                          ? 'bg-red-500/10 text-red-400'
-                          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                      }`}
-                    >
-                      <span className="text-red-500/70">{s.icon}</span>
-                      <div className="flex flex-col">
-                        <span className="font-medium">{s.label}</span>
-                        <span className="text-[10px] text-slate-500">{s.country}</span>
-                      </div>
-                    </Link>
+                  {[
+                    { label: 'Classical Cryptanalysis', items: CLASSICAL_ANALYSIS },
+                    { label: 'Attack Toolbox',          items: ATTACK_TOOLBOX },
+                    { label: 'Statistical Lab',         items: STATS_LAB },
+                  ].map(({ label, items }) => (
+                    <React.Fragment key={label}>
+                      <div className="px-4 py-2 text-[10px] font-bold text-red-400 uppercase tracking-wider border-b border-t border-slate-800">{label}</div>
+                      {items.map(s => (
+                        <Link key={s.path} to={s.path}
+                          className={`flex items-center gap-3 px-4 py-3 text-sm transition-colors ${
+                            s.path === location.pathname ? 'bg-red-500/10 text-red-400' : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                          }`}>
+                          <span className="text-red-500/70">{s.icon}</span>
+                          <div className="flex flex-col">
+                            <span className="font-medium">{s.label}</span>
+                          </div>
+                        </Link>
+                      ))}
+                    </React.Fragment>
                   ))}
                   <div className="px-4 py-2 text-[10px] font-bold text-cyan-400 uppercase tracking-wider border-b border-t border-slate-800">Modern Cryptography</div>
                   {MODERN_CRYPTO.map(s => (

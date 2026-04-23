@@ -94,6 +94,11 @@ const ShiftSolverApp      = lazy(() => import('./simulators/shift-solver/App'));
 const KasiskiApp          = lazy(() => import('./simulators/kasiski/App'));
 const DecoderApp          = lazy(() => import('./simulators/decoder/App'));
 const PlayfairSolverApp   = lazy(() => import('./simulators/playfair-solver/App'));
+const BigramMapApp        = lazy(() => import('./simulators/bigram-map/App'));
+const AutocorrelationApp  = lazy(() => import('./simulators/autocorrelation/App'));
+const BitTestsApp         = lazy(() => import('./simulators/bit-tests/App'));
+const PRNGScatterApp      = lazy(() => import('./simulators/prng-scatter/App'));
+const AvalancheApp        = lazy(() => import('./simulators/avalanche/App'));
 
 
 const root = document.getElementById('root')!;
@@ -192,6 +197,11 @@ ReactDOM.createRoot(root).render(
             <Route path="/kasiski" element={<KasiskiApp />} />
             <Route path="/decoder" element={<DecoderApp />} />
             <Route path="/playfair-solver" element={<PlayfairSolverApp />} />
+            <Route path="/bigram-map" element={<BigramMapApp />} />
+            <Route path="/autocorrelation" element={<AutocorrelationApp />} />
+            <Route path="/bit-tests" element={<BitTestsApp />} />
+            <Route path="/prng-scatter" element={<PRNGScatterApp />} />
+            <Route path="/avalanche" element={<AvalancheApp />} />
         </Route>
       </Routes>
     </HashRouter>
