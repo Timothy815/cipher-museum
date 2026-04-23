@@ -84,6 +84,11 @@ const SBoxApp             = lazy(() => import('./simulators/sbox/App'));
 const GF28App             = lazy(() => import('./simulators/gf28/App'));
 const PBoxApp             = lazy(() => import('./simulators/pbox/App'));
 const EcbPenguinApp       = lazy(() => import('./simulators/ecb-penguin/App'));
+const SubstitutionAutoApp = lazy(() => import('./simulators/substitution-auto/App'));
+const XorAnalyzerApp      = lazy(() => import('./simulators/xor-analyzer/App'));
+const CribDragApp         = lazy(() => import('./simulators/crib-drag/App'));
+const EntropyApp          = lazy(() => import('./simulators/entropy/App'));
+const ColumnarSolverApp   = lazy(() => import('./simulators/columnar-solver/App'));
 
 
 const root = document.getElementById('root')!;
@@ -172,6 +177,11 @@ ReactDOM.createRoot(root).render(
             <Route path="/gf28" element={<GF28App />} />
             <Route path="/pbox" element={<PBoxApp />} />
             <Route path="/ecb-penguin" element={<EcbPenguinApp />} />
+            <Route path="/substitution-auto" element={<SubstitutionAutoApp />} />
+            <Route path="/xor-analyzer" element={<XorAnalyzerApp />} />
+            <Route path="/crib-drag" element={<CribDragApp />} />
+            <Route path="/entropy" element={<EntropyApp />} />
+            <Route path="/columnar-solver" element={<ColumnarSolverApp />} />
         </Route>
       </Routes>
     </HashRouter>

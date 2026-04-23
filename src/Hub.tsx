@@ -152,6 +152,16 @@ const cryptanalysisTools = [
     description: 'Break a random substitution cipher by hand. Live frequency bars, bigram hints, click-to-assign mappings.' },
   { path: '/ioc', name: 'Index of Coincidence', subtitle: 'Friedman\'s Key Length Estimator', country: 'Cryptanalysis', era: '1922', icon: <Equal size={32} />, color: 'rose',
     description: 'Friedman\'s statistical method for estimating polyalphabetic cipher key lengths via stream splitting.' },
+  { path: '/substitution-auto', name: 'Auto Substitution Solver', subtitle: 'Simulated Annealing + Bigram Scoring', country: 'Cryptanalysis', era: 'Modern', icon: <ZapIcon size={32} />, color: 'crimson',
+    description: 'Paste any monoalphabetic substitution ciphertext and watch simulated annealing + bigram fitness scoring automatically recover the key. Four independent restarts; manual key-swap correction when needed.' },
+  { path: '/xor-analyzer', name: 'Repeating XOR Analyzer', subtitle: 'Hamming Distance + Frequency Attack', country: 'Cryptanalysis', era: 'Modern', icon: <Binary size={32} />, color: 'crimson',
+    description: 'Input hex, base64, or ASCII ciphertext. Hamming-distance analysis identifies the key length; per-column chi-squared attacks recover each key byte. The standard technique for CTF XOR challenges.' },
+  { path: '/crib-drag', name: 'Crib Drag', subtitle: 'Known-Plaintext Sliding Attack', country: 'Cryptanalysis', era: 'Modern', icon: <SlidersHorizontal size={32} />, color: 'crimson',
+    description: 'Slide a known-plaintext word or phrase across XOR ciphertext to find where it matches. Dual mode reveals OTP reuse: when two messages share a key, dragging a crib over their XOR directly exposes the plaintext.' },
+  { path: '/entropy', name: 'Entropy Analyzer', subtitle: 'Shannon Entropy + Type Classifier', country: 'Cryptanalysis', era: 'Modern', icon: <BarChart3 size={32} />, color: 'crimson',
+    description: 'Measure Shannon entropy, IoC, chi-squared, byte distribution, and printable fraction of any input. Automatically classifies as English plaintext, classical cipher, high-entropy encryption, compressed data, or binary.' },
+  { path: '/columnar-solver', name: 'Columnar Transposition Solver', subtitle: 'Brute-Force + Hill-Climb Solver', country: 'Cryptanalysis', era: 'Modern', icon: <Columns3 size={32} />, color: 'crimson',
+    description: 'Select a key length and solve columnar transposition ciphers automatically. Exhaustive for ≤8 columns (up to 40,320 permutations), hill-climbing for 9–15. Ranks all candidates by bigram fitness score.' },
 ];
 
 const modernCrypto = [

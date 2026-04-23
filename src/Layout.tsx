@@ -59,6 +59,11 @@ const CRYPTANALYSIS = [
   { path: '/vigenere-workshop', label: 'Vigenère Workshop', country: 'Cryptanalysis', icon: <SlidersHorizontal size={14} /> },
   { path: '/substitution-solver', label: 'Substitution Solver', country: 'Cryptanalysis', icon: <SearchCode size={14} /> },
   { path: '/ioc', label: 'Index of Coincidence', country: 'Cryptanalysis', icon: <Equal size={14} /> },
+  { path: '/substitution-auto', label: 'Auto Substitution Solver', country: 'Cryptanalysis', icon: <Zap size={14} /> },
+  { path: '/xor-analyzer', label: 'Repeating XOR Analyzer', country: 'Cryptanalysis', icon: <Binary size={14} /> },
+  { path: '/crib-drag', label: 'Crib Drag', country: 'Cryptanalysis', icon: <SlidersHorizontal size={14} /> },
+  { path: '/entropy', label: 'Entropy Analyzer', country: 'Cryptanalysis', icon: <BarChart3 size={14} /> },
+  { path: '/columnar-solver', label: 'Columnar Transposition Solver', country: 'Cryptanalysis', icon: <Columns3 size={14} /> },
 ];
 
 const MODERN_CRYPTO = [
