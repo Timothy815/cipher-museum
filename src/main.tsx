@@ -89,6 +89,11 @@ const XorAnalyzerApp      = lazy(() => import('./simulators/xor-analyzer/App'));
 const CribDragApp         = lazy(() => import('./simulators/crib-drag/App'));
 const EntropyApp          = lazy(() => import('./simulators/entropy/App'));
 const ColumnarSolverApp   = lazy(() => import('./simulators/columnar-solver/App'));
+const HashIdApp           = lazy(() => import('./simulators/hash-id/App'));
+const ShiftSolverApp      = lazy(() => import('./simulators/shift-solver/App'));
+const KasiskiApp          = lazy(() => import('./simulators/kasiski/App'));
+const DecoderApp          = lazy(() => import('./simulators/decoder/App'));
+const PlayfairSolverApp   = lazy(() => import('./simulators/playfair-solver/App'));
 
 
 const root = document.getElementById('root')!;
@@ -182,6 +187,11 @@ ReactDOM.createRoot(root).render(
             <Route path="/crib-drag" element={<CribDragApp />} />
             <Route path="/entropy" element={<EntropyApp />} />
             <Route path="/columnar-solver" element={<ColumnarSolverApp />} />
+            <Route path="/hash-id" element={<HashIdApp />} />
+            <Route path="/shift-solver" element={<ShiftSolverApp />} />
+            <Route path="/kasiski" element={<KasiskiApp />} />
+            <Route path="/decoder" element={<DecoderApp />} />
+            <Route path="/playfair-solver" element={<PlayfairSolverApp />} />
         </Route>
       </Routes>
     </HashRouter>

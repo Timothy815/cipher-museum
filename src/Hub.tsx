@@ -162,6 +162,16 @@ const cryptanalysisTools = [
     description: 'Measure Shannon entropy, IoC, chi-squared, byte distribution, and printable fraction of any input. Automatically classifies as English plaintext, classical cipher, high-entropy encryption, compressed data, or binary.' },
   { path: '/columnar-solver', name: 'Columnar Transposition Solver', subtitle: 'Brute-Force + Hill-Climb Solver', country: 'Cryptanalysis', era: 'Modern', icon: <Columns3 size={32} />, color: 'crimson',
     description: 'Select a key length and solve columnar transposition ciphers automatically. Exhaustive for ≤8 columns (up to 40,320 permutations), hill-climbing for 9–15. Ranks all candidates by bigram fitness score.' },
+  { path: '/hash-id', name: 'Hash Identifier', subtitle: 'Fingerprint & Classify Hash Strings', country: 'Cryptanalysis', era: 'Modern', icon: <Hash size={32} />, color: 'crimson',
+    description: 'Paste any hash, token, or encoded string and instantly identify it. Recognizes MD5, SHA-1/256/512, bcrypt, Argon2, NTLM, JWT, and 20+ other formats. Shows hashcat/john mode, crackability notes, and JWT payload decode.' },
+  { path: '/shift-solver', name: 'Caesar & Affine Brute-Forcer', subtitle: 'All 25 / 312 Keys Ranked by χ²', country: 'Cryptanalysis', era: 'Modern', icon: <KeyRound size={32} />, color: 'crimson',
+    description: 'Try all 25 Caesar shifts or all 312 Affine (a,b) key pairs and rank them by chi-squared frequency fitness. Instantly finds the correct key without guessing. Includes frequency bar chart and letter distribution comparison.' },
+  { path: '/kasiski', name: 'Kasiski Examination', subtitle: 'Repeated Sequences + Factor Analysis', country: 'Cryptanalysis', era: 'Modern', icon: <BarChart3 size={32} />, color: 'crimson',
+    description: 'The classic technique for finding the Vigenère key length. Locates all repeated n-grams, extracts their spacings, and factor-analyzes the GCDs to identify the most likely key length. Also plots IoC at each stride.' },
+  { path: '/decoder', name: 'Multi-Encoding Decoder', subtitle: 'Base64 · Hex · URL · Morse · ROT · Atbash', country: 'Cryptanalysis', era: 'Modern', icon: <ArrowRightLeft size={32} />, color: 'crimson',
+    description: 'Auto-detects and strips layered encodings one step at a time. Supports Base64, hex, URL, HTML entities, binary, Morse, char codes, ROT13/47/18, Atbash, and more. Build a decoding pipeline to peel any CTF encoding chain.' },
+  { path: '/playfair-solver', name: 'Playfair Auto-Solver', subtitle: 'Simulated Annealing on the 5×5 Square', country: 'Cryptanalysis', era: 'Modern', icon: <Grid3X3 size={32} />, color: 'crimson',
+    description: 'Automatically recover Playfair keys using simulated annealing scored by bigram log-likelihood. Multiple independent restarts for better coverage. Manual key entry for refinement. Best with 80+ ciphertext letters.' },
 ];
 
 const modernCrypto = [

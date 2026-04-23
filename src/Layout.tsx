@@ -64,6 +64,11 @@ const CRYPTANALYSIS = [
   { path: '/crib-drag', label: 'Crib Drag', country: 'Cryptanalysis', icon: <SlidersHorizontal size={14} /> },
   { path: '/entropy', label: 'Entropy Analyzer', country: 'Cryptanalysis', icon: <BarChart3 size={14} /> },
   { path: '/columnar-solver', label: 'Columnar Transposition Solver', country: 'Cryptanalysis', icon: <Columns3 size={14} /> },
+  { path: '/hash-id',         label: 'Hash Identifier',               country: 'Cryptanalysis', icon: <Hash size={14} /> },
+  { path: '/shift-solver',    label: 'Caesar & Affine Brute-Forcer',  country: 'Cryptanalysis', icon: <KeyRound size={14} /> },
+  { path: '/kasiski',         label: 'Kasiski Examination',           country: 'Cryptanalysis', icon: <BarChart3 size={14} /> },
+  { path: '/decoder',         label: 'Multi-Encoding Decoder',        country: 'Cryptanalysis', icon: <ArrowRightLeft size={14} /> },
+  { path: '/playfair-solver', label: 'Playfair Auto-Solver',          country: 'Cryptanalysis', icon: <Grid3X3 size={14} /> },
 ];
 
 const MODERN_CRYPTO = [
